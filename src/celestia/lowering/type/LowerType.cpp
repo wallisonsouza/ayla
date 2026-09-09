@@ -2,11 +2,13 @@
 
 namespace celestia::lowering {
 
-ir::TypeId LoweringContext::lower_type(semantic::TypeId type_id) {
+ir::TypeId Lowering::lower_type(semantic::TypeId type_id) {
+
+  auto &types = context.ir.get_global();
 
   if (!type_id.is_valid()) return ir::TypeId::invalid();
 
-  const auto &type = env.types.get(type_id);
+  const auto &type = context.compiler.environment().types.get(type_id);
 
   switch (type.kind) {
 
@@ -15,42 +17,49 @@ ir::TypeId LoweringContext::lower_type(semantic::TypeId type_id) {
 
     switch (primitive.primitive) {
 
-    case semantic::PrimitiveKind::Void: return ir.get_or_create_type(ir::TypeKind::Void);
+    case semantic::PrimitiveKind::Void: return types.create_primitive_type(ir::TypeKind::Void);
 
-    case semantic::PrimitiveKind::Bool: return ir.get_or_create_type(ir::TypeKind::Bool);
+    case semantic::PrimitiveKind::Bool: return types.create_primitive_type(ir::TypeKind::Bool);
 
-    case semantic::PrimitiveKind::Char: return ir.get_or_create_type(ir::TypeKind::Char);
+    case semantic::PrimitiveKind::Char: return types.create_primitive_type(ir::TypeKind::Char);
 
-    case semantic::PrimitiveKind::Int: return ir.get_or_create_type(ir::TypeKind::Int);
+    case semantic::PrimitiveKind::Int: return types.create_primitive_type(ir::TypeKind::Int);
 
-    case semantic::PrimitiveKind::UInt: return ir.get_or_create_type(ir::TypeKind::UInt);
+    case semantic::PrimitiveKind::UInt: return types.create_primitive_type(ir::TypeKind::UInt);
 
-    case semantic::PrimitiveKind::Int8: return ir.get_or_create_type(ir::TypeKind::Int8);
+    case semantic::PrimitiveKind::Int8: return types.create_primitive_type(ir::TypeKind::Int8);
 
-    case semantic::PrimitiveKind::Int16: return ir.get_or_create_type(ir::TypeKind::Int16);
+    case semantic::PrimitiveKind::Int16: return types.create_primitive_type(ir::TypeKind::Int16);
 
-    case semantic::PrimitiveKind::Int32: return ir.get_or_create_type(ir::TypeKind::Int32);
+    case semantic::PrimitiveKind::Int32: return types.create_primitive_type(ir::TypeKind::Int32);
 
-    case semantic::PrimitiveKind::Int64: return ir.get_or_create_type(ir::TypeKind::Int64);
+    case semantic::PrimitiveKind::Int64: return types.create_primitive_type(ir::TypeKind::Int64);
 
-    case semantic::PrimitiveKind::UInt8: return ir.get_or_create_type(ir::TypeKind::UInt8);
+    case semantic::PrimitiveKind::UInt8: return types.create_primitive_type(ir::TypeKind::UInt8);
 
-    case semantic::PrimitiveKind::UInt16: return ir.get_or_create_type(ir::TypeKind::UInt16);
+    case semantic::PrimitiveKind::UInt16: return types.create_primitive_type(ir::TypeKind::UInt16);
 
-    case semantic::PrimitiveKind::UInt32: return ir.get_or_create_type(ir::TypeKind::UInt32);
+    case semantic::PrimitiveKind::UInt32: return types.create_primitive_type(ir::TypeKind::UInt32);
 
-    case semantic::PrimitiveKind::UInt64: return ir.get_or_create_type(ir::TypeKind::UInt64);
+    case semantic::PrimitiveKind::UInt64: return types.create_primitive_type(ir::TypeKind::UInt64);
 
-    case semantic::PrimitiveKind::F32: return ir.get_or_create_type(ir::TypeKind::F32);
+    case semantic::PrimitiveKind::F32: return types.create_primitive_type(ir::TypeKind::F32);
 
-    case semantic::PrimitiveKind::F64: return ir.get_or_create_type(ir::TypeKind::F64);
+    case semantic::PrimitiveKind::F64: return types.create_primitive_type(ir::TypeKind::F64);
 
-    case semantic::PrimitiveKind::String: return ir.get_or_create_type(ir::TypeKind::String);
+    case semantic::PrimitiveKind::String: return types.create_primitive_type(ir::TypeKind::String);
     }
 
     break;
   }
 
+  case semantic::TypeKind::Struct: {
+    auto it = context.ir.get_program().type_map.find(type_id);
+
+    if (it == context.ir.get_program().type_map.end()) return ir::TypeId::invalid();
+
+    return it->second;
+  }
   case semantic::TypeKind::Function: {
     const auto &function = static_cast<const semantic::FunctionType &>(type);
 
@@ -69,7 +78,7 @@ ir::TypeId LoweringContext::lower_type(semantic::TypeId type_id) {
 
     if (!return_type.is_valid()) return ir::TypeId::invalid();
 
-    return ir.create_function_type(std::move(params), return_type);
+    return types.create_function_type(std::move(params), return_type);
   }
 
   default: break;

@@ -18,25 +18,18 @@ TypeId TypeChecker::check_name_pattern(ast::NamedPattern *pattern, TypeId expect
 
   if (!pattern) return TypeId::invalid();
 
-  if (!pattern->symbol_id.is_valid()) {
+  auto &semantic = context.unit.semantic;
+
+  SymbolId symbol_id = semantic.symbol(pattern);
+
+  if (!symbol_id.is_valid()) {
 
     error(pattern, "pattern has invalid SymbolId");
 
     return TypeId::invalid();
   }
 
-  auto *symbol = context.compiler.symbols.get(pattern->symbol_id);
-
-  if (!symbol) {
-
-    error(pattern, "pattern symbol not found");
-
-    return TypeId::invalid();
-  }
-
-  // ------------------------------------------------
-  // Tipo da anotação
-  // ------------------------------------------------
+  auto &symbol = context.env().symbols.get(symbol_id);
 
   TypeId annotation_type = TypeId::invalid();
 
@@ -58,8 +51,6 @@ TypeId TypeChecker::check_name_pattern(ast::NamedPattern *pattern, TypeId expect
 
   TypeId type = annotation_type;
 
-  // Sem anotação:
-  // usa o tipo fornecido pelo contexto.
   if (!type.is_valid()) {
 
     if (!expected_type.is_valid()) {
@@ -91,8 +82,9 @@ TypeId TypeChecker::check_name_pattern(ast::NamedPattern *pattern, TypeId expect
   // Resultado semântico
   // ------------------------------------------------
 
-  pattern->type_id = type;
-  symbol->type = type;
+  semantic.set_type(pattern, type);
+
+  symbol.type = type;
 
   return type;
 }

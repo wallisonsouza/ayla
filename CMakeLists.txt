@@ -12,7 +12,6 @@ file(GLOB_RECURSE  SOURCES
 add_executable(ayla
     main.cpp
     ${SOURCES}
-    src/celestia/semantic/resolver/declaration/ResolveVariableDeclaration.cpp
 )
 
 target_include_directories(ayla PRIVATE

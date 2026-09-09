@@ -20,7 +20,7 @@ celestia::ast::Expression *ExpressionParser::parse_binary_expression(int min_bp,
 
     if (!std::holds_alternative<BinaryOperation>(info->op)) return nullptr;
 
-    context.tokens().advance();
+    context.tokens().consume();
 
     auto *right = parse_unary_expression();
 

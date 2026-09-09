@@ -3,7 +3,7 @@
 #include "celestia/core/memory/Arena.hpp"
 #include "celestia/core/token/Token.hpp"
 
-#include <functional>
+#include <utility>
 #include <vector>
 
 namespace core::token {
@@ -18,49 +18,44 @@ public:
   // ============================================================
 
   template <typename T, typename... Args> T *create_token(Args &&...args) {
-    T *tok = arena_.alloc<T>(std::forward<Args>(args)...);
-    tokens_.push_back(tok);
-    return tok;
+    auto *token = arena_.alloc<T>(std::forward<Args>(args)...);
+    tokens_.push_back(token);
+    return token;
   }
 
   // ============================================================
   // Inspection
   // ============================================================
 
-  void for_each(const std::function<void(const Token &)> &fn) const {
-    for (auto *token : tokens_) {
-      if (token) fn(*token);
-    }
+  Token *at(size_t distance = 0) const noexcept {
+    const auto index = pos_ + distance;
+
+    if (index >= tokens_.size()) return nullptr;
+
+    return tokens_[index];
   }
 
-  TokenKind kind() const noexcept { return kind_at(0); }
+  TokenKind kind(size_t distance = 0) const noexcept {
+    auto *token = at(distance);
+    return token ? token->kind() : TokenKind::EndOfFile;
+  }
 
-  TokenKind lookahead_kind(size_t distance) const noexcept { return kind_at(distance); }
-
-  bool check(TokenKind expected, size_t distance = 0) const noexcept { return kind_at(distance) == expected; }
+  bool check(TokenKind expected, size_t distance = 0) const noexcept { return kind(distance) == expected; }
 
   bool is_end() const noexcept { return pos_ >= tokens_.size(); }
 
-  bool has(size_t distance = 0) const noexcept { return pos_ + distance < tokens_.size(); }
+  size_t position() const noexcept { return pos_; }
 
-  size_t current_pos() const noexcept { return pos_; }
+  Token *current() const noexcept { return at(); }
 
-  // ============================================================
-  // Token access
-  // ============================================================
+  Token *previous() const noexcept { return pos_ > 0 ? tokens_[pos_ - 1] : nullptr; }
 
-  Token *current() const noexcept { return has() ? tokens_[pos_] : nullptr; }
-
-  Token *previous() const noexcept { return pos_ == 0 ? nullptr : tokens_[pos_ - 1]; }
-
-  // ============================================================
-  // Trivia
-  // ============================================================
+  Token *next() const noexcept { return at(1); }
 
   bool is_trivia() const noexcept { return kind() == TokenKind::NEW_LINE; }
 
   void skip_trivia() noexcept {
-    while (!is_end() && is_trivia()) consume();
+    while (is_trivia()) consume();
   }
 
   // ============================================================
@@ -68,106 +63,68 @@ public:
   // ============================================================
 
   Token *consume() noexcept {
-    if (is_end()) return nullptr;
+    auto *token = current();
 
-    last_token_ = tokens_[pos_];
-    return tokens_[pos_++];
+    if (!token) return nullptr;
+
+    last_token_ = token;
+    ++pos_;
+
+    return token;
   }
 
-  Token *advance() noexcept { return consume(); }
-
-  void advance(size_t count) noexcept {
-    while (count-- && !is_end()) consume();
-  }
-
-  Token *match(TokenKind expected) {
+  Token *match(TokenKind expected) noexcept {
     if (!check(expected)) return nullptr;
 
     return consume();
   }
 
-  bool consume_if(TokenKind expected) {
-    if (!check(expected)) return false;
+  bool consume_if(TokenKind expected) noexcept { return match(expected) != nullptr; }
 
-    consume();
-    return true;
+  void consume(size_t count) noexcept {
+    while (count-- > 0 && !is_end()) consume();
   }
 
-  Token *expect(TokenKind expected) {
-    if (!check(expected)) return nullptr;
-
-    return consume();
-  }
+  size_t size() const noexcept { return tokens_.size(); }
 
   // ============================================================
   // Checkpoints
   // ============================================================
 
-  void add_checkpoint() noexcept { checkpoint_stack_.push_back(pos_); }
+  void add_checkpoint() noexcept {
+    checkpoints_.push_back({
+        .position = pos_,
+        .last_token = last_token_,
+    });
+  }
 
   void rollback_checkpoint() noexcept {
-    if (checkpoint_stack_.empty()) return;
+    if (checkpoints_.empty()) return;
 
-    pos_ = checkpoint_stack_.back();
-    checkpoint_stack_.pop_back();
+    auto checkpoint = checkpoints_.back();
+    checkpoints_.pop_back();
+
+    pos_ = checkpoint.position;
+    last_token_ = checkpoint.last_token;
   }
 
   void discard_checkpoint() noexcept {
-    if (checkpoint_stack_.empty()) return;
+    if (checkpoints_.empty()) return;
 
-    checkpoint_stack_.pop_back();
-  }
-
-  // ============================================================
-  // Source location
-  // ============================================================
-
-  const SourceSlice &last_slice() const noexcept {
-    static SourceSlice empty{};
-
-    return last_token_ ? last_token_->slice : empty;
-  }
-
-  const SourceSlice &diagnostic_slice() const noexcept {
-    if (auto *token = current()) { return token->slice; }
-
-    return last_slice();
-  }
-  const SourceSlice &current_slice() const noexcept {
-    static SourceSlice empty{};
-
-    if (auto *token = current()) return token->slice;
-
-    return empty;
-  }
-
-  // ============================================================
-  // Misc
-  // ============================================================
-
-  size_t size() const noexcept { return tokens_.size(); }
-
-  void traverse(const std::function<void(Token *)> &fn) const {
-    for (auto *token : tokens_) fn(token);
-  }
-
-  void reset(size_t position) noexcept { pos_ = std::min(position, tokens_.size()); }
-
-private:
-  TokenKind kind_at(size_t distance) const noexcept {
-    if (!has(distance)) return TokenKind::EndOfFile;
-
-    auto *token = tokens_[pos_ + distance];
-
-    return token ? token->kind() : TokenKind::EndOfFile;
+    checkpoints_.pop_back();
   }
 
 private:
+  struct Checkpoint {
+    size_t position;
+    Token *last_token;
+  };
+
   core::memory::Arena arena_;
   std::vector<Token *> tokens_;
 
   size_t pos_ = 0;
-  std::vector<size_t> checkpoint_stack_;
+  std::vector<Checkpoint> checkpoints_;
 
   Token *last_token_ = nullptr;
 };

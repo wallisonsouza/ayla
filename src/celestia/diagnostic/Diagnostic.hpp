@@ -1,6 +1,8 @@
 #pragma once
 
+#include "celestia/ast/Node.hpp"
 #include "celestia/core/token/Location.hpp"
+#include "celestia/core/token/Token.hpp"
 #include "celestia/core/token/TokenKind.hpp"
 #include "celestia/diagnostic/DiagnosticCode.hpp"
 #include "celestia/diagnostic/Expected.hpp"
@@ -13,33 +15,87 @@
 
 namespace diagnostic {
 
-using DiagnosticValue = std::variant<TokenKind, ExpectedKind, celestia::semantic::TypeId, celestia::semantic::SymbolId, std::string>;
+//--------------------------------------------------
+// Expected
+//--------------------------------------------------
 
-enum class DiagnosticArgumentKind { Expected, Found, Previous, Type, Symbol, Name };
-
-enum class LabelKind { Primary, Secondary };
-
-enum class Severity { Error, Warning, Note, Help };
-
-struct Label {
-  SourceSlice slice;
-
-  LabelKind kind;
+enum class ExpectedPosition {
+  Before,
+  After,
 };
+
+struct ExpectedToken {
+  TokenKind kind;
+  ExpectedPosition position;
+};
+
+struct ExpectedCategory {
+  ExpectedKind kind;
+  ExpectedPosition position;
+};
+
+//--------------------------------------------------
+// Argument
+//--------------------------------------------------
+
+enum class DiagnosticArgumentKind {
+  Expected,
+  Found,
+  Previous,
+  Type,
+  Symbol,
+  Name,
+};
+
+using DiagnosticValue = std::variant<ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId, std::string>;
+
 struct DiagnosticArgument {
   DiagnosticArgumentKind kind;
   DiagnosticValue value;
 };
 
+//--------------------------------------------------
+// Label
+//--------------------------------------------------
+
+enum class LabelKind {
+  Primary,
+  Secondary,
+};
+
+struct Label {
+  SourceSlice slice;
+  LabelKind kind;
+};
+
+//--------------------------------------------------
+// Severity
+//--------------------------------------------------
+
+enum class Severity {
+  Error,
+  Warning,
+  Note,
+  Help,
+};
+
+//--------------------------------------------------
+// Auxiliary diagnostics
+//--------------------------------------------------
+
 struct Help {
-    DiagnosticCode code;
-    std::vector<DiagnosticArgument> arguments;
+  HelpCode code;
+  std::vector<DiagnosticArgument> arguments;
 };
 
 struct Note {
-    DiagnosticCode code;
-    std::vector<DiagnosticArgument> arguments;
+  NoteCode code;
+  std::vector<DiagnosticArgument> arguments;
 };
+
+//--------------------------------------------------
+// Diagnostic
+//--------------------------------------------------
 
 struct Diagnostic {
   Severity severity;
@@ -52,6 +108,10 @@ struct Diagnostic {
   std::vector<Note> notes;
 };
 
+//--------------------------------------------------
+// Label helpers
+//--------------------------------------------------
+
 inline Label location(SourceSlice slice, LabelKind kind = LabelKind::Primary) {
 
   return {
@@ -60,9 +120,42 @@ inline Label location(SourceSlice slice, LabelKind kind = LabelKind::Primary) {
   };
 }
 
-template <typename T> inline DiagnosticArgument make_argument(DiagnosticArgumentKind kind, T &&value) { return {kind, std::forward<T>(value)}; }
+inline Label location(const celestia::ast::Node *node, LabelKind kind = LabelKind::Primary) { return location(node->slice, kind); }
+//--------------------------------------------------
+// Argument helpers
+//--------------------------------------------------
 
-template <typename T> inline DiagnosticArgument expected(T &&value) { return make_argument(DiagnosticArgumentKind::Expected, std::forward<T>(value)); }
+template <typename T> inline DiagnosticArgument make_argument(DiagnosticArgumentKind kind, T &&value) {
+
+  return {
+      .kind = kind,
+      .value = std::forward<T>(value),
+  };
+}
+
+//--------------------------------------------------
+// Expected helpers
+//--------------------------------------------------
+
+inline DiagnosticArgument expected_token(TokenKind kind, ExpectedPosition position = ExpectedPosition::Before) {
+
+  return make_argument(DiagnosticArgumentKind::Expected, ExpectedToken{
+                                                             .kind = kind,
+                                                             .position = position,
+                                                         });
+}
+
+inline DiagnosticArgument expected_category(ExpectedKind kind, ExpectedPosition position = ExpectedPosition::Before) {
+
+  return make_argument(DiagnosticArgumentKind::Expected, ExpectedCategory{
+                                                             .kind = kind,
+                                                             .position = position,
+                                                         });
+}
+
+//--------------------------------------------------
+// Other argument helpers
+//--------------------------------------------------
 
 template <typename T> inline DiagnosticArgument found(T &&value) { return make_argument(DiagnosticArgumentKind::Found, std::forward<T>(value)); }
 

@@ -32,9 +32,9 @@ inline void print_diagnostic(const Diagnostic &diagnostic, const core::source::S
 
   const auto &message = it->second;
 
-  auto text = DiagnosticFormatter::format(message.text, diagnostic.arguments, env);
+  auto text = DiagnosticFormatter::format(message.text, diagnostic.arguments, env, source);
 
-  debug::Console::log(theme::ErrorLabel, "[", message.title, "] ", theme::ErrorText, text);
+  debug::Console::log(theme::ErrorLabel, "error: ", theme::ErrorText, text);
 
   if (diagnostic.labels.empty()) return;
 
@@ -47,7 +47,11 @@ inline void print_diagnostic(const Diagnostic &diagnostic, const core::source::S
 
   debug::Console::log(theme::Arrow, "--> ", theme::LineInfo, "line ", slice.begin.line, " col ", slice.begin.column);
 
-  debug::Console::log(debug::Color::BrightBlack, source.path);
+
+  auto absolute = std::filesystem::absolute(source.path);
+  
+  debug::Console::log(debug::Color::BrightBlack, absolute, ":", label.slice.begin.line,":",
+    label.slice.begin.column);
 
   auto cut = cutter.cut(source, slice);
 
@@ -80,11 +84,20 @@ inline void print_diagnostic(const Diagnostic &diagnostic, const core::source::S
 
   for (const auto &help : diagnostic.helps) {
 
-    const auto &help_message = messages.at(help.code);
+    const auto &help_message = help_messages.at(help.code);
 
-    auto help_text = DiagnosticFormatter::format(help_message.text, help.arguments, env);
+    auto help_text = DiagnosticFormatter::format(help_message.text, help.arguments, env, source);
 
     debug::Console::log(theme::Help, "help: ", help_text);
+  }
+
+  for (const auto &note : diagnostic.notes) {
+
+    const auto &note_message = note_messages.at(note.code);
+
+    // auto help_text = DiagnosticFormatter::format(note_messages.text, note.arguments, env, source);
+
+    debug::Console::log(theme::Help, "note: ", note_message.title);
   }
 
   std::cout << '\n';

@@ -8,13 +8,14 @@ class Node;
 
 class CapabilityDeclaration;
 class FunctionDeclaration;
-class ImplementationDeclaration;
 class ImportDeclaration;
 class ModuleDeclaration;
 class ModuleInitDeclaration;
 class StructDeclaration;
 class VariableDeclaration;
-
+class TypeDeclaration;
+class ImplDeclaration;
+class FieldDeclaration;
 
 class AssignmentExpressionNode;
 class BinaryExpressionNode;

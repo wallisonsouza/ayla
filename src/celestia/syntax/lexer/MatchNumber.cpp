@@ -24,7 +24,7 @@ Token *Lexer::match_number() {
 
   auto slice = stream.slice_from(start);
 
-  auto descriptor = ctx.language.descriptors.lookup_by_kind(TokenKind::NUMBER_LITERAL);
+  auto descriptor = ctx.language.tokens.lookup_by_kind(TokenKind::NUMBER_LITERAL);
 
   return ctx.tokens.create_token<Token>(descriptor, slice);
 }

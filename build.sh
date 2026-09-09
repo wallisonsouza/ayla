@@ -31,5 +31,5 @@ ln -sf build/compile_commands.json compile_commands.json
 clear
 
 cd build
-
-./ayla run ../src/ayla/scripts/main.ayla --dump ast
+#gdb --args/
+ ./ayla run ../src/ayla/scripts/main.ayla --dump ast

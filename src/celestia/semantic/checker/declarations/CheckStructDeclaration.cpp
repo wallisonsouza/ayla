@@ -6,7 +6,15 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
 
   if (!node) return;
 
-  if (!node->symbol_id.is_valid()) {
+  auto &semantic = context.unit.semantic;
+
+  // --------------------------------------------------
+  // Symbol
+  // --------------------------------------------------
+
+  SymbolId symbol_id = semantic.symbol(node);
+
+  if (!symbol_id.is_valid()) {
     error(node, "struct has no resolved symbol");
     return;
   }
@@ -15,25 +23,20 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
   // StructType
   // --------------------------------------------------
 
-  TypeId type_id = context.compiler.types.get_or_create(node->symbol_id, TypeKind::Struct);
+  TypeId type_id = context.env().types.get_or_create(symbol_id, TypeKind::Struct);
 
   if (!type_id.is_valid()) {
     error(node, "could not create struct type");
     return;
   }
 
-  node->type_id = type_id;
+  semantic.set_type(node, type_id);
 
-  auto *symbol = context.compiler.symbols.get(node->symbol_id);
+  auto &symbol = context.env().symbols.get(symbol_id);
 
-  if (!symbol) {
-    error(node, "struct symbol not found");
-    return;
-  }
+  symbol.type = type_id;
 
-  symbol->type = type_id;
-
-  auto &type = context.compiler.types.get(type_id);
+  auto &type = context.env().types.get(type_id);
 
   auto &struct_type = static_cast<StructType &>(type);
 
@@ -52,9 +55,9 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
       continue;
     }
 
-    composition->type_id = composed_type;
+    semantic.set_type(composition, composed_type);
 
-    auto &composed = context.compiler.types.get(composed_type);
+    auto &composed = context.env().types.get(composed_type);
 
     if (composed.kind != TypeKind::Struct) {
       error(composition, "struct composition must be a struct");
@@ -63,7 +66,6 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
 
     auto &composed_struct = static_cast<const StructType &>(composed);
 
-    // Copia os campos da composição
     for (const auto &[name, member_type] : composed_struct.members) {
 
       if (struct_type.has_member(name)) {
@@ -90,7 +92,6 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
 
     const auto &name = field->name->str;
 
-  
     if (struct_type.has_member(name)) {
       error(field, "duplicate field '" + name + "'");
       continue;
@@ -108,7 +109,7 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
       continue;
     }
 
-    field->type_id = field_type;
+    semantic.set_type(field->type, field_type);
 
     struct_type.add_member(name, field_type);
   }

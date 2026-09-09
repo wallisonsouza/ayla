@@ -1,18 +1,16 @@
 
-let name: String = "Wallison"
-let age: Int = 23
-
-fun add(a: Int, b: Int) -> Int {
-    a + b
+struct Test {
+    a: Int
 }
 
-struct Point {
-    x: Int
-    y: Int
+struct Test1 {
+    a: A
 }
 
-enum Color {
-    Red
-    Green
-    Blue
+struct Test2 {
+    a: A
+}
+
+struct Test3 {
+    a: A
 }

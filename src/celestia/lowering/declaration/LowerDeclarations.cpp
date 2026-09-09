@@ -3,7 +3,7 @@
 
 namespace celestia::lowering {
 
-void LoweringContext::lower_declaration(const ast::Declaration *node) {
+void Lowering::lower_declaration(const ast::Declaration *node) {
 
   if (!node) return;
 
@@ -11,7 +11,8 @@ void LoweringContext::lower_declaration(const ast::Declaration *node) {
 
   case ast::NodeKind::VariableDeclaration: lower_variable_declaration(ast::as<ast::VariableDeclaration>(node)); return;
   case ast::NodeKind::StructDeclaration: lower_struct_declaration(ast::as<ast::StructDeclaration>(node)); return;
-
+  case ast::NodeKind::FunctionDeclaration: lower_function_declaration(ast::as<ast::FunctionDeclaration>(node)); return;
+    case ast::NodeKind::ModuleDeclaration: lower_module_declaration(ast::as<ast::ModuleDeclaration>(node)); return;
   default: return;
   }
 }

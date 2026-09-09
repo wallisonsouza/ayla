@@ -2,37 +2,49 @@
 
 namespace celestia::lowering {
 
-ir::ValueId LoweringContext::lower_number_literal(const ast::NumberLiteralNode *node) {
+ir::ValueId Lowering::lower_number_literal(const ast::NumberLiteralNode *node) {
 
   if (!node) return ir::ValueId::invalid();
 
-  ir::TypeId type = lower_type(node->type_id);
+  auto semantic_type = context.unit.semantic.type(node);
+
+  if (!semantic_type.is_valid()) return ir::ValueId::invalid();
+
+  ir::TypeId type = lower_type(semantic_type);
 
   if (!type.is_valid()) return ir::ValueId::invalid();
 
-  return ir.create_constant(type, node->value);
+  return context.ir.create_constant(type, node->value);
 }
 
-ir::ValueId LoweringContext::lower_string_literal(const ast::StringLiteralNode *node) {
+ir::ValueId Lowering::lower_string_literal(const ast::StringLiteralNode *node) {
 
   if (!node) return ir::ValueId::invalid();
 
-  ir::TypeId type = lower_type(node->type_id);
+  auto semantic_type = context.unit.semantic.type(node);
+
+  if (!semantic_type.is_valid()) return ir::ValueId::invalid();
+
+  ir::TypeId type = lower_type(semantic_type);
 
   if (!type.is_valid()) return ir::ValueId::invalid();
 
-  return ir.create_constant(type, node->value);
+  return context.ir.create_constant(type, node->value);
 }
 
-ir::ValueId LoweringContext::lower_bool_literal(const ast::BoolLiteralNode *node) {
+ir::ValueId Lowering::lower_bool_literal(const ast::BoolLiteralNode *node) {
 
   if (!node) return ir::ValueId::invalid();
 
-  ir::TypeId type = lower_type(node->type_id);
+  auto semantic_type = context.unit.semantic.type(node);
+
+  if (!semantic_type.is_valid()) return ir::ValueId::invalid();
+
+  ir::TypeId type = lower_type(semantic_type);
 
   if (!type.is_valid()) return ir::ValueId::invalid();
 
-  return ir.create_constant(type, node->value);
+  return context.ir.create_constant(type, node->value);
 }
 
 } // namespace celestia::lowering

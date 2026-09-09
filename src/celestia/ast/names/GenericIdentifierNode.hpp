@@ -4,6 +4,7 @@
 
 #include "celestia/ast/names/IdentifierNode.hpp"
 #include "celestia/ast/types/TypeNode.hpp"
+#include <vector>
 
 namespace celestia::ast {
 

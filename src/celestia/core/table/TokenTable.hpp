@@ -3,17 +3,16 @@
 #include "celestia/core/token/TokenDescriptor.hpp"
 #include "celestia/core/token/TokenGroup.hpp"
 #include "celestia/core/token/TokenKind.hpp"
-#include "celestia/semantic/types/type.hpp"
 #include <deque>
 #include <string>
 #include <unordered_map>
 
 namespace core::table {
 
-class DescriptorTable {
+class TokenTable {
 public:
-  celestia::TokenDescriptor &add(TokenKind kind, const std::string &name, TokenGroup group, celestia::semantic::Type *type = nullptr) {
-    storage_.emplace_back(kind, group, name, type);
+  celestia::TokenDescriptor &add(TokenKind kind, const std::string &name, TokenGroup group) {
+    storage_.emplace_back(kind, group, name);
     celestia::TokenDescriptor &desc = storage_.back();
     by_kind_[kind] = &desc;
     by_name_[name] = &desc;
@@ -49,7 +48,7 @@ public:
     auto it = by_kind_.find(kind);
     return it != by_kind_.end() ? it->second : nullptr;
   }
-  
+
   celestia::TokenDescriptor *lookup_by_name(std::string_view name) {
     auto it = by_name_.find(std::string(name));
 
@@ -63,9 +62,11 @@ public:
 
 private:
   std::deque<celestia::TokenDescriptor> storage_;
+
   std::unordered_map<TokenKind, celestia::TokenDescriptor *> by_kind_;
 
   std::unordered_map<std::string, celestia::TokenDescriptor *> by_name_;
+  
   Trie<celestia::TokenDescriptor> trie_;
 };
 

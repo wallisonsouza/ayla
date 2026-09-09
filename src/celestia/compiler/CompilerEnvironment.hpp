@@ -1,8 +1,10 @@
 #pragma once
 
 #include "celestia/compiler/TypeManager.hpp"
+#include "celestia/compiler/UnitManager.hpp"
 #include "celestia/language/LanguageDefinition.hpp"
-#include "celestia/module/ModuleManager.hpp"
+#include "celestia/semantic/module/ModuleManager.hpp"
+#include "celestia/semantic/scope/ScopeManager.hpp"
 #include "celestia/semantic/symbol/SymbolManager.hpp"
 
 struct BuiltinTypes {
@@ -30,24 +32,41 @@ struct BuiltinTypes {
 
 struct BuiltinIntrinsics {
   celestia::semantic::SymbolId array = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId  map = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId  set = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId  ref = celestia::semantic::SymbolId ::invalid();
+  celestia::semantic::SymbolId map = celestia::semantic::SymbolId ::invalid();
+  celestia::semantic::SymbolId set = celestia::semantic::SymbolId ::invalid();
+  celestia::semantic::SymbolId ref = celestia::semantic::SymbolId ::invalid();
 };
 
 struct CompilerEnvironment {
+
+  std::filesystem::path root;
 
   celestia::LanguageDefinition language;
 
   SymbolManager symbols;
 
-  ModuleManager modules;
+  celestia::semantic::ModuleManager modules;
 
   TypeManager types;
 
   BuiltinTypes builtins;
 
+  UnitManager units;
+
+  ScopeManager scopes;
+
   BuiltinIntrinsics intrinsics;
 
-  CompilerEnvironment() = default;
+  celestia::semantic::ModuleId builtin_module;
+
+  CompilerEnvironment() {
+    
+    builtin_module = modules.register_module("builtin");
+
+    auto &module = modules.get(builtin_module);
+
+    auto scope = scopes.create_scope(core::ScopeKind::Module, celestia::semantic::ScopeId::invalid());
+
+    module.set_scope(scope);
+  }
 };

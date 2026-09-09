@@ -1,54 +1,52 @@
 #pragma once
 
-#include "ContextStack.hpp"
 #include "celestia/ast/ASTFwd.hpp"
 #include "celestia/ast/AstDispacher.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
+#include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/CompilerEnvironment.hpp"
 #include "celestia/semantic/id/ids.hpp"
-#include "celestia/semantic/scope/Scope.hpp"
-#include "celestia/semantic/scope/ScopeManager.hpp"
+#include "celestia/semantic/resolver/ContextStack.hpp"
 
 namespace celestia::semantic {
 struct ResolverContext {
-  CompilerEnvironment &compiler;
+  Compiler &compiler;
   CompilationUnit &unit;
 
-  ContextStack<core::Scope> scopes;
+  ContextStack<ScopeId> stack;
 
-  ScopeManager scope_manager;
+  CompilerEnvironment &get_env() const { return compiler.environment(); }
 
-  celestia::ast::FunctionDeclaration *current_function = nullptr;
-  celestia::ast::ModuleDeclaration *current_module = nullptr;
-  celestia::ast::WhileStatement *current_loop = nullptr;
-
-  ResolverContext(CompilerEnvironment &compiler, CompilationUnit &unit) : compiler(compiler), unit(unit), scopes(nullptr) {}
+  ResolverContext(Compiler &compiler, CompilationUnit &unit) : compiler(compiler), unit(unit), stack(ScopeId::invalid()) {}
 };
 
 struct Resolver {
 
 public:
-  explicit Resolver(ResolverContext &context);
-  void resolve(celestia::ast::Node *node);
-
+  Resolver(Compiler &compiler, CompilationUnit &unit);
+void resolve_root(ast::RootNode *node);
 private:
   AstDispatcher<Resolver, celestia::ast::Node> dispatcher;
 
-  ResolverContext &context;
+  ResolverContext context;
 
   void bind_literals();
   void bind_expressions();
   void bind_statements();
   void bind_declarations();
   void bind_types();
-  SymbolId lookup_symbol(std::string_view name) const;
 
+  SymbolId lookup_symbol(ScopeId scope_id, std::string_view name) const;
+  SymbolId lookup_qualified_name(ast::QualifiedNameNode *name);
+  SymbolId resolve_name(ast::NameNode *name, ScopeId scope_id);
+
+  void resolve_node(celestia::ast::Node *node);
 
   void resolve_named_type(ast::NamedType *node);
   void resolve_generic_type(ast::GenericTypeNode *node);
   void resolve_function_type(ast::FunctionType *node);
 
-  void pattern(celestia::ast::PatternNode *pat, Visibility visibilit);
+  void pattern(celestia::ast::PatternNode *pat);
 
   void function_call(celestia::ast::CallExpressionNode *node);
   void assignment(celestia::ast::AssignmentExpressionNode *node);
@@ -87,9 +85,7 @@ private:
 
   void resolve_import_declaration(celestia::ast::ImportDeclaration *node);
   void expression_statement(celestia::ast::ExpressionStatement *node);
-  bool can_have_visibility(core::ScopeKind kind, Visibility visibility);
-  SymbolId declare_symbol(const std::string &name, SymbolKind kind, Visibility visibility, celestia::ast::Node *node);
-  void named_pattern(celestia::ast::NamedPattern *pattern, Visibility visibilit);
+  void named_pattern(celestia::ast::NamedPattern *pattern);
 
   void diagnostic() {}
 };

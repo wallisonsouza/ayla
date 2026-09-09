@@ -11,7 +11,7 @@ struct QualifiedNameNode : NameNode {
 
   std::vector<IdentifierNode *> parts;
 
-  std::string get_name() {
+  std::string get_str() const override {
     std::string key;
 
     for (size_t i = 0; i < parts.size(); i++) {

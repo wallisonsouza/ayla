@@ -2,6 +2,7 @@
 
 #include "celestia/semantic/id/ids.hpp"
 #include "celestia/semantic/symbol/SymbolTable.hpp"
+
 #include <string_view>
 
 namespace core {
@@ -18,26 +19,13 @@ enum class ScopeKind {
 
 struct Scope {
 
-  Scope *parent = nullptr;
-
   SymbolTable symbols;
   ScopeKind kind;
 
-  explicit Scope(ScopeKind kind, Scope *p = nullptr) : parent(p), kind(kind) {}
+  celestia::semantic::ScopeId id;
+  celestia::semantic::ScopeId parent;
 
-  celestia::semantic::SymbolId symbol(std::string_view name) const {
-    const Scope *scope = this;
-
-    while (scope) {
-      celestia::semantic::SymbolId id = scope->symbols.find(name);
-
-      if (id.is_valid()) return id;
-
-      scope = scope->parent;
-    }
-
-    return celestia::semantic::SymbolId::invalid();
-  }
+  explicit Scope(ScopeKind kind, celestia::semantic::ScopeId parent = celestia::semantic::ScopeId::invalid()) : kind(kind), parent(parent) {}
 
   bool has_symbol_local(std::string_view name) const { return symbols.contains(name); }
 };

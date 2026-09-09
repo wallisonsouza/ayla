@@ -1,13 +1,16 @@
+#pragma once
+
 #include <vector>
+
 template <typename T> class ContextStack {
 public:
-  explicit ContextStack(T *initial) : current_(initial) {}
+  explicit ContextStack(T initial) : current_(initial) {}
 
-  T *current() const { return current_; }
+  T current() const { return current_; }
 
-  void push(T &value) {
+  void push(T value) {
     stack_.push_back(current_);
-    current_ = &value;
+    current_ = value;
   }
 
   void pop() {
@@ -16,6 +19,6 @@ public:
   }
 
 private:
-  T *current_;
-  std::vector<T *> stack_;
+  T current_;
+  std::vector<T> stack_;
 };

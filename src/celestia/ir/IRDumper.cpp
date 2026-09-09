@@ -1,252 +1,252 @@
-#include "celestia/ir/IRDumper.hpp"
+// #include "celestia/ir/IRDumper.hpp"
 
-#include <type_traits>
+// #include <type_traits>
 
-namespace celestia::ir {
+// namespace celestia::ir {
 
-void IRDumper::dump(std::ostream &out) const {
+// void IRDumper::dump(std::ostream &out) const {
 
-  out << "=== IR ===\n\n";
+//   out << "=== IR ===\n\n";
 
-  out << "Types:\n";
+//   out << "Types:\n";
 
-  for (uint32_t i = 0; i < context.type_count(); ++i) {
+//   for (uint32_t i = 0; i < context.type_count(); ++i) {
 
-    TypeId id{i};
+//     TypeId id{i};
 
-    out << "  %" << i << " = ";
+//     out << "  %" << i << " = ";
 
-    dump_type(out, id);
+//     dump_type(out, id);
 
-    out << '\n';
-  }
+//     out << '\n';
+//   }
 
-  out << "\nStructs:\n";
+//   out << "\nStructs:\n";
 
-  for (uint32_t i = 0; i < context.struct_count(); ++i) {
+//   for (uint32_t i = 0; i < context.struct_count(); ++i) {
 
-    StructId id{i};
+//     StructId id{i};
 
-    out << "  %" << i << " = ";
+//     out << "  %" << i << " = ";
 
-    dump_struct(out, id);
+//     dump_struct(out, id);
 
-    out << '\n';
-  }
+//     out << '\n';
+//   }
 
-  out << "\nValues:\n";
+//   out << "\nValues:\n";
 
-  for (uint32_t i = 0; i < context.value_count(); ++i) {
+//   for (uint32_t i = 0; i < context.value_count(); ++i) {
 
-    ValueId id{i};
+//     ValueId id{i};
 
-    const auto &value = context.get_value(id);
+//     const auto &value = context.get_value(id);
 
-    out << "  ";
+//     out << "  ";
 
-    dump_value(out, value.id);
+//     dump_value(out, value.id);
 
-    out << " : ";
+//     out << " : ";
 
-    dump_type(out, value.type);
+//     dump_type(out, value.type);
 
-    out << '\n';
-  }
+//     out << '\n';
+//   }
 
-  out << "\nInstructions:\n";
+//   out << "\nInstructions:\n";
 
-  for (uint32_t i = 0; i < context.instruction_count(); ++i) {
+//   for (uint32_t i = 0; i < context.instruction_count(); ++i) {
 
-    InstructionId id{i};
+//     InstructionId id{i};
 
-    const auto &instruction = context.get_instruction(id);
+//     const auto &instruction = context.get_instruction(id);
 
-    out << "  ";
+//     out << "  ";
 
-    dump_instruction(out, instruction);
+//     dump_instruction(out, instruction);
 
-    out << '\n';
-  }
-}
+//     out << '\n';
+//   }
+// }
 
-void IRDumper::dump_type(std::ostream &out, TypeId id) const {
+// void IRDumper::dump_type(std::ostream &out, TypeId id) const {
 
-  if (!id.is_valid()) {
-    out << "<invalid>";
-    return;
-  }
+//   if (!id.is_valid()) {
+//     out << "<invalid>";
+//     return;
+//   }
 
-  const Type &type = context.get_type(id);
+//   const Type &type = context.get_type(id);
 
-  switch (type.kind) {
+//   switch (type.kind) {
 
-  case TypeKind::Void:
-  case TypeKind::Bool:
-  case TypeKind::Char:
-  case TypeKind::Int:
-  case TypeKind::UInt:
-  case TypeKind::Int8:
-  case TypeKind::Int16:
-  case TypeKind::Int32:
-  case TypeKind::Int64:
-  case TypeKind::UInt8:
-  case TypeKind::UInt16:
-  case TypeKind::UInt32:
-  case TypeKind::UInt64:
-  case TypeKind::F32:
-  case TypeKind::F64:
-  case TypeKind::String: out << type_kind_name(type.kind); break;
+//   case TypeKind::Void:
+//   case TypeKind::Bool:
+//   case TypeKind::Char:
+//   case TypeKind::Int:
+//   case TypeKind::UInt:
+//   case TypeKind::Int8:
+//   case TypeKind::Int16:
+//   case TypeKind::Int32:
+//   case TypeKind::Int64:
+//   case TypeKind::UInt8:
+//   case TypeKind::UInt16:
+//   case TypeKind::UInt32:
+//   case TypeKind::UInt64:
+//   case TypeKind::F32:
+//   case TypeKind::F64:
+//   case TypeKind::String: out << type_kind_name(type.kind); break;
 
-  case TypeKind::Array: {
+//   case TypeKind::Array: {
 
-    const auto &array = static_cast<const ArrayType &>(type);
+//     const auto &array = static_cast<const ArrayType &>(type);
 
-    out << "array<";
+//     out << "array<";
 
-    dump_type(out, array.element_type);
+//     dump_type(out, array.element_type);
 
-    out << ">";
+//     out << ">";
 
-    break;
-  }
+//     break;
+//   }
 
-  case TypeKind::Pointer: {
+//   case TypeKind::Pointer: {
 
-    const auto &pointer = static_cast<const PointerType &>(type);
+//     const auto &pointer = static_cast<const PointerType &>(type);
 
-    out << "pointer<";
+//     out << "pointer<";
 
-    dump_type(out, pointer.pointee);
+//     dump_type(out, pointer.pointee);
 
-    out << ">";
+//     out << ">";
 
-    break;
-  }
+//     break;
+//   }
 
-  case TypeKind::Struct: {
+//   case TypeKind::Struct: {
 
-    const auto &struct_type = static_cast<const StructType &>(type);
+//     const auto &struct_type = static_cast<const StructType &>(type);
 
-    const Struct &structure = context.get_struct(struct_type.id);
+//     const Struct &structure = context.get_struct(struct_type.id);
 
-    dump_string(out, structure.name);
+//     dump_string(out, structure.name);
 
-    break;
-  }
+//     break;
+//   }
 
-  case TypeKind::Function: out << "function"; break;
-  }
-}
+//   case TypeKind::Function: out << "function"; break;
+//   }
+// }
 
-void IRDumper::dump_value(std::ostream &out, ValueId id) const {
+// void IRDumper::dump_value(std::ostream &out, ValueId id) const {
 
-  if (!id.is_valid()) {
-    out << "<invalid>";
-    return;
-  }
+//   if (!id.is_valid()) {
+//     out << "<invalid>";
+//     return;
+//   }
 
-  out << "%" << id.index();
-}
+//   out << "%" << id.index();
+// }
 
-void IRDumper::dump_instruction(std::ostream &out, const Instruction &instruction) const {
+// void IRDumper::dump_instruction(std::ostream &out, const Instruction &instruction) const {
 
-  if (instruction.result.is_valid()) {
+//   if (instruction.result.is_valid()) {
 
-    dump_value(out, instruction.result);
+//     dump_value(out, instruction.result);
 
-    out << " = ";
-  }
+//     out << " = ";
+//   }
 
-  switch (instruction.kind) {
+//   switch (instruction.kind) {
 
-  case InstructionKind::Constant: {
+//   case InstructionKind::Constant: {
 
-    out << "constant ";
+//     out << "constant ";
 
-    std::visit(
-        [&](const auto &value) {
-          using T = std::decay_t<decltype(value)>;
+//     std::visit(
+//         [&](const auto &value) {
+//           using T = std::decay_t<decltype(value)>;
 
-          if constexpr (std::is_same_v<T, std::monostate>) {
+//           if constexpr (std::is_same_v<T, std::monostate>) {
 
-            out << "<none>";
+//             out << "<none>";
 
-          } else if constexpr (std::is_same_v<T, std::string>) {
+//           } else if constexpr (std::is_same_v<T, std::string>) {
 
-            out << '"' << value << '"';
+//             out << '"' << value << '"';
 
-          } else if constexpr (std::is_same_v<T, char>) {
+//           } else if constexpr (std::is_same_v<T, char>) {
 
-            out << '\'' << value << '\'';
+//             out << '\'' << value << '\'';
 
-          } else {
+//           } else {
 
-            out << value;
-          }
-        },
-        instruction.data);
+//             out << value;
+//           }
+//         },
+//         instruction.data);
 
-    break;
-  }
+//     break;
+//   }
 
-  case InstructionKind::Add: out << "add "; break;
+//   case InstructionKind::Add: out << "add "; break;
 
-  case InstructionKind::Sub: out << "sub "; break;
+//   case InstructionKind::Sub: out << "sub "; break;
 
-  case InstructionKind::Mul: out << "mul "; break;
+//   case InstructionKind::Mul: out << "mul "; break;
 
-  case InstructionKind::Div: out << "div "; break;
+//   case InstructionKind::Div: out << "div "; break;
 
-  default: out << "<unknown>"; break;
-  }
+//   default: out << "<unknown>"; break;
+//   }
 
-  for (size_t i = 0; i < instruction.operands.size(); ++i) {
+//   for (size_t i = 0; i < instruction.operands.size(); ++i) {
 
-    if (i != 0) out << ", ";
+//     if (i != 0) out << ", ";
 
-    dump_value(out, instruction.operands[i]);
-  }
-}
+//     dump_value(out, instruction.operands[i]);
+//   }
+// }
 
-void IRDumper::dump_struct(std::ostream &out, StructId id) const {
+// void IRDumper::dump_struct(std::ostream &out, StructId id) const {
 
-  if (!id.is_valid()) {
-    out << "<invalid>";
-    return;
-  }
+//   if (!id.is_valid()) {
+//     out << "<invalid>";
+//     return;
+//   }
 
-  const Struct &structure = context.get_struct(id);
+//   const Struct &structure = context.get_struct(id);
 
-  out << "struct ";
+//   out << "struct ";
 
-  dump_string(out, structure.name);
+//   dump_string(out, structure.name);
 
-  out << " {\n";
+//   out << " {\n";
 
-  for (const auto &field : structure.fields) {
+//   for (const auto &field : structure.fields) {
 
-    out << "    ";
+//     out << "    ";
 
-    dump_string(out, field.name);
+//     dump_string(out, field.name);
 
-    out << ": ";
+//     out << ": ";
 
-    dump_type(out, field.type);
+//     dump_type(out, field.type);
 
-    out << '\n';
-  }
+//     out << '\n';
+//   }
 
-  out << "  }";
-}
+//   out << "  }";
+// }
 
-void IRDumper::dump_string(std::ostream &out, StringId id) const {
+// void IRDumper::dump_string(std::ostream &out, StringId id) const {
 
-  if (!id.is_valid()) {
-    out << "<invalid>";
-    return;
-  }
+//   if (!id.is_valid()) {
+//     out << "<invalid>";
+//     return;
+//   }
 
-  out << context.get_string(id);
-}
+//   out << context.get_string(id);
+// }
 
-} // namespace celestia::ir
+// } // namespace celestia::ir

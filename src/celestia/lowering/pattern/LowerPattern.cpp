@@ -3,7 +3,7 @@
 
 namespace celestia::lowering {
 
-void LoweringContext::lower_pattern(const ast::PatternNode *node, ir::ValueId value) {
+void Lowering::lower_pattern(const ast::PatternNode *node, ir::ValueId value) {
 
   if (!node) return;
 

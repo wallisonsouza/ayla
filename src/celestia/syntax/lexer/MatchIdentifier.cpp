@@ -23,9 +23,9 @@ Token *Lexer::match_identifier() {
 
   auto name = ctx.source.buffer.get_view(slice.get_span());
 
-  auto descriptor = ctx.language.descriptors.lookup_by_name(name);
+  auto descriptor = ctx.language.tokens.lookup_by_name(name);
 
-  if (!descriptor) { descriptor = ctx.language.descriptors.lookup_by_kind(TokenKind::IDENTIFIER); }
+  if (!descriptor) { descriptor = ctx.language.tokens.lookup_by_kind(TokenKind::IDENTIFIER); }
 
   return ctx.tokens.create_token<Token>(descriptor, slice);
 }

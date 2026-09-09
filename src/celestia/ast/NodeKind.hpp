@@ -5,6 +5,7 @@ namespace celestia::ast {
 
 enum class NodeKind {
   Unknown,
+  Root,
   NumberLiteral,
   StringLiteral,
   BooleanLiteral,
@@ -68,7 +69,7 @@ constexpr std::string_view node_kind_name(NodeKind kind) noexcept {
   switch (kind) {
 
   case NodeKind::Unknown: return "Unknown";
-
+  case NodeKind::Root: return "Root";
   case NodeKind::NumberLiteral: return "NumberLiteral";
   case NodeKind::StringLiteral: return "StringLiteral";
   case NodeKind::BooleanLiteral: return "BooleanLiteral";

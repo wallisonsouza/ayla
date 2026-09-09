@@ -1,18 +1,20 @@
 #pragma once
 
-#include "celestia/compiler/CompilerEnvironment.hpp"
 #include "celestia/core/visitor/Stage.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
-#include "celestia/semantic/resolver/Resolver.hpp"
+
+namespace celestia::semantic {
 
 class CheckStage : public Stage {
+public:
+  void run(Compiler &compiler, CompilationUnit &unit) override {
 
-  void run(CompilerEnvironment &env, CompilationUnit &unit) override {
+    TypeCheckerContext ctx(compiler, unit);
 
-    celestia::semantic::ResolverContext ctx(env, unit);
+    TypeChecker checker(ctx);
 
-    celestia::semantic::TypeChecker checker(ctx);
-
-    checker.check(unit.ast_module);
+    checker.check(unit._root);
   }
 };
+
+} // namespace celestia::semantic

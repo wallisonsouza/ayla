@@ -8,13 +8,12 @@ enum class ExpectedKind {
   Identifier,
 
   Expression,
-
+  Statement,
   Pattern,
 
   Type,
 
   Declaration
 };
-
 
 } // namespace diagnostic

@@ -25,6 +25,14 @@ public:
   const T &get(Id id) const { return items[id.index()]; }
 
   size_t size() const { return items.size(); }
+
+  auto begin() { return items.begin(); }
+
+  auto end() { return items.end(); }
+
+  auto begin() const { return items.begin(); }
+
+  auto end() const { return items.end(); }
 };
 
 } // namespace celestia::ir

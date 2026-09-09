@@ -1,6 +1,7 @@
 #pragma once
 
 #include "celestia/ast/AstDispacher.hpp"
+
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
 
@@ -8,28 +9,36 @@
 #include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
 
-#include "celestia/compiler/CompilerEnvironment.hpp"
-#include "celestia/ir/IR.hpp"
+#include "celestia/lowering/LoweringContext.hpp"
 
 namespace celestia::lowering {
 
-class LoweringContext {
+class Lowering {
 public:
-  ir::IRContext &ir;
+  Lowering(LoweringContext &context) : context(context) {}
 
-  explicit LoweringContext(ir::IRContext &ir, CompilerEnvironment &env) : ir(ir), env(env) {}
+  void lower() {
+    // std::cout << "[Lowering] lowering unit " << context.unit.id.index() << " module '" << context.unit.root->name->get_str() << "'\n";
 
-  void lower(const ast::ModuleDeclaration *root) {
-
-    for (auto &decl : root->declarations) { lower_declaration(decl); }
+    // lower_module_declaration(context.unit.root);
   }
 
+private:
+  LoweringContext &context;
+
   void lower_variable_declaration(const ast::VariableDeclaration *node);
+
   void lower_struct_declaration(const ast::StructDeclaration *node);
+
   void lower_capability_declaration(const ast::CapabilityDeclaration *node);
+
   void lower_impl_declaration(const ast::ImplDeclaration *node);
 
+  void lower_function_declaration(const ast::FunctionDeclaration *node);
+
   void lower_declaration(const ast::Declaration *node);
+
+  void lower_module_declaration(const ast::ModuleDeclaration *node);
 
   ir::ValueId lower_expression(const ast::Expression *node);
 
@@ -47,9 +56,7 @@ public:
 
   ir::TypeId lower_type(semantic::TypeId type_id);
 
-  AstDispatcher<LoweringContext, const ast::Expression> dispatcher;
-
-  CompilerEnvironment &env;
+  AstDispatcher<Lowering, const ast::Expression> dispatcher;
 };
 
 } // namespace celestia::lowering

@@ -2,7 +2,7 @@
 
 namespace celestia::lowering {
 
-void LoweringContext::lower_variable_declaration(const ast::VariableDeclaration *node) {
+void Lowering::lower_variable_declaration(const ast::VariableDeclaration *node) {
 
   if (!node || !node->pattern) return;
 

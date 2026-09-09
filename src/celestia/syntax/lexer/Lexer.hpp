@@ -5,10 +5,17 @@
 #include "celestia/syntax/lexer/LexerContext.hpp"
 #include "celestia/utils/Unicode.hpp"
 
+struct OperatorMatch {
+  const celestia::TokenDescriptor *descriptor = nullptr;
+  size_t length = 0;
+
+  explicit operator bool() const { return descriptor != nullptr; }
+};
+
 struct Lexer {
 private:
   LexerContext &ctx;
-    core::source::TextStream stream;
+  core::source::TextStream stream;
 
   Token *match_token() {
 
@@ -22,6 +29,8 @@ private:
 
     return nullptr;
   }
+
+  OperatorMatch find_operator();
 
 public:
   Lexer(LexerContext &ctx) : ctx(ctx), stream(ctx.source.buffer) {};
@@ -75,7 +84,7 @@ public:
 
         auto state = stream.get_state();
 
-        auto desc = ctx.language.descriptors.lookup_by_kind(TokenKind::NEW_LINE);
+        auto desc = ctx.language.tokens.lookup_by_kind(TokenKind::NEW_LINE);
         ctx.tokens.create_token<Token>(desc, stream.slice_from(state));
       }
 

@@ -1,14 +1,15 @@
+#include "celestia/compiler/Compiler.hpp"
 #include "celestia/core/visitor/Stage.hpp"
-#include "celestia/compiler/CompilerEnvironment.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 
 class ParserStage : public Stage {
-  void run(CompilerEnvironment &env, CompilationUnit &unit) override {
+public:
+  void run(Compiler &compiler, CompilationUnit &unit) {
 
-    celestia::syntax::ParseContext context = celestia::syntax::ParseContext(unit, env);
+    celestia::syntax::ParseContext context(unit, compiler.environment());
     celestia::syntax::Parser parser(context);
 
     parser.run();
-  };
+  }
 };

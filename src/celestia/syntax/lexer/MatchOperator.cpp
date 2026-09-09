@@ -1,34 +1,43 @@
 #include "Lexer.hpp"
 #include "celestia/core/token/TokenDescriptor.hpp"
 
-Token *Lexer::match_operator() {
-  auto start = stream.get_state();
+OperatorMatch Lexer::find_operator() {
+  const auto *node = ctx.language.tokens.trie().root();
 
-  const auto *node = ctx.language.descriptors.trie().root();
   const celestia::TokenDescriptor *best = nullptr;
   size_t best_len = 0;
 
-  size_t offset = 0;
-
-  while (true) {
+  for (size_t offset = 0;; ++offset) {
     char32_t c = stream.peek_n(offset);
+
     if (!c) break;
 
     node = node->child(c);
-    if (!node) break;
 
-    offset++;
+    if (!node) break;
 
     if (node->is_terminal) {
       best = node->value;
-      best_len = offset;
+      best_len = offset + 1;
     }
   }
 
-  if (!best) return nullptr;
+  return {
+      .descriptor = best,
+      .length = best_len,
+  };
+}
 
-  stream.advance_n(best_len);
+Token *Lexer::match_operator() {
+  auto start = stream.get_state();
+
+  auto match = find_operator();
+
+  if (!match) return nullptr;
+
+  stream.advance_n(match.length);
+
   auto slice = stream.slice_from(start);
 
-  return ctx.tokens.create_token<Token>(best, slice);
+  return ctx.tokens.create_token<Token>(match.descriptor, slice);
 }

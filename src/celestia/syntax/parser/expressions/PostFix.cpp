@@ -6,7 +6,7 @@
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 #include "celestia/syntax/parser/expressions/Expression.hpp"
-#include "celestia/syntax/parser/NameParser.hpp"
+
 namespace celestia::syntax {
 celestia::ast::Expression *ExpressionParser::parse_postfix_expression() {
   auto *expr = parse_primary_expression();
@@ -24,7 +24,7 @@ celestia::ast::Expression *ExpressionParser::parse_postfix_expression() {
 
     if (!std::holds_alternative<PostfixOperation>(info->op)) return nullptr;
 
-    context.tokens().advance();
+    context.tokens().consume();
 
     auto op = std::get<PostfixOperation>(info->op);
 
@@ -51,7 +51,7 @@ celestia::ast::Expression *ExpressionParser::parse_member_access(celestia::ast::
 
   if (!tokens.match(TokenKind::DOT)) return nullptr;
 
-  auto *member = parser.names().parse_name();
+  auto *member = parser.parse_identifier().value();
 
   if (!member) return nullptr;
 

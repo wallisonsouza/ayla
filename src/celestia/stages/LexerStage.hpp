@@ -1,13 +1,14 @@
-#include "celestia/core/visitor/Stage.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
+#include "celestia/compiler/Compiler.hpp"
+#include "celestia/core/visitor/Stage.hpp"
 #include "celestia/syntax/lexer/Lexer.hpp"
 #include "celestia/syntax/lexer/LexerContext.hpp"
 
 class LexerStage : public Stage {
 public:
-  void run(CompilerEnvironment &env, CompilationUnit &unit) override {
-    
-    LexerContext ctx(env.language, unit.source, unit.tokens);
+  void run(Compiler &compiler, CompilationUnit &unit) override {
+
+    LexerContext ctx(compiler.environment().language, unit.source, unit.tokens);
 
     Lexer lexer(ctx);
 

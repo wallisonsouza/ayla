@@ -39,7 +39,14 @@ std::string TokenDumper::dump(const core::token::TokenStream &tokens, const core
 
   std::ostringstream oss;
 
-  tokens.for_each([&](const Token &token) { oss << dump_token(token, source) << "\n\n"; });
+  for (size_t i = 0; i < tokens.size(); ++i) {
+
+    const auto *token = tokens.at(i);
+
+    if (!token) continue;
+
+    oss << dump_token(*token, source) << "\n\n";
+  }
 
   return oss.str();
 }

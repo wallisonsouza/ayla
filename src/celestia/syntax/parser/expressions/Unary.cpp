@@ -16,7 +16,7 @@ celestia::ast::Expression *ExpressionParser::parse_unary_expression() {
 
   if (!std::holds_alternative<UnaryOperation>(info->op)) return nullptr;
 
-  context.tokens().advance();
+  context.tokens().consume();
 
   auto op = std::get<UnaryOperation>(info->op);
 

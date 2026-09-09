@@ -1,48 +1,32 @@
 #pragma once
 
-#include <iostream>
-#include <ostream>
-
-#include "celestia/ast/Node.hpp"
-
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-
-#include "celestia/ast/expressions/AssignmentExpression.hpp"
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/CallExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
-#include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
-#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
-
-#include "celestia/ast/statements/BlockStatementNode.hpp"
-#include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/statements/IfStatementNode.hpp"
-#include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/statements/WhileStatementNode.hpp"
-
-#include "celestia/ast/types/GenericType.hpp"
-#include "celestia/ast/types/NamedType.hpp"
-
-#include "celestia/semantic/resolver/Resolver.hpp"
+#include "celestia/ast/ASTFwd.hpp"
+#include "celestia/compiler/Compiler.hpp"
+#include "celestia/compiler/CompilationUnit.hpp"
+#include "celestia/compiler/CompilerEnvironment.hpp"
+#include "celestia/ast/AstDispacher.hpp"
 
 namespace celestia::semantic {
 
+struct TypeCheckerContext {
+  Compiler &compiler;
+  CompilationUnit &unit;
+
+  TypeCheckerContext(Compiler &compiler, CompilationUnit &unit) : compiler(compiler), unit(unit) {}
+
+  CompilerEnvironment &env() { return compiler.environment(); }
+
+  const CompilerEnvironment &env() const { return compiler.environment(); }
+};
+
 class TypeChecker {
 public:
-  explicit TypeChecker(ResolverContext &context);
+  explicit TypeChecker(TypeCheckerContext &context);
 
   void check(ast::Node *node);
 
 private:
-  ResolverContext &context;
+  TypeCheckerContext &context;
   AstDispatcher<TypeChecker, celestia::ast::Node> dispatcher;
 
   void bind_literals();
@@ -107,7 +91,7 @@ private:
   // Types
   void type_node(ast::TypeNode *node);
   TypeId type_from_node(ast::TypeNode *node);
-  void error(ast::Node *node, std::string message) { throw std::runtime_error(message); }
+  void error(ast::Node *node, std::string message) {std::cerr << (message); }
 };
 
 } // namespace celestia::semantic

@@ -1,17 +1,29 @@
 #pragma once
-#include "celestia/compiler/CompilerEnvironment.hpp"
+
 #include "celestia/core/visitor/Stage.hpp"
+#include "celestia/semantic/collector/SymbolCollector.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 
-class ResolverStage : public Stage{
+namespace celestia::semantic {
 
-  void run(CompilerEnvironment &env, CompilationUnit &unit) override {
+class SymbolCollectorStage : public Stage {
+public:
+  void run(Compiler &compiler, CompilationUnit &unit) override {
 
+    SymbolCollector collector(compiler, unit);
 
-    celestia::semantic::ResolverContext ctx = celestia::semantic::ResolverContext(env, unit);
-
-    celestia::semantic::Resolver resolver = celestia::semantic::Resolver(ctx);
-
-    resolver.resolve(unit.ast_module);
+    collector.collect();
   }
 };
+
+class ResolverStage : public Stage {
+public:
+  void run(Compiler &compiler, CompilationUnit &unit) override {
+
+    Resolver resolver = Resolver(compiler, unit);
+
+    resolver.resolve_root(unit._root);
+  }
+};
+
+} // namespace celestia::semantic

@@ -8,44 +8,43 @@ void TypeChecker::check_function_declaration(ast::FunctionDeclaration *node) {
 
   std::cout << "[TypeChecker] checking function\n";
 
-  if (!node->symbol_id.is_valid()) {
+  auto &semantic = context.unit.semantic;
+
+  auto symbol_id = semantic.symbol(node);
+
+  if (!symbol_id.is_valid()) {
     error(node, "function has invalid SymbolId");
     return;
   }
 
-  auto *symbol = context.compiler.symbols.get(node->symbol_id);
-
-  if (!symbol) {
-    error(node, "function symbol not found");
-    return;
-  }
+  auto &symbol = context.env().symbols.get(symbol_id);
 
   // FunctionType
-  TypeId function_type_id = create_function_type(node);
+
+  TypeId function_type_id = context.env().types.get_or_create(symbol_id, TypeKind::Function);
 
   if (!function_type_id.is_valid()) return;
 
-  node->type_id = function_type_id;
-  symbol->type = function_type_id;
+  semantic.set_type(node, function_type_id);
 
-  auto &type = context.compiler.types.get(function_type_id);
+  symbol.type = function_type_id;
+
+  auto &type = context.env().types.get(function_type_id);
 
   auto &function_type = static_cast<FunctionType &>(type);
 
   // Parâmetros
-  if (!check_function_parameters(node, function_type)) { return; }
+  if (!check_function_parameters(node, function_type)) return;
 
   // Retorno
-  if (!check_function_return_type(node, function_type)) { return; }
+  if (!check_function_return_type(node, function_type)) return;
 
-  std::cout << "[TypeChecker] function '" << symbol->name << "' type = " << function_type.to_string() << '\n';
+  std::cout << "[TypeChecker] function '" << symbol.name << "' type = " << function_type.to_string() << '\n';
 
   // Corpo
   check_function_body(node, function_type_id);
 }
 
-// FunctionType
-TypeId TypeChecker::create_function_type(ast::FunctionDeclaration *node) { return context.compiler.types.get_or_create(node->symbol_id, TypeKind::Function); }
 
 // Parameters
 bool TypeChecker::check_function_parameters(ast::FunctionDeclaration *node, FunctionType &function_type) {
@@ -83,7 +82,7 @@ bool TypeChecker::check_function_return_type(ast::FunctionDeclaration *node, Fun
     return true;
   }
 
-  // TypeId void_type = context.compiler.builtins.void_type;
+  // TypeId void_type = context.env().builtins.void_type;
 
   // if (!void_type.is_valid()) {
 

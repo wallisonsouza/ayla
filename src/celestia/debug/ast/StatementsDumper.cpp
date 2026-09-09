@@ -44,6 +44,9 @@ void AstDumper::dump_import_statement(const ast::ImportDeclaration *node) {
 
   auto g = context.object("ImportStatement");
 
-  if (node->name) g.list("Path", node->name->parts);
+
+  dump_name(node->name);
+
+  // if (node->name) g.field("Path",node->name->get_str());
 }
 } // namespace celestia::debug

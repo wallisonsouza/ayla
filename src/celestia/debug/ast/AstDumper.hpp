@@ -5,6 +5,7 @@
 
 #include "celestia/ast/AstDispacher.hpp"
 #include "celestia/ast/Node.hpp"
+#include "celestia/ast/RootNode.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
@@ -39,7 +40,7 @@ public:
   AstDumper(std::ostream &out = std::cout) : dispatcher(), context(out, [this](const celestia::ast::Node *node) { dispatch(node); }) { register_handlers(); }
 
 public:
-  void dump_scrypt() {}
+  void dump(const ast::RootNode *root) { dispatch(root); }
 
   void dispatch(const celestia::ast::Node *node) {
     if (!node) return;
@@ -122,15 +123,17 @@ private:
     dispatcher.bind<ast::StructFieldInitializerNode, &AstDumper::dump_struct_field>();
 
     dispatcher.bind<ast::StructLiteralNode, &AstDumper::dump_struct_literal>();
+    dispatcher.bind<ast::RootNode, &AstDumper::dump_root>();
 
     // Types
     dispatcher.bind<ast::NamedType, &AstDumper::dump_named_type>();
 
     dispatcher.bind<ast::GenericTypeNode, &AstDumper::dump_generic_type>();
     dispatcher.bind<ast::TypeDeclaration, &AstDumper::dump_type_declaration>();
-
+    //  dispatcher.bind<ast::NameNode, &AstDumper::dump_name>();
   }
 
+  void dump_root(const ast::RootNode *node);
   void dump_impl_declaration(const ast::ImplDeclaration *node);
   void dump_number_literal(const ast::NumberLiteralNode *node);
   void dump_string_literal(const ast::StringLiteralNode *node);
@@ -176,6 +179,7 @@ private:
   void dump_type_declaration(const ast::TypeDeclaration *node);
   void dump_named_type(const ast::NamedType *node);
   void dump_generic_type(const ast::GenericTypeNode *node);
+  void dump_name(const ast::NameNode *node);
 
 private:
   AstDispatcher<AstDumper, const celestia::ast::Node> dispatcher;

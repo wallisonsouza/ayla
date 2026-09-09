@@ -1,20 +1,36 @@
-
 #include "celestia/compiler/CompilationUnit.hpp"
-#include "celestia/compiler/CompilerEnvironment.hpp"
+#include "celestia/compiler/Compiler.hpp"
 #include "celestia/core/visitor/Stage.hpp"
 #include "celestia/ir/IRDumper.hpp"
 #include "celestia/lowering/Lowering.hpp"
+
 #include <iostream>
 
 class LoweringStage : public Stage {
-  void run(CompilerEnvironment &env, CompilationUnit &unit) override {
+public:
+  void run(Compiler &compiler, CompilationUnit &unit) override {
 
+    auto &program = compiler.program;
 
-    celestia::lowering::LoweringContext lowering(unit.ir, env);
+    if (!unit.ir_module.is_valid()) {
 
-    celestia::ir::IRDumper dumper(unit.ir);
+      // auto name = unit._root->name->get_str();
 
-    lowering.lower(unit.ast_module);
-    dumper.dump(std::cout);
+      // std:: cout << "name do modulo dessa merda: " << name;
+
+      // auto string_id = program.get_global().intern_string(name);
+
+      // unit.ir_module = program.create_module(string_id);
+    }
+
+    std::cerr << "[Lowering] unit.ir_module = " << unit.ir_module.index() << '\n';
+
+    celestia::ir::IRContext ir(program, unit.ir_module);
+
+    celestia::lowering::LoweringContext ctx(ir, compiler, unit);
+
+    celestia::lowering::Lowering lowering(ctx);
+
+    lowering.lower();
   }
 };

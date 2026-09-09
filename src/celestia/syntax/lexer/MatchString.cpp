@@ -44,7 +44,7 @@ Token *Lexer::match_string() {
     return nullptr;
   }
 
-  auto descriptor = ctx.language.descriptors.lookup_by_kind(TokenKind::STRING_LITERAL);
+  auto *descriptor = ctx.language.tokens.lookup_by_kind(TokenKind::STRING_LITERAL);
 
   return ctx.tokens.create_token<Token>(descriptor, slice);
 }

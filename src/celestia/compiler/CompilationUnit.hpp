@@ -1,30 +1,36 @@
 #pragma once
 
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
+#include "celestia/ast/RootNode.hpp"
+#include "celestia/compiler/CompileFlags.hpp"
 #include "celestia/core/source/Source.hpp"
 #include "celestia/core/token/token_stream.hpp"
 #include "celestia/diagnostic/DiagnosticContext.hpp"
-#include "celestia/ir/IR.hpp"
+#include "celestia/ir/IRIds.hpp"
+#include "celestia/semantic/SemanticInfo.hpp"
 
 struct CompilationUnit {
 
+  celestia::semantic::CompilationUnitId id;
+
   core::source::Source &source;
 
-  core::memory::Arena ast_arena;
+  core::memory::Arena arena;
 
   diagnostic::DiagnosticContext diagnostics;
 
   core::token::TokenStream tokens;
 
-  celestia::ast::ModuleDeclaration *ast_module = nullptr;
+  celestia::ast::RootNode *_root = nullptr;
 
-  celestia::semantic::ModuleId module =  celestia::semantic::ModuleId::invalid();
+  celestia::ir::ModuleId ir_module = celestia::ir::ModuleId::invalid();
 
-  celestia::ir::IRContext ir;
+  CompileFlags flags = CompileFlags::None;
 
-  void set_ast_module(celestia::ast::ModuleDeclaration *module) { ast_module = module; }
+  std::vector<celestia::semantic::ModuleId> modules;
 
-  void set_module( celestia::semantic::ModuleId module) { this->module = module; }
+  celestia::semantic::SemanticInfo semantic;
+
+  void set_root(celestia::ast::RootNode *root) { _root = root; }
 
   CompilationUnit(core::source::Source &source) : source(source) {}
 };

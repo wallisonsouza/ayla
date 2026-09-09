@@ -6,8 +6,8 @@ namespace diagnostic::theme {
 
 using C = debug::Color;
 
-inline const auto ErrorLabel = C::BrightRed;
-inline const auto ErrorText = C::Red;
+inline const auto ErrorLabel = C::MediumSlateBlue;
+inline const auto ErrorText = C::SoftRed;
 
 inline const auto Arrow = C::DarkRed;
 

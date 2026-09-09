@@ -6,7 +6,7 @@ TypeId TypeChecker::check_generic_type(ast::GenericTypeNode *node) {
 
   if (!node || !node->name) return TypeId::invalid();
 
-  SymbolId constructor_id = node->symbol_id;
+  SymbolId constructor_id = context.unit.semantic.symbol(node);
 
   if (!constructor_id.is_valid()) {
 
@@ -22,7 +22,7 @@ TypeId TypeChecker::check_generic_instance_type(ast::GenericTypeNode *node) {
 
   if (!node) return TypeId::invalid();
 
-  SymbolId constructor = node->symbol_id;
+  SymbolId constructor = context.unit.semantic.symbol(node);
 
   if (!constructor.is_valid()) {
 
@@ -36,7 +36,9 @@ TypeId TypeChecker::check_generic_instance_type(ast::GenericTypeNode *node) {
   for (auto *argument : node->arguments) {
 
     if (!argument) {
+
       error(node, "invalid generic argument");
+
       return TypeId::invalid();
     }
 
@@ -52,7 +54,7 @@ TypeId TypeChecker::check_generic_instance_type(ast::GenericTypeNode *node) {
     arguments.push_back(argument_type);
   }
 
-  TypeId generic_type = context.compiler.types.get_or_create_generic_instance(constructor, std::move(arguments));
+  TypeId generic_type = context.env().types.get_or_create_generic_instance(constructor, std::move(arguments));
 
   if (!generic_type.is_valid()) {
 
@@ -61,8 +63,9 @@ TypeId TypeChecker::check_generic_instance_type(ast::GenericTypeNode *node) {
     return TypeId::invalid();
   }
 
-  node->type_id = generic_type;
+  context.unit.semantic.set_type(node, generic_type);
 
   return generic_type;
 }
+
 } // namespace celestia::semantic

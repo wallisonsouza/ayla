@@ -4,14 +4,8 @@
 #include "celestia/core/modifiers/ModifierSet.hpp"
 #include "celestia/core/modifiers/Visibility.hpp"
 #include "celestia/semantic/id/ids.hpp"
-
+#include "celestia/ast/ASTFwd.hpp"
 #include <string>
-
-namespace celestia::ast {
-struct Node;
-
-}
-
 struct Symbol {
 
   celestia::semantic::SymbolId id;

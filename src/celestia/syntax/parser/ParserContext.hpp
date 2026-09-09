@@ -4,7 +4,6 @@
 #include "celestia/compiler/CompilerEnvironment.hpp"
 #include "celestia/diagnostic/Diagnostic.hpp"
 
-
 namespace celestia::syntax {
 class ParseContext {
 public:
@@ -15,9 +14,10 @@ public:
 
   auto &tokens() { return unit.tokens; }
 
+
   auto &source() { return unit.source; }
 
-  auto &get_ast() { return unit.ast_arena; }
+  auto &get_ast() { return unit.arena; }
 
   auto &operators() { return env.language.operators; }
 
@@ -25,10 +25,16 @@ public:
 
   void report_error(diagnostic::Diagnostic diag) { unit.diagnostics.report(diag); }
 
-  void set_ast_module(ast::ModuleDeclaration *module) { unit.ast_module = module; }
-  
-  void set_module(ast::ModuleDeclaration *m) { unit.ast_module = m; }
+  auto &descriptors() { return env.language.tokens; }
 
-  auto &descriptors() { return env.language.descriptors; }
+  const SourceSlice &diagnostic_slice() {
+
+    if (auto *token = unit.tokens.current()) return token->slice;
+
+    if (auto *token = unit.tokens.previous()) return token->slice;
+
+    static SourceSlice empty{};
+    return empty;
+  }
 };
 } // namespace celestia::syntax

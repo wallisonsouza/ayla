@@ -1,7 +1,6 @@
 #pragma once
 
 #include "celestia/diagnostic/DiagnosticCode.hpp"
-
 #include <string_view>
 #include <unordered_map>
 
@@ -12,17 +11,12 @@ struct DiagnosticMessage {
   std::string_view text;
 };
 
+// Diagnostic messages
 inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
 
     // ============================================================
     // Lexer
     // ============================================================
-
-    {DiagnosticCode::NotAType,
-     {
-         .title = "not a type",
-         .text = "'{name}' is not a type",
-     }},
 
     {DiagnosticCode::InvalidCharacter,
      {
@@ -52,45 +46,22 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
     // Parser
     // ============================================================
 
-    {DiagnosticCode::ExpectedToken,
+    {DiagnosticCode::Expected,
      {
-         .title = "expected token",
-         .text = "expected '{expected}', found '{found}'",
-     }},
-    {DiagnosticCode::UnexpectedToken,
-     {
-         .title = "unexpected token",
-         .text = "unexpected '{found}'",
+         .title = "expected",
+         .text = "expected {expected}, found {found}",
      }},
 
-    {DiagnosticCode::ExpectedIdentifier,
+    {DiagnosticCode::Unexpected,
      {
-         .title = "expected identifier",
-         .text = "expected an identifier",
+         .title = "unexpected",
+         .text = "unexpected {found}",
      }},
 
-    {DiagnosticCode::ExpectedExpression,
+    {DiagnosticCode::UnexpectedEOF,
      {
-         .title = "expected expression",
-         .text = "expected an expression",
-     }},
-
-    {DiagnosticCode::ExpectedType,
-     {
-         .title = "expected type",
-         .text = "expected a type",
-     }},
-
-    {DiagnosticCode::ExpectedPattern,
-     {
-         .title = "expected pattern",
-         .text = "expected pattern , found '{found}'",
-     }},
-
-    {DiagnosticCode::ExpectedSemicolon,
-     {
-         .title = "expected semicolon",
-         .text = "expected ';'",
+         .title = "unexpected end of file",
+         .text = "unexpected end of file",
      }},
 
     // ============================================================
@@ -115,8 +86,38 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
          .text = "declaration of '{name}' shadows another symbol",
      }},
 
+    {DiagnosticCode::UnknownType,
+     {
+         .title = "unknown type",
+         .text = "unknown type '{name}'",
+     }},
+
+      {DiagnosticCode::UnknownModule,
+     {
+         .title = "unknown module",
+         .text = "unknown module '{name}'",
+     }},
+
+    {DiagnosticCode::NotAType,
+     {
+         .title = "not a type",
+         .text = "'{name}' is not a type",
+     }},
+
+    {DiagnosticCode::UnknownGeneric,
+     {
+         .title = "unknown generic",
+         .text = "unknown generic '{name}'",
+     }},
+
+    {DiagnosticCode::InvalidGenericArity,
+     {
+         .title = "invalid generic arity",
+         .text = "invalid number of generic arguments",
+     }},
+
     // ============================================================
-    // Type Checker
+    // Type checker
     // ============================================================
 
     {DiagnosticCode::TypeMismatch,
@@ -135,6 +136,50 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
      {
          .title = "invalid conversion",
          .text = "invalid conversion",
+     }},
+};
+
+// Help messages
+inline const std::unordered_map<HelpCode, DiagnosticMessage> help_messages = {
+
+    {HelpCode::UseReturnArrow,
+     {
+         .title = "help",
+         .text = "function return types use '->'",
+     }},
+
+    {HelpCode::AddTypeAnnotation,
+     {
+         .title = "help",
+         .text = "add ':' before the parameter type",
+     }},
+
+    {HelpCode::RenameSymbol,
+     {
+         .title = "help",
+         .text = "consider renaming this symbol",
+     }},
+};
+
+// Note messages
+inline const std::unordered_map<NoteCode, DiagnosticMessage> note_messages = {
+
+    {NoteCode::PreviousDeclaration,
+     {
+         .title = "note",
+         .text = "previous declaration is here",
+     }},
+
+    {NoteCode::TypeDeclaredHere,
+     {
+         .title = "note",
+         .text = "type declared here",
+     }},
+
+    {NoteCode::SymbolDeclaredHere,
+     {
+         .title = "note",
+         .text = "symbol declared here",
      }},
 };
 

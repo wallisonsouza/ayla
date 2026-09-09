@@ -3,6 +3,7 @@
 #include "celestia/ast/NodeKind.hpp"
 
 // Declarations
+#include "celestia/ast/RootNode.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
@@ -43,6 +44,10 @@
 namespace celestia::ast {
 
 template <typename T> struct NodeTraits;
+
+template <> struct NodeTraits<RootNode> {
+  static constexpr NodeKind kind = NodeKind::Root;
+};
 
 template <> struct NodeTraits<TypeDeclaration> {
   static constexpr NodeKind kind = NodeKind::TypeDeclaration;

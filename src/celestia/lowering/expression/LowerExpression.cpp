@@ -3,7 +3,7 @@
 
 namespace celestia::lowering {
 
-ir::ValueId LoweringContext::lower_expression(const ast::Expression *node) {
+ir::ValueId Lowering::lower_expression(const ast::Expression *node) {
 
   if (!node) return ir::ValueId::invalid();
 

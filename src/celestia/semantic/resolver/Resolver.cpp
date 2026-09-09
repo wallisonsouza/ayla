@@ -1,9 +1,8 @@
 #include "Resolver.hpp"
-#include <iostream>
 
 namespace celestia::semantic {
 
-Resolver::Resolver(ResolverContext &ctx) : context(ctx), dispatcher() {
+Resolver::Resolver(Compiler &compiler, CompilationUnit &unit) : context(compiler, unit) {
   bind_literals();
   bind_expressions();
   bind_statements();
@@ -49,7 +48,7 @@ void Resolver::bind_statements() {
 
 void Resolver::bind_declarations() {
 
-    dispatcher.bind<ast::TypeDeclaration, &Resolver::resolve_type_declaration>();
+  dispatcher.bind<ast::TypeDeclaration, &Resolver::resolve_type_declaration>();
 
   dispatcher.bind<ast::VariableDeclaration, &Resolver::resolve_variable_declaration>();
 
@@ -78,11 +77,24 @@ void Resolver::bind_types() {
   dispatcher.bind<ast::FunctionType, &Resolver::resolve_function_type>();
 }
 
-void Resolver::resolve(ast::Node *node) {
+void Resolver::resolve_root(ast::RootNode *node) {
+
+  if (!node) return;
+
+  for (auto *module : node->modules) {
+
+    if (!module) continue;
+
+    resolve_node(module);
+  }
+}
+
+void Resolver::resolve_node(ast::Node *node) {
   if (!node) { return; }
 
-  dispatcher.dispatch(this, node) ;
-  // if (== DispatchResult::NotHandled) { std::cerr << "Resolver: no handler for NodeKind: " << celestia::ast::node_kind_name(node->kind) << '\n'; }
+  auto result = dispatcher.dispatch(this, node);
+
+  if (result == DispatchResult::NotHandled) { std::cerr << "Resolver: no handler for NodeKind: " << celestia::ast::node_kind_name(node->kind) << '\n'; }
 }
 
 } // namespace celestia::semantic

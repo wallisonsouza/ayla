@@ -13,7 +13,6 @@ struct Token {
 
   constexpr bool is(TokenKind kind) const { return desc && desc->kind == kind; }
 
-
   TokenKind kind() const noexcept { return desc ? desc->kind : TokenKind::INVALID; }
 
   TokenGroup group() const noexcept { return desc ? desc->group : TokenGroup::Error; }

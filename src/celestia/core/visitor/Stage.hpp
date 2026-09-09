@@ -1,11 +1,11 @@
 #pragma once
 
-#include "celestia/compiler/CompilerEnvironment.hpp"
 class CompilationUnit;
+class Compiler;
 
 class Stage {
 public:
   virtual ~Stage() = default;
 
-  virtual void run(CompilerEnvironment &env, CompilationUnit &unit) = 0;
+  virtual void run(Compiler &compiler, CompilationUnit &unit) = 0;
 };

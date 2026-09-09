@@ -17,5 +17,8 @@
 *.log
 *.tmp
 
+
+/compile_commands.json
+
 # Ignorar dependências (ex: Node.js)
 node_modules/

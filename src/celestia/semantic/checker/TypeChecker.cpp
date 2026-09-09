@@ -2,7 +2,7 @@
 
 namespace celestia::semantic {
 
-TypeChecker::TypeChecker(ResolverContext &context) : context(context), dispatcher() {
+TypeChecker::TypeChecker(TypeCheckerContext &context) : context(context), dispatcher() {
   bind_literals();
   bind_expressions();
   bind_statements();
@@ -23,9 +23,9 @@ bool TypeChecker::is_assignable(TypeId target, TypeId source) const {
   // Mesmo tipo.
   if (is_same_type(target, source)) return true;
 
-  const auto &target_type = context.compiler.types.get(target);
+  const auto &target_type = context.env().types.get(target);
 
-  const auto &source_type = context.compiler.types.get(source);
+  const auto &source_type = context.env().types.get(source);
 
   // Primitive
   if (target_type.kind == TypeKind::Primitive && source_type.kind == TypeKind::Primitive) {
@@ -102,8 +102,7 @@ void TypeChecker::bind_literals() {
 void TypeChecker::check(ast::Node *node) {
   if (!node) return;
 
-  dispatcher.dispatch(this, node);
-  // if ( == DispatchResult::NotHandled) { std::cerr << "Checker: no handler for NodeKind: " << celestia::ast::node_kind_name(node->kind) << '\n'; }
+  if ( dispatcher.dispatch(this, node)== DispatchResult::NotHandled) { std::cerr << "Checker: no handler for NodeKind: " << celestia::ast::node_kind_name(node->kind) << '\n'; }
 }
 
 TypeId TypeChecker::type_from_node(ast::TypeNode *node) {

@@ -6,21 +6,25 @@ void TypeChecker::check_struct_literal(ast::StructLiteralNode *node) {
 
   if (!node) return;
 
-  if (!node->symbol_id.is_valid()) {
+  auto &semantic = context.unit.semantic;
+
+  SymbolId symbol_id = semantic.symbol(node);
+
+  if (!symbol_id.is_valid()) {
     error(node, "struct literal has no resolved symbol");
     return;
   }
 
-  auto *symbol = context.compiler.symbols.get(node->symbol_id);
+  auto &symbol = context.env().symbols.get(symbol_id);
 
-  if (!symbol || !symbol->type.is_valid()) {
+  if (!symbol.type.is_valid()) {
     error(node, "struct literal has no resolved type");
     return;
   }
 
-  TypeId struct_type_id = symbol->type;
+  TypeId struct_type_id = symbol.type;
 
-  auto &type = context.compiler.types.get(struct_type_id);
+  auto &type = context.env().types.get(struct_type_id);
 
   if (type.kind != TypeKind::Struct) {
     error(node, "struct literal requires a struct type");
@@ -47,11 +51,9 @@ void TypeChecker::check_struct_literal(ast::StructLiteralNode *node) {
       continue;
     }
 
-    // IMPORTANTE:
-    // passa o tipo esperado para a expressão
     check(field->value);
 
-    TypeId actual = field->value->type_id;
+    TypeId actual = semantic.type(field->value);
 
     if (!actual.is_valid()) {
       error(field, "field '" + name + "' has no valid value type");
@@ -64,6 +66,7 @@ void TypeChecker::check_struct_literal(ast::StructLiteralNode *node) {
     }
   }
 
-  node->type_id = struct_type_id;
+  semantic.set_type(node, struct_type_id);
 }
+
 } // namespace celestia::semantic
