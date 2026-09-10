@@ -32,9 +32,7 @@ public:
   }
 
 private:
-  // --------------------------------------------------
   // Placeholder
-  // --------------------------------------------------
 
   static std::string_view placeholder_name(DiagnosticArgumentKind kind) {
 
@@ -56,18 +54,14 @@ private:
     return "{unknown}";
   }
 
-  // --------------------------------------------------
   // Value
-  // --------------------------------------------------
 
   static std::string format_value(const DiagnosticValue &value, const CompilerEnvironment &env, const core::source::Source &source) {
 
     return std::visit([&](const auto &value) -> std::string { return format_value_impl(value, env, source); }, value);
   }
 
-  // --------------------------------------------------
   // Token
-  // --------------------------------------------------
 
   static std::string format_value_impl(Token *token, const CompilerEnvironment &, const core::source::Source &source) {
 
@@ -88,9 +82,7 @@ private:
     return "'" + std::string(lexeme) + "'";
   }
 
-  // --------------------------------------------------
   // TokenKind
-  // --------------------------------------------------
 
   static std::string format_value_impl(TokenKind kind, const CompilerEnvironment &env, const core::source::Source &) {
 
@@ -101,15 +93,11 @@ private:
     return "'" + std::string(desc->name) + "'";
   }
 
-  // --------------------------------------------------
   // Expected token
-  // --------------------------------------------------
 
   static std::string format_value_impl(const ExpectedToken &expected, const CompilerEnvironment &env, const core::source::Source &source) { return format_value_impl(expected.kind, env, source); }
 
-  // --------------------------------------------------
   // Expected category
-  // --------------------------------------------------
 
   static std::string format_value_impl(const ExpectedCategory &expected, const CompilerEnvironment &, const core::source::Source &) {
 
@@ -129,9 +117,7 @@ private:
     std::unreachable();
   }
 
-  // --------------------------------------------------
   // Type
-  // --------------------------------------------------
 
   static std::string format_value_impl(celestia::semantic::TypeId id, const CompilerEnvironment &env, const core::source::Source &) {
 
@@ -142,9 +128,7 @@ private:
     return type.to_string();
   }
 
-  // --------------------------------------------------
   // Symbol
-  // --------------------------------------------------
 
   static std::string format_value_impl(celestia::semantic::SymbolId id, const CompilerEnvironment &env, const core::source::Source &) {
 
@@ -152,19 +136,14 @@ private:
 
     const auto &symbol = env.symbols.get(id);
 
-
     return symbol.name;
   }
 
-  // --------------------------------------------------
   // String
-  // --------------------------------------------------
 
   static std::string format_value_impl(const std::string &value, const CompilerEnvironment &, const core::source::Source &) { return value; }
 
-  // --------------------------------------------------
   // Replace
-  // --------------------------------------------------
 
   static void replace(std::string &text, std::string_view from, std::string_view to) {
 

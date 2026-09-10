@@ -17,6 +17,9 @@ void AylaApplication::discover_modules(Compiler &compiler) {
     auto *unit = compiler.add_script(file);
 
     compiler.require(*unit, stages::ModuleParser, rules);
+
+    celestia::debug::AstDumper dump;
+    dump.dump(unit->_root);
   }
 }
 
@@ -34,14 +37,16 @@ int AylaApplication::run(const CommandLine &cmd) {
 
   ayla::language::LanguageBootstrap::bootstrap_builtin(compiler.environment());
 
-  auto *user = compiler.add_script(*cmd.input);
+  auto *user = compiler.find_script(*cmd.input);
+
+  if (!user) {
+    std::cerr << "script not found: " << *cmd.input << '\n';
+    return 1;
+  }
 
   compiler.require(*user, stages::Parser, CompilationRules::normal());
 
   compiler.show_diagnostics();
-
-  celestia::debug::AstDumper dump;
-  dump.dump(user->_root);
 
   return 0;
 }

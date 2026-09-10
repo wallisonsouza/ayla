@@ -20,7 +20,7 @@ public:
     return desc;
   }
 
-  // Adiciona um token sem nome (ex.: TokenKind::Identifier)
+  // Adiciona um token
   celestia::TokenDescriptor &add(TokenKind kind, TokenGroup group) {
     storage_.emplace_back(kind, group, "");
     celestia::TokenDescriptor &desc = storage_.back();
@@ -28,7 +28,7 @@ public:
     return desc;
   }
 
-  // Adiciona um alias para um celestia::TokenDescriptor existente
+  // Adiciona um alias
   void add_alias(TokenKind kind, const std::string &alias) {
 
     auto desc = lookup_by_kind(kind);

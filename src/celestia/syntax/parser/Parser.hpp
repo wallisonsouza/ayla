@@ -21,6 +21,10 @@ public:
 
   void run();
 
+  ast::RootNode *parse_root();
+  ast::ModuleDeclaration *parse_explicit_module();
+  void parse_module_body(ast::ModuleDeclaration *module);
+  ast::ModuleDeclaration *create_implicit_module();
   DeclarationSpecifiers parse_specifiers();
 
   // names
@@ -33,7 +37,7 @@ public:
   // types
   ParseResult<ast::TypeNode *> parse_type();
 
- ParseResult<ast::GenericTypeNode *> parse_generic_type(ast::NameNode *name);
+  ParseResult<ast::GenericTypeNode *> parse_generic_type(ast::NameNode *name);
 
   ParseResult<ast::NamedType *> parse_named_type();
 
@@ -46,9 +50,9 @@ public:
 
   ParseResult<ast::ImportDeclaration *> parse_import_declaration();
 
-  ParseResult<celestia::ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
+  ParseResult<ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
 
-  ParseResult<celestia::ast::FunctionDeclaration *> parse_function_declaration(DeclarationSpecifiers specifiers, bool require_body);
+  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(DeclarationSpecifiers specifiers, bool require_body);
 
   ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(DeclarationSpecifiers specifiers);
 
@@ -60,7 +64,7 @@ public:
 
   ParseResult<ast::Declaration *> named(DeclarationSpecifiers specifiers);
 
-  ParseResult<celestia::ast::FieldDeclaration *> parse_field_declaration();
+  ParseResult<ast::FieldDeclaration *> parse_field_declaration();
 
   // statements
   ast::Statement *parse_statement();
@@ -188,8 +192,6 @@ public:
 
     return ParseResult<std::vector<T>>::fail();
   }
-
-  
 
   ExpressionParser &expressions() { return *expression_parser; }
 

@@ -1,16 +1,11 @@
 
-struct Test {
-    a: Int
-}
+struct c {}
+struct d {}
 
-struct Test1 {
-    a: A
-}
+module foo
 
-struct Test2 {
-    a: A
-}
+struct A {}
 
-struct Test3 {
-    a: A
-}
+module bar
+
+struct B {}

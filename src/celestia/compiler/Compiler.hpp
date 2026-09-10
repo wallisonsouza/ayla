@@ -12,16 +12,38 @@
 #include <unordered_set>
 
 class Compiler {
+
+  std::unordered_map<std::string, CompilationUnit *> scripts_;
+
 public:
   explicit Compiler(celestia::LanguageDefinition &lang) : environment_(), sources() { environment_.language = lang; }
   celestia::ir::IRProgram program;
   CompilationUnit *add_script(const std::string &path) {
 
-    auto *source = sources.create_source(path);
+    auto normalized = std::filesystem::absolute(path).lexically_normal();
+
+    auto *source = sources.create_source(normalized.string());
 
     auto id = environment_.units.create(*source);
 
-    return environment_.units.get(id);
+    auto *unit = environment_.units.get(id);
+
+    if (!unit) return nullptr;
+
+    scripts_[normalized.string()] = unit;
+
+    return unit;
+  }
+
+  CompilationUnit *find_script(const std::string &path) {
+
+    auto normalized = std::filesystem::absolute(path).lexically_normal();
+
+    auto it = scripts_.find(normalized.string());
+
+    if (it == scripts_.end()) return nullptr;
+
+    return it->second;
   }
 
   void require(CompilationUnit &unit, std::string_view target, const CompilationRules &rules) {
