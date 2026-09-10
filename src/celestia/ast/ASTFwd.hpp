@@ -6,6 +6,9 @@ namespace celestia::ast {
 class Node;
 
 
+class FunctionType;
+class Expression;
+
 class CapabilityDeclaration;
 class FunctionDeclaration;
 class ImportDeclaration;

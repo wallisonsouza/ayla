@@ -4,7 +4,6 @@
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
 #include "celestia/ast/statements/WhileStatementNode.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
-#include "celestia/syntax/parser/expressions/Expression.hpp"
 
 namespace celestia::syntax {
 
@@ -33,7 +32,7 @@ celestia::ast::ReturnStatement *Parser::parse_return_statement() {
   // return vazio
   if (tokens.check(TokenKind::CLOSE_BRACE) || tokens.check(TokenKind::NEW_LINE)) { return context.get_ast().alloc<celestia::ast::ReturnStatement>(nullptr); }
 
-  auto *value = expressions().parse_expression();
+  auto *value = parse_expression();
 
   if (!value) return nullptr;
 
@@ -83,7 +82,7 @@ celestia::ast::WhileStatement *Parser::parse_while_statement() {
 
   if (!tokens.match(TokenKind::WHILE_KEYWORD)) return nullptr;
 
-  auto *condition = expressions().parse_expression();
+  auto *condition = parse_expression();
 
   if (!condition) {
     // context.//report_error(
@@ -123,7 +122,7 @@ celestia::ast::IfStatement *Parser::parse_if_statement() {
 
   if (!tokens.match(TokenKind::IF_KEYWORD)) return nullptr;
 
-  auto *condition = expressions().parse_expression();
+  auto *condition = parse_expression();
 
   if (!condition) {
     // context.//report_error(...)
@@ -158,8 +157,9 @@ celestia::ast::IfStatement *Parser::parse_if_statement() {
   return context.get_ast().alloc<celestia::ast::IfStatement>(condition, then_block, else_block);
 }
 
+// exp
 celestia::ast::ExpressionStatement *Parser::parse_expression_statement() {
-  auto *expr = expressions().parse_expression();
+  auto *expr = parse_expression();
 
   if (!expr) return nullptr;
 

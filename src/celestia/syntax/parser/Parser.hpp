@@ -1,11 +1,9 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/types/FunctionType.hpp"
 #include "celestia/syntax/parser/ParseStatus.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 #include "celestia/syntax/parser/ParserDiagnostics.hpp"
-#include <memory>
 
 namespace celestia::syntax {
 
@@ -82,6 +80,42 @@ public:
   // patterns
   ParseResult<ast::PatternNode *> parse_pattern();
   ParseResult<ast::NamedPattern *> parse_named_pattern();
+
+  // expressions
+
+  ast::Expression *parse_expression();
+
+private:
+  ast::Expression *parse_assignment(ast::Expression *);
+
+  ast::Expression *parse_binary_expression(int, ast::Expression *);
+
+  ast::Expression *parse_unary_expression();
+
+  ast::Expression *parse_postfix_expression();
+
+  ast::Expression *parse_primary_expression();
+
+  ast::Expression *parse_struct_literal(celestia::ast::IdentifierNode *name);
+
+  ast::Expression *parse_number_literal();
+
+  ast::Expression *parse_string_literal();
+
+  ast::Expression *parse_bool_literal();
+
+  ast::Expression *parse_object_literal();
+
+  ast::Expression *parse_grouped_expression();
+
+  ast::Expression *parse_member_access(ast::Expression *);
+
+  ast::Expression *parse_index_access(ast::Expression *);
+
+  ast::Expression *parse_call(ast::Expression *);
+
+  ast::Expression *parse_identifier_expression();
+  ast::Expression *parse_array_literal();
 
   static bool is_declaration_start(TokenKind kind) {
     switch (kind) {
@@ -193,8 +227,6 @@ public:
     return ParseResult<std::vector<T>>::fail();
   }
 
-  ExpressionParser &expressions() { return *expression_parser; }
-
   template <typename Parser> auto speculate(Parser &&parser) {
 
     context.tokens().add_checkpoint();
@@ -208,8 +240,6 @@ public:
 
 private:
   ParseContext &context;
-
-  std::unique_ptr<ExpressionParser> expression_parser;
 };
 
 } // namespace celestia::syntax

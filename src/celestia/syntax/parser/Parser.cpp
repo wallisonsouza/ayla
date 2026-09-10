@@ -4,13 +4,13 @@
 
 #include "celestia/ast/declarations/ModuleDeclaration.hpp"
 #include "celestia/ast/names/QualifiedNameNode.hpp"
-#include "celestia/syntax/parser/expressions/Expression.hpp"
+
 
 #include <vector>
 
 namespace celestia::syntax {
 
-Parser::Parser(ParseContext &context) : context(context) { expression_parser = std::make_unique<ExpressionParser>(context, *this); }
+Parser::Parser(ParseContext &context) : context(context) { }
 
 Parser::~Parser() = default;
 

@@ -54,9 +54,29 @@ ParseResult<celestia::ast::IdentifierNode *> Parser::parse_identifier() {
   auto *node = context.get_ast().alloc<celestia::ast::IdentifierNode>(text);
 
   node->slice = token->slice;
-  
 
   return ParseResult<celestia::ast::IdentifierNode *>::ok(node);
+}
+
+ParseResult<ast::IdentifierNode *> Parser::parse_identifier_name() {
+
+  auto result = parse_name();
+
+  if (result.is_error()) return ParseResult<ast::IdentifierNode *>::fail();
+
+  if (result.is_no_match()) {
+    parser::diagnostics::report_expected_identifier(context);
+    return ParseResult<ast::IdentifierNode *>::fail();
+  }
+
+  auto *name = result.value();
+
+  if (name->kind != ast::NodeKind::Identifier) {
+    parser::diagnostics::report_expected_identifier(context);
+    return ParseResult<ast::IdentifierNode *>::fail();
+  }
+
+  return ParseResult<ast::IdentifierNode *>::ok(static_cast<ast::IdentifierNode *>(name));
 }
 
 } // namespace celestia::syntax

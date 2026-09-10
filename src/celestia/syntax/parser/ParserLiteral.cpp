@@ -1,13 +1,9 @@
-
-#include "celestia/ast/expressions/ExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
-#include "celestia/syntax/parser/ParserContext.hpp"
-#include "celestia/syntax/parser/expressions/Expression.hpp"
+
 namespace celestia::syntax {
-celestia::ast::Expression *ExpressionParser::parse_number_literal() {
+celestia::ast::Expression *Parser::parse_number_literal() {
   auto &tokens = context.tokens();
 
   auto *token = tokens.match(TokenKind::NUMBER_LITERAL);
@@ -19,7 +15,7 @@ celestia::ast::Expression *ExpressionParser::parse_number_literal() {
   return context.get_ast().alloc<celestia::ast::NumberLiteralNode>(text);
 }
 
-celestia::ast::Expression *ExpressionParser::parse_string_literal() {
+celestia::ast::Expression *Parser::parse_string_literal() {
   auto *token = context.tokens().match(TokenKind::STRING_LITERAL);
 
   if (!token) return nullptr;
@@ -29,7 +25,7 @@ celestia::ast::Expression *ExpressionParser::parse_string_literal() {
   return context.get_ast().alloc<celestia::ast::StringLiteralNode>(text);
 }
 
-celestia::ast::Expression *ExpressionParser::parse_bool_literal() {
+celestia::ast::Expression *Parser::parse_bool_literal() {
   auto *token = context.tokens().consume();
 
   if (!token) return nullptr;
@@ -39,18 +35,7 @@ celestia::ast::Expression *ExpressionParser::parse_bool_literal() {
   return context.get_ast().alloc<celestia::ast::BoolLiteralNode>(value);
 }
 
-celestia::ast::Expression *ExpressionParser::parse_identifier_expression() {
-
-  auto name = parser.parse_identifier_name();
-
-  if (!name.is_ok()) return nullptr;
-
-  if (context.tokens().check(TokenKind::OPEN_BRACE)) { return parse_struct_literal(name.value()); }
-
-  return context.get_ast().alloc<celestia::ast::IdentifierExpressionNode>(name.value());
-}
-
-celestia::ast::Expression *ExpressionParser::parse_grouped_expression() {
+celestia::ast::Expression *Parser::parse_grouped_expression() {
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;
@@ -64,7 +49,7 @@ celestia::ast::Expression *ExpressionParser::parse_grouped_expression() {
   return expr;
 }
 
-celestia::ast::Expression *ExpressionParser::parse_primary_expression() {
+celestia::ast::Expression *Parser::parse_primary_expression() {
 
   auto *token = context.tokens().current();
 
@@ -88,7 +73,7 @@ celestia::ast::Expression *ExpressionParser::parse_primary_expression() {
   default: return nullptr;
   }
 }
-celestia::ast::Expression *ExpressionParser::parse_struct_literal(celestia::ast::IdentifierNode *name) {
+celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::IdentifierNode *name) {
 
   auto &tokens = context.tokens();
 
@@ -100,7 +85,7 @@ celestia::ast::Expression *ExpressionParser::parse_struct_literal(celestia::ast:
 
     tokens.skip_trivia();
 
-    auto *field_name = parser.parse_identifier().value();
+    auto *field_name = parse_identifier().value();
 
     if (!field_name) return nullptr;
 
@@ -137,7 +122,7 @@ celestia::ast::Expression *ExpressionParser::parse_struct_literal(celestia::ast:
   return context.get_ast().alloc<celestia::ast::StructLiteralNode>(type, std::move(fields));
 }
 
-celestia::ast::Expression *ExpressionParser::parse_array_literal() {
+celestia::ast::Expression *Parser::parse_array_literal() {
 
   auto &tokens = context.tokens();
 

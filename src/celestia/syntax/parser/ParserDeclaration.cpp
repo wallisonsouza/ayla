@@ -5,36 +5,14 @@
 #include "celestia/ast/declarations/StructDeclaration.hpp"
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
-#include "celestia/ast/expressions/ExpressionNode.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
-#include "celestia/syntax/parser/expressions/Expression.hpp"
 
 namespace celestia::syntax {
 
-ParseResult<ast::IdentifierNode *> Parser::parse_identifier_name() {
-
-  auto result = parse_name();
-
-  if (result.is_error()) return ParseResult<ast::IdentifierNode *>::fail();
-
-  if (result.is_no_match()) {
-    parser::diagnostics::report_expected_identifier(context);
-    return ParseResult<ast::IdentifierNode *>::fail();
-  }
-
-  auto *name = result.value();
-
-  if (name->kind != ast::NodeKind::Identifier) {
-    parser::diagnostics::report_expected_identifier(context);
-    return ParseResult<ast::IdentifierNode *>::fail();
-  }
-
-  return ParseResult<ast::IdentifierNode *>::ok(static_cast<ast::IdentifierNode *>(name));
-}
 ParseResult<std::vector<ast::IdentifierNode *>> Parser::parse_generic_parameters() {
 
   auto result =
@@ -46,6 +24,7 @@ ParseResult<std::vector<ast::IdentifierNode *>> Parser::parse_generic_parameters
 
   return ParseResult<std::vector<ast::IdentifierNode *>>::ok(std::move(result.value()));
 }
+
 ParseResult<ast::Declaration *> Parser::parse_declaration() {
 
   auto specifiers = parse_specifiers();
@@ -112,7 +91,6 @@ DeclarationSpecifiers Parser::parse_specifiers() {
 
   return specifiers;
 }
-
 
 // Module declaration
 ParseResult<ast::ModuleDeclaration *> Parser::parse_module_declaration() {
@@ -244,7 +222,7 @@ ParseResult<ast::VariableDeclaration *> Parser::parse_variable_declaration(Decla
 
   if (tokens.match(TokenKind::ASSIGN)) {
 
-    auto initializer_result = expression_parser->parse_expression();
+    auto initializer_result = parse_expression();
 
     if (!initializer_result) {
 
