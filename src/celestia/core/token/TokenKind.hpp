@@ -21,6 +21,7 @@ enum class TokenKind : uint8_t {
   CONST_KEYWORD,
   FUN_KEYWORD,
   IMPORT_KEYWORD,
+  FROM_KEYWORD,
   EXPORT_KEYWORD,
   STRUCT_KEYWORD,
   IF_KEYWORD,
@@ -162,6 +163,7 @@ constexpr std::string_view token_kind_name(TokenKind kind) noexcept {
 
   case TokenKind::EXPORT_KEYWORD: return "EXPORT_KEYWORD";
   case TokenKind::LET_KEYWORD: return "LET_KEYWORD";
+  case TokenKind::FROM_KEYWORD: return "FROM_KEYWORD";
   }
 
   return "UNKNOWN";

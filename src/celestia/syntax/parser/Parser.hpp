@@ -100,7 +100,7 @@ private:
 
   ast::Expression *parse_number_literal();
 
-  ast::Expression *parse_string_literal();
+  ast::StringLiteralNode *parse_string_literal();
 
   ast::Expression *parse_bool_literal();
 

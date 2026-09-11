@@ -2,6 +2,7 @@
 #include "celestia/semantic/id/ids.hpp"
 #include "celestia/semantic/scope/Scope.hpp"
 
+#include <cassert>
 #include <vector>
 
 class ScopeManager {
@@ -15,6 +16,8 @@ public:
     auto *scope = arena.alloc<core::Scope>(kind, parent);
 
     celestia::semantic::ScopeId id{static_cast<uint32_t>(scopes.size())};
+
+    assert(id.is_valid());
 
     scope->id = id;
     scopes.push_back(scope);

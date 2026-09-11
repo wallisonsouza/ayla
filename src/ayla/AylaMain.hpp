@@ -4,7 +4,4 @@
 class AylaApplication {
 public:
   int run(const CommandLine &command);
-
-private:
-  void discover_modules(Compiler &compiler);
 };

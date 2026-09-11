@@ -1,0 +1,4 @@
+struct Test {
+    a: Int
+    b: Int
+}

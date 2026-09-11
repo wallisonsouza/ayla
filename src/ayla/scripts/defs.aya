@@ -1,0 +1,26 @@
+module vector
+
+import math.capacities as operator
+
+struct Vector2D {
+    x: Int
+    y: Int
+}
+
+impl operator.Add: Vector2D {
+    add(a: Self, b: Self) -> Self {
+        return Vector2D {
+            x: a.x + b.x,
+            y: a.y + b.y
+        }
+    }
+}
+
+impl operator.Sub: Vector2D {
+    sub(a: Self, b: Self) -> Self {
+        return Vector2D {
+            x: a.x - b.x,
+            y: a.y - b.y
+        }
+    }
+}

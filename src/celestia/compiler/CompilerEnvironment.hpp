@@ -2,6 +2,7 @@
 
 #include "celestia/compiler/TypeManager.hpp"
 #include "celestia/compiler/UnitManager.hpp"
+#include "celestia/core/managers/source_manager.hpp"
 #include "celestia/language/LanguageDefinition.hpp"
 #include "celestia/semantic/module/ModuleManager.hpp"
 #include "celestia/semantic/scope/ScopeManager.hpp"
@@ -48,6 +49,8 @@ struct CompilerEnvironment {
   celestia::semantic::ModuleManager modules;
 
   TypeManager types;
+
+  SourceManager sources;
 
   BuiltinTypes builtins;
 

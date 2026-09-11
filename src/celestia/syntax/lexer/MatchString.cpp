@@ -5,8 +5,10 @@ Token *Lexer::match_string() {
 
   if (quote != U'"' && quote != U'\'') { return nullptr; }
 
-  auto start = stream.get_state();
+  // consome '"'
   stream.advance();
+
+  auto start = stream.get_state();
 
   bool escaped = false;
   bool closed = false;
@@ -28,23 +30,29 @@ Token *Lexer::match_string() {
 
     if (ch == quote) {
       closed = true;
-      stream.advance();
       break;
     }
 
     stream.advance();
   }
 
-  auto slice = stream.slice_from(start);
-
   if (!closed) {
+    auto slice = stream.slice_from(start);
 
-    // unit.diagnostics.emit({DiagnosticCode::UnterminatedString, slice});
+    // unit.diagnostics.emit({
+    //     DiagnosticCode::UnterminatedString,
+    //     slice
+    // });
 
     return nullptr;
   }
 
+  auto value = stream.slice_from(start);
+
+  // consome '"'
+  stream.advance();
+
   auto *descriptor = ctx.language.tokens.lookup_by_kind(TokenKind::STRING_LITERAL);
 
-  return ctx.tokens.create_token<Token>(descriptor, slice);
+  return ctx.tokens.create_token<Token>(descriptor, value);
 }

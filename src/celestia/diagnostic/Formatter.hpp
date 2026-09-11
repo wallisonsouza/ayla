@@ -128,6 +128,28 @@ private:
     return type.to_string();
   }
 
+  static std::string format_value_impl(SymbolKind kind, const CompilerEnvironment &, const core::source::Source &) {
+
+    switch (kind) {
+    case SymbolKind::Struct: return "struct";
+
+    case SymbolKind::Function: return "function";
+
+    case SymbolKind::Variable: return "variable";
+
+    case SymbolKind::Field: return "field";
+
+    // case SymbolKind::Parameter: return "parameter";
+
+    case SymbolKind::Type: return "type";
+
+    case SymbolKind::Module: return "module";
+
+    case SymbolKind::Capability: return "capability";
+
+    default: return "symbol";
+    }
+  }
   // Symbol
 
   static std::string format_value_impl(celestia::semantic::SymbolId id, const CompilerEnvironment &env, const core::source::Source &) {

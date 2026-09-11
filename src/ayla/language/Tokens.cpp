@@ -32,6 +32,7 @@ void register_tokens(celestia::LanguageDefinition &def) {
 
   def.tokens.add(TokenKind::MODULE_KEYWORD, "module", TokenGroup::Keyword);
   def.tokens.add(TokenKind::IMPORT_KEYWORD, "import", TokenGroup::Keyword);
+   def.tokens.add(TokenKind::FROM_KEYWORD, "from", TokenGroup::Keyword);
   def.tokens.add(TokenKind::EXPORT_KEYWORD, "export", TokenGroup::Keyword);
 
   // punctuaction

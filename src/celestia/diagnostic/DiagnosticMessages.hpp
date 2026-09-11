@@ -77,7 +77,7 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
     {DiagnosticCode::RedefinedSymbol,
      {
          .title = "redefined symbol",
-         .text = "redefinition of '{name}'",
+         .text = "redefinition of {kind} '{name}'",
      }},
 
     {DiagnosticCode::ShadowedSymbol,
@@ -92,7 +92,7 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
          .text = "unknown type '{name}'",
      }},
 
-      {DiagnosticCode::UnknownModule,
+    {DiagnosticCode::UnknownModule,
      {
          .title = "unknown module",
          .text = "unknown module '{name}'",

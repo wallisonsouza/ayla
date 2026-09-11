@@ -1,11 +1,4 @@
+import lib.test
 
-struct c {}
-struct d {}
+let a: lib.test.Test
 
-module foo
-
-struct A {}
-
-module bar
-
-struct B {}

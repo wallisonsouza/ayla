@@ -6,7 +6,7 @@ void Resolver::identifier(ast::IdentifierExpressionNode *node) {
 
   if (!node || !node->name) return;
 
-  ScopeId scope_id = context.unit.semantic.scope(node);
+  ScopeId scope_id = context.stack.current();
 
   if (!scope_id.is_valid()) {
 
@@ -40,14 +40,13 @@ void Resolver::identifier(ast::IdentifierExpressionNode *node) {
 
   context.unit.semantic.set_symbol(node, id);
 }
-
 SymbolId Resolver::resolve_name(ast::NameNode *name, ScopeId scope_id) {
 
   assert(name && "Resolver::resolve_name received null");
 
   switch (name->kind) {
 
-  case ast::NodeKind::Identifier: return lookup_symbol(scope_id, static_cast<ast::IdentifierNode *>(name)->str);
+  case ast::NodeKind::Identifier: return lookup_symbol(scope_id, static_cast<ast::IdentifierNode *>(name)->get_str());
 
   case ast::NodeKind::QualifiedName: return lookup_qualified_name(static_cast<ast::QualifiedNameNode *>(name));
 
@@ -63,22 +62,20 @@ SymbolId Resolver::lookup_qualified_name(ast::QualifiedNameNode *name) {
 
   const auto &parts = name->parts;
 
-  if (parts.empty()) { return SymbolId::invalid(); }
-
-  if (parts.size() == 1) { return SymbolId::invalid(); }
+  if (parts.size() < 2) return SymbolId::invalid();
 
   std::string module_name;
 
   for (std::size_t i = 0; i + 1 < parts.size(); ++i) {
 
-    if (!module_name.empty()) { module_name += '.'; }
+    if (!module_name.empty()) module_name += '.';
 
     module_name += parts[i]->str;
   }
 
   ModuleId module_id = context.get_env().modules.find(module_name);
 
-  if (!module_id.is_valid()) { return SymbolId::invalid(); }
+  if (!module_id.is_valid()) return SymbolId::invalid();
 
   const auto &module = context.get_env().modules.get(module_id);
 

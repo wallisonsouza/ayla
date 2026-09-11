@@ -13,16 +13,22 @@
 
 class Compiler {
 
-  std::unordered_map<std::string, CompilationUnit *> scripts_;
-
 public:
-  explicit Compiler(celestia::LanguageDefinition &lang) : environment_(), sources() { environment_.language = lang; }
+  explicit Compiler(celestia::LanguageDefinition &lang) : environment_() { environment_.language = lang; }
+
   celestia::ir::IRProgram program;
+
   CompilationUnit *add_script(const std::string &path) {
 
     auto normalized = std::filesystem::absolute(path).lexically_normal();
 
-    auto *source = sources.create_source(normalized.string());
+    const auto key = normalized.string();
+
+    if (auto it = units_by_path_.find(key); it != units_by_path_.end()) { return environment_.units.get(it->second); }
+
+    auto *source = environment_.sources.get_or_create(key);
+
+    if (!source) return nullptr;
 
     auto id = environment_.units.create(*source);
 
@@ -30,22 +36,10 @@ public:
 
     if (!unit) return nullptr;
 
-    scripts_[normalized.string()] = unit;
+    units_by_path_.emplace(key, id);
 
     return unit;
   }
-
-  CompilationUnit *find_script(const std::string &path) {
-
-    auto normalized = std::filesystem::absolute(path).lexically_normal();
-
-    auto it = scripts_.find(normalized.string());
-
-    if (it == scripts_.end()) return nullptr;
-
-    return it->second;
-  }
-
   void require(CompilationUnit &unit, std::string_view target, const CompilationRules &rules) {
 
     auto &completed = completed_[unit.id];
@@ -77,6 +71,59 @@ public:
 
       dumper.dispatch(unit->_root);
     }
+  }
+
+  void load_module(const celestia::ast::ImportDeclaration *node, CompilationUnit &importer) {
+
+    if (!node || !node->name) return;
+
+    std::filesystem::path path;
+
+    if (node->path) {
+
+      // import physics from "./math.ayla"
+      path = node->path.value();
+
+      if (path.is_relative()) { path = importer.source.path.parent_path() / path; }
+
+    } else {
+
+      // import lib.math
+      //
+      // lib.math -> lib/math.ayla
+
+      const auto module_name = node->name->get_str();
+
+      std::string relative_path = module_name;
+
+      for (char &c : relative_path) {
+        if (c == '.') c = '/';
+      }
+
+      path = environment_.root / (relative_path + ".ayla");
+    }
+
+    path = std::filesystem::absolute(path).lexically_normal();
+
+    std::cout << path;
+
+    // // Já carregado?
+    // if (auto *existing = find_script(path.string())) { return existing; }
+
+    // // Cria Source + CompilationUnit.
+    // auto *unit = add_script(path.string());
+
+    // if (!unit) {
+    //   // TODO: diagnóstico de arquivo inexistente
+    //   return nullptr;
+    // }
+
+    // // Faz somente o necessário para conhecer o módulo.
+    // auto rules = CompilationRules::discovery();
+
+    // require(*unit, stages::ModuleParser, rules);
+
+    // return unit;
   }
 
 private:
@@ -115,7 +162,8 @@ private:
 
 private:
   CompilerEnvironment environment_;
-  SourceManager sources;
 
+private:
+  std::unordered_map<std::string, celestia::semantic::CompilationUnitId> units_by_path_;
   std::unordered_map<celestia::semantic::CompilationUnitId, std::unordered_set<std::string>> completed_;
 };

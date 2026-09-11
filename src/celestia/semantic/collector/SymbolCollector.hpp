@@ -1,25 +1,12 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/AstDispacher.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
-#include "celestia/compiler/CompilerEnvironment.hpp"
-#include "celestia/semantic/resolver/ContextStack.hpp"
+#include "celestia/semantic/collector/SymbolCollectorContext.hpp"
 #include "celestia/semantic/scope/Scope.hpp"
 
 namespace celestia::semantic {
-
-struct SymbolCollectorContext {
-  Compiler &compiler;
-  CompilationUnit &unit;
-
-  ContextStack<ScopeId> stack;
-
-  CompilerEnvironment &env() const { return compiler.environment(); }
-
-  SymbolCollectorContext(Compiler &compiler, CompilationUnit &unit) : compiler(compiler), unit(unit), stack(ScopeId::invalid()) {}
-};
 
 class SymbolCollector {
 

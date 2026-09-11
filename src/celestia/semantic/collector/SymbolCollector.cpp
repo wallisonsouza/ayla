@@ -1,6 +1,21 @@
 #include "celestia/semantic/collector/SymbolCollector.hpp"
 
 namespace celestia::semantic {
+inline void report_redeclaration(SymbolCollectorContext &context, const std::string &name, SourceSlice slice) {
+
+  context.unit.diagnostics.report({
+      .severity = diagnostic::Severity::Error,
+      .code = diagnostic::DiagnosticCode::RedefinedSymbol,
+      .arguments =
+          {
+              diagnostic::name(name),
+          },
+      .labels =
+          {
+              diagnostic::location(slice),
+          },
+  });
+}
 
 SymbolCollector::SymbolCollector(Compiler &compiler, CompilationUnit &unit) : context(compiler, unit) {}
 
@@ -89,45 +104,88 @@ void SymbolCollector::collect_node(ast::Node *node) {
 
 void SymbolCollector::collect_module(ast::ModuleDeclaration *node) {
 
-  if (!node) return;
+  if (!node || !node->name) return;
 
-  // O ParserStage pode ter associado explicitamente este módulo,
-  // como acontece com o módulo builtin.
-  auto module_id = context.unit.semantic.module(node);
+  const auto module_name = node->name->get_str();
 
-  // Módulos normais são encontrados pelo nome descoberto.
-  if (!module_id.is_valid()) {
+  // Cria ou reutiliza o módulo.
+  auto module_id = context.env().modules.register_module(module_name);
 
-    if (!node->name) return;
+  if (!module_id.is_valid()) { return; }
 
-    module_id = context.env().modules.find(node->name->get_str());
 
-    if (!module_id.is_valid()) return;
-  }
-
-  ScopeId parent = context.stack.current();
-
-  ScopeId scope = context.env().scopes.create_scope(core::ScopeKind::Module, parent);
-
-  if (!scope.is_valid()) return;
-
-  context.stack.push(scope);
-
-  context.unit.semantic.set_scope(node, scope);
-  context.unit.semantic.set_module(node, module_id);
+  auto &builtin = context.env().modules.get(context.env().builtin_module);
 
   auto &module = context.env().modules.get(module_id);
 
-  module.set_scope(scope);
+  // O módulo ainda não possui scope.
+  ScopeId scope = module.scope_id();
+
+  if (!scope.is_valid()) {
+
+    ScopeId parent = context.stack.current();
+
+    scope = context.env().scopes.create_scope(core::ScopeKind::Module, builtin.scope_id());
+
+    if (!scope.is_valid()) { return; }
+
+    module.set_scope(scope);
+  }
+
+  context.unit.semantic.set_module(node, module_id);
+  context.unit.semantic.set_scope(node, scope);
+
+  context.stack.push(scope);
 
   for (auto *declaration : node->declarations) {
 
+    if (!declaration) continue;
+
     std::cout << "[SymbolCollector] declaration kind = " << ast::node_kind_name(declaration->kind) << '\n';
+
     collect_node(declaration);
   }
 
   context.stack.pop();
 }
+
+// void SymbolCollector::collect_module(ast::ModuleDeclaration *node) {
+
+//   if (!node) return;
+
+//   auto module_id = context.unit.semantic.module(node);
+
+//   if (!module_id.is_valid()) {
+
+//     if (!node->name) return;
+
+//     module_id = context.env().modules.find(node->name->get_str());
+
+//     if (!module_id.is_valid()) return;
+//   }
+
+//   auto &module = context.env().modules.get(module_id);
+
+//   ScopeId scope = module.scope_id();
+
+//   if (!scope.is_valid()) return;
+
+//   context.stack.push(scope);
+
+//   context.unit.semantic.set_scope(node, scope);
+//   context.unit.semantic.set_module(node, module_id);
+
+//   for (auto *declaration : node->declarations) {
+
+//     if (!declaration) continue;
+
+//     std::cout << "[SymbolCollector] declaration kind = " << ast::node_kind_name(declaration->kind) << '\n';
+
+//     collect_node(declaration);
+//   }
+
+//   context.stack.pop();
+// }
 
 void SymbolCollector::collect_pattern(ast::PatternNode *pattern) {
 
@@ -173,17 +231,17 @@ void SymbolCollector::collect_generics(const std::vector<ast::IdentifierNode *> 
 }
 
 void SymbolCollector::collect_function(ast::FunctionDeclaration *node) {
+  assert(node && node->name);
 
-  if (!node || !node->name) return;
+  const std::string &name = node->name->get_str();
 
-  const std::string &name = node->name->str;
-
-  // Símbolo da função pertence ao scope atual
   SymbolId function_symbol = declare_symbol(name, SymbolKind::Function, node->specifiers.visibility, node);
 
-  if (!function_symbol.is_valid()) return;
+  if (!function_symbol.is_valid()) {
+    report_redeclaration(context, name, node->name->slice);
+    return;
+  };
 
-  // Scope da função
   ScopeId function_scope = context.env().scopes.create_scope(core::ScopeKind::Function, context.stack.current());
 
   if (!function_scope.is_valid()) return;
@@ -210,18 +268,18 @@ void SymbolCollector::collect_function(ast::FunctionDeclaration *node) {
 }
 
 void SymbolCollector::collect_struct(ast::StructDeclaration *node) {
+  assert(node && node->name);
 
-  std::cout << "[SymbolCollector]: colleting struct declaration" << std::endl;
+  SymbolId struct_symbol = declare_symbol(node->name->get_str(), SymbolKind::Struct, node->specifiers.visibility, node);
 
-  if (!node || !node->name) return;
-
-  SymbolId symbol_id = declare_symbol(node->name->get_str(), SymbolKind::Type, node->specifiers.visibility, node);
-
-  if (!symbol_id.is_valid()) return;
+  if (!struct_symbol.is_valid()) {
+    report_redeclaration(context, node->name->get_str(), node->name->slice);
+    return;
+  };
 
   ScopeId struct_scope = context.env().scopes.create_scope(core::ScopeKind::Struct, context.stack.current());
 
-  if (!struct_scope.is_valid()) return;
+  if (!struct_scope.is_valid()) { assert(!struct_scope.is_valid()); };
 
   context.unit.semantic.set_scope(node, struct_scope);
 
@@ -272,16 +330,24 @@ void SymbolCollector::collect_named_pattern(ast::NamedPattern *pattern) {
 
   SymbolId symbol_id = declare_symbol(pattern->name->str, SymbolKind::Variable, Visibility::Private, pattern);
 
+  if (!symbol_id.is_valid()) {
+    report_redeclaration(context, pattern->name->get_str(), pattern->name->slice);
+    return;
+  };
+
   if (!symbol_id.is_valid()) return;
 }
 
 void SymbolCollector::collect_field(ast::FieldDeclaration *node) {
 
-  if (!node || !node->name) return;
+  assert(node && node->name);
 
   SymbolId symbol_id = declare_symbol(node->name->str, SymbolKind::Field, Visibility::Private, node);
 
-  if (!symbol_id.is_valid()) return;
+  if (!symbol_id.is_valid()) {
+    report_redeclaration(context, node->name->get_str(), node->name->slice);
+    return;
+  };
 
   // O tipo é resolvido depois pelo Resolver.
 }

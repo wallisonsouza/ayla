@@ -16,6 +16,7 @@ void Resolver::bind_literals() {
   dispatcher.bind<ast::ArrayLiteralNode, &Resolver::array_literal>();
 
   dispatcher.bind<ast::ObjectLiteralNode, &Resolver::object_literal>();
+  dispatcher.bind<ast::NamedPattern, &Resolver::named_pattern>();
 }
 
 void Resolver::bind_expressions() {

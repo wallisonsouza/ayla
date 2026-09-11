@@ -89,8 +89,8 @@ public:
   }
 
 private:
-  std::vector<std::unique_ptr<Module>> storage_;
 
+  std::vector<std::unique_ptr<Module>> storage_;
   std::unordered_map<std::string, ModuleId> modules_;
 
   // ModuleId -> CompilationUnitId[]

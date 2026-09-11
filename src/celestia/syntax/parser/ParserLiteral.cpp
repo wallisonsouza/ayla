@@ -15,7 +15,7 @@ celestia::ast::Expression *Parser::parse_number_literal() {
   return context.get_ast().alloc<celestia::ast::NumberLiteralNode>(text);
 }
 
-celestia::ast::Expression *Parser::parse_string_literal() {
+celestia::ast::StringLiteralNode *Parser::parse_string_literal() {
   auto *token = context.tokens().match(TokenKind::STRING_LITERAL);
 
   if (!token) return nullptr;

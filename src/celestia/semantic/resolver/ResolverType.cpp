@@ -33,59 +33,18 @@ void Resolver::resolve_named_type(ast::NamedType *node) {
 
   ScopeId scope_id = context.stack.current();
 
-  std::cout << "scope id: " << scope_id.index();
-
-  if (!scope_id.is_valid()) {
-
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UnknownType,
-        .arguments =
-            {
-                diagnostic::name(node->name->get_str()),
-            },
-        .labels =
-            {
-                diagnostic::location(node->slice),
-            },
-    });
-
-    return;
-  }
+  if (!scope_id.is_valid()) { return; }
 
   SymbolId symbol_id = resolve_name(node->name, scope_id);
 
   if (!symbol_id.is_valid()) {
 
-    const auto name = node->name->get_str();
-
     context.unit.diagnostics.report({
         .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UnknownType,
-        .arguments =
-            {
-                diagnostic::name(name),
-            },
-        .labels =
-            {
-                diagnostic::location(node->slice),
-            },
-    });
-
-    return;
-  }
-
-  auto &symbol = context.get_env().symbols.get(symbol_id);
-
-  if (symbol.kind != SymbolKind::Type) {
-
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::NotAType,
+        .code = diagnostic::DiagnosticCode::UndefinedSymbol,
         .arguments =
             {
                 diagnostic::name(node->name->get_str()),
-                diagnostic::symbol(symbol_id),
             },
         .labels =
             {
@@ -98,7 +57,6 @@ void Resolver::resolve_named_type(ast::NamedType *node) {
 
   context.unit.semantic.set_symbol(node, symbol_id);
 }
-
 void Resolver::resolve_generic_type(ast::GenericTypeNode *node) {
 
   // assert(node && "Resolver::resolve_generic_type received null");

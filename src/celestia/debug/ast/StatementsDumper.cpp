@@ -14,7 +14,6 @@ void AstDumper::dump_block_statement(const ast::BlockStatement *node) {
   auto g = context.object("BlockStatement");
 
   g.list("Statements", node->statements);
-  
 }
 
 void AstDumper::dump_if_statement(const ast::IfStatement *node) {
@@ -42,10 +41,11 @@ void AstDumper::dump_expression_statement(const ast::ExpressionStatement *node) 
 
 void AstDumper::dump_import_statement(const ast::ImportDeclaration *node) {
 
-  auto g = context.object("ImportStatement");
+  auto g = context.object("ImportDeclaration");
 
+  g.field("name",node->name);
 
-  dump_name(node->name);
+  if (node->path.has_value()) { g.field("path", node->path.value()); }
 
   // if (node->name) g.field("Path",node->name->get_str());
 }

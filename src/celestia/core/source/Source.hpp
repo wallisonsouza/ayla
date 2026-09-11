@@ -4,20 +4,19 @@
 #include "celestia/utils/TextLoader.hpp"
 
 #include <filesystem>
-#include <string>
 #include <utility>
 
 namespace core::source {
 
 struct Source {
-  std::string path;
+  std::filesystem::path path;
   SourceBuffer buffer;
 
-  explicit Source(std::string p) : path(std::move(p)), buffer(utils::TextLoader::load_file(path)) {}
+  explicit Source(std::filesystem::path p) : path(std::move(p)), buffer(utils::TextLoader::load_file(path)) {}
 
-  std::string filename() const { return std::filesystem::path(path).filename().string(); }
+  std::filesystem::path filename() const { return path.filename(); }
 
-  std::string stem() const { return std::filesystem::path(path).stem().string(); }
+  std::filesystem::path stem() const { return path.stem(); }
 };
 
 } // namespace core::source

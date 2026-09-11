@@ -5,6 +5,7 @@
 #include "celestia/ast/declarations/StructDeclaration.hpp"
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
@@ -133,9 +134,20 @@ ParseResult<ast::ImportDeclaration *> Parser::parse_import_declaration() {
     return ParseResult<ast::ImportDeclaration *>::fail();
   }
 
+  std::optional<std::string> path;
+
+  if (tokens.match(TokenKind::FROM_KEYWORD)) {
+
+    tokens.skip_trivia();
+
+    auto node = parse_string_literal();
+
+    if (node) { path = node->value; }
+  }
+
   celestia::debug::trace(debug::Category::Parser, "parsed import declaration '{}'", module_result.value()->get_str());
 
-  return ParseResult<ast::ImportDeclaration *>::ok(context.get_ast().alloc<ast::ImportDeclaration>(module_result.value()));
+  return ParseResult<ast::ImportDeclaration *>::ok(context.get_ast().alloc<ast::ImportDeclaration>(module_result.value(), std::move(path)));
 }
 
 // Field declaration
@@ -509,7 +521,7 @@ ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(DeclarationSp
 
   if (!tokens.match(TokenKind::TYPE_KEYWORD)) return ParseResult<ast::TypeDeclaration *>::no_match();
 
-  auto name_result = parse_name();
+  auto name_result = parse_identifier_name();
 
   if (name_result.is_error()) return ParseResult<ast::TypeDeclaration *>::fail();
 
@@ -519,16 +531,6 @@ ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(DeclarationSp
 
     return ParseResult<ast::TypeDeclaration *>::fail();
   }
-
-  auto *name = name_result.value();
-
-  if (name->kind != ast::NodeKind::Identifier) {
-    // diagnóstico: nome de função não pode ser qualificado
-    return ParseResult<ast::TypeDeclaration *>::fail();
-  }
-
-  auto *identifier = static_cast<ast::IdentifierNode *>(name);
-
   auto generic_parameters = parse_generic_parameters();
 
   if (generic_parameters.is_error()) return ParseResult<ast::TypeDeclaration *>::fail();
@@ -537,7 +539,7 @@ ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(DeclarationSp
 
   if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
 
-  return ParseResult<ast::TypeDeclaration *>::ok(context.get_ast().alloc<ast::TypeDeclaration>(identifier, std::move(generics), specifiers));
+  return ParseResult<ast::TypeDeclaration *>::ok(context.get_ast().alloc<ast::TypeDeclaration>(name_result.value(), std::move(generics), specifiers));
 }
 
 // Function declaration
