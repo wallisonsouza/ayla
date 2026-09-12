@@ -13,8 +13,6 @@ namespace celestia::semantic {
 class Module {
 
 public:
-  // CompilationUnitId unit_;
-
   Module(std::string name, ModuleId parent = ModuleId::invalid()) : name_(std::move(name)), parent_(parent) {}
 
   std::string_view name() const { return name_; }

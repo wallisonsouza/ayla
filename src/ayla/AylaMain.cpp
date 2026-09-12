@@ -2,7 +2,9 @@
 #include "ayla/bootstrap/LanguageBootstrap.hpp"
 #include "ayla/language/AylaLanguage.hpp"
 #include "celestia/compiler/Compiler.hpp"
-#include "celestia/file/FileDiscovery.hpp"
+#include "celestia/compiler/ModuleIndexer.hpp"
+#include "celestia/diagnostic/diagnostic_debug.hpp"
+#include <memory.h>
 
 int AylaApplication::run(const CommandLine &cmd) {
 
@@ -16,6 +18,8 @@ int AylaApplication::run(const CommandLine &cmd) {
 
   compiler.environment().root = "../src/ayla/scripts/";
 
+  ModuleIndexer::run(compiler.environment());
+
   auto *user = compiler.add_script(*cmd.input);
 
   if (!user) {
@@ -23,12 +27,16 @@ int AylaApplication::run(const CommandLine &cmd) {
     return 1;
   }
 
-  compiler.require(*user, stages::Resolver, CompilationRules::normal());
+  compiler.require(*user, StageId::Resolver, CompilationRules::normal());
 
-  compiler.show_diagnostics();
+  for (auto &unit : compiler.environment().units.all()) {
+    for (auto &diag : unit->diagnostics.all()) { diagnostic::print_diagnostic(diag, unit->source, compiler.environment()); }
+  }
 
-  celestia::debug::AstDumper dump;
-  dump.dump(user->_root);
+
+
+  // celestia::debug::AstDumper dump;
+  // dump.dump(user->_root);
 
   return 0;
 }

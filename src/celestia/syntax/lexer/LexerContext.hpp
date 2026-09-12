@@ -6,6 +6,7 @@
 #include "celestia/language/LanguageDefinition.hpp"
 
 struct LexerContext {
+  
   celestia::LanguageDefinition &language;
 
   core::source::Source &source;

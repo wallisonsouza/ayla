@@ -19,11 +19,15 @@ private:
 
   Token *match_token() {
 
+    if (auto t = match_comment()) return t;
+
     if (auto t = match_string()) return t;
 
     if (auto t = match_number()) return t;
 
     if (auto t = match_identifier()) return t;
+
+    if (auto t = match_newline()) return t;
 
     if (auto t = match_operator()) return t;
 
@@ -39,56 +43,18 @@ public:
   Token *match_string();
   Token *match_number();
   Token *match_operator();
-  Token mathch_comment();
-
-  void skip_whitespace_and_comments(core::source::TextStream &stream) {
-    while (!stream.eof()) {
-      char32_t c = stream.peek();
-
-      // Espaços em branco, mas NÃO newline
-      if (utils::Unicode::is_white_space(c) && c != U'\n') {
-        stream.advance();
-        continue;
-      }
-
-      // Comentário de linha //
-      if (c == U'/' && stream.peek_n(1) == U'/') {
-        stream.advance_n(2);
-        while (stream.peek() != U'\n' && !stream.eof()) stream.advance();
-        continue;
-      }
-
-      // Comentário de bloco /* ... */
-      if (c == U'/' && stream.peek_n(1) == U'*') {
-        stream.advance_n(2);
-        while (!stream.eof()) {
-          if (stream.peek() == U'*' && stream.peek_n(1) == U'/') {
-            stream.advance_n(2);
-            break;
-          }
-          stream.advance();
-        }
-        continue;
-      }
-
-      break; // Não é espaço nem comentário
-    }
-  }
+  Token *match_comment();
+  Token *match_newline();
 
   void tokenize() {
 
     while (!stream.eof()) {
-      skip_whitespace_and_comments(stream);
 
-      if (stream.peek() == U'\n') {
-
-        auto state = stream.get_state();
-
-        auto desc = ctx.language.tokens.lookup_by_kind(TokenKind::NEW_LINE);
-        ctx.tokens.create_token<Token>(desc, stream.slice_from(state));
+      if (utils::Unicode::is_white_space(stream.peek()) && stream.peek() != U'\n') {
+        stream.advance();
+        continue;
       }
 
-      auto start_state = stream.get_state();
       auto *token = match_token();
 
       if (!token) { stream.advance(); }

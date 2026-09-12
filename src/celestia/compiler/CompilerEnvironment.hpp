@@ -4,6 +4,7 @@
 #include "celestia/compiler/UnitManager.hpp"
 #include "celestia/core/managers/source_manager.hpp"
 #include "celestia/language/LanguageDefinition.hpp"
+#include "celestia/semantic/module/ModuleIndex.hpp"
 #include "celestia/semantic/module/ModuleManager.hpp"
 #include "celestia/semantic/scope/ScopeManager.hpp"
 #include "celestia/semantic/symbol/SymbolManager.hpp"
@@ -54,6 +55,8 @@ struct CompilerEnvironment {
 
   BuiltinTypes builtins;
 
+  ModuleIndex index;
+
   UnitManager units;
 
   ScopeManager scopes;
@@ -63,7 +66,7 @@ struct CompilerEnvironment {
   celestia::semantic::ModuleId builtin_module;
 
   CompilerEnvironment() {
-    
+
     builtin_module = modules.register_module("builtin");
 
     auto &module = modules.get(builtin_module);

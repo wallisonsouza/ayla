@@ -42,9 +42,23 @@ void Resolver::resolve_import_declaration(ast::ImportDeclaration *node) {
 
   if (!node || !node->name) return;
 
-  auto *unit = load_module(context.compiler, node, context.unit);
+  if (!load_module(context.compiler, node, context.unit)) {
 
-  if (unit) { context.compiler.require(*unit, stages::Resolver, CompilationRules::normal()); }
+    context.unit.diagnostics.report({
+        .severity = diagnostic::Severity::Error,
+        .code = diagnostic::DiagnosticCode::UnknownModule,
+        .arguments =
+            {
+                diagnostic::name(node->name->get_str()),
+            },
+        .labels =
+            {
+                diagnostic::location(node->name->slice),
+            },
+    });
+
+    return;
+  }
 }
 
 // function

@@ -13,9 +13,9 @@ CompilationRules CompilationRules::discovery() {
 
   CompilationRules rules;
 
-  rules.add<LexerStage>(stages::Lex, {});
+  rules.add<LexerStage>(StageId::Lex, {});
 
-  rules.add<ParserStage>(stages::Parser, {stages::Lex});
+  rules.add<ParserStage>(StageId::Parser, {StageId::Lex});
 
   // rules.add<ModuleDiscoveryStage>(stages::ModuleParser, {stages::Parser});
 
@@ -26,21 +26,21 @@ CompilationRules CompilationRules::normal() {
 
   CompilationRules rules;
 
-  rules.add<LexerStage>(stages::Lex, {});
+  rules.add<LexerStage>(StageId::Lex, {});
 
-  rules.add<ParserStage>(stages::Parser, {stages::Lex});
+  rules.add<ParserStage>(StageId::Parser, {StageId::Lex});
 
-  // rules.add<ModuleDiscoveryStage>(stages::ModuleParser, {stages::Parser});
+  // rules.add<ModuleDiscoveryStage>(StageId::ModuleParser, {StageId::Parser});
 
-  rules.add<celestia::semantic::SymbolCollectorStage>(stages::SymbolCollector, {stages::Parser});
+  rules.add<celestia::semantic::SymbolCollectorStage>(StageId::SymbolCollector, {StageId::Parser});
 
-  rules.add<celestia::semantic::ResolverStage>(stages::Resolver, {stages::SymbolCollector});
+  rules.add<celestia::semantic::ResolverStage>(StageId::Resolver, {StageId::SymbolCollector});
 
-  rules.add<celestia::semantic::CheckStage>(stages::Check, {stages::Resolver});
+  rules.add<celestia::semantic::CheckStage>(StageId::Check, {StageId::Resolver});
 
-  rules.add<LoweringStage>(stages::Lowering, {stages::Check});
+  rules.add<LoweringStage>(StageId::Lowering, {StageId::Check});
 
-  rules.add<CTranspileStage>(stages::Transpile, {stages::Lowering});
+  rules.add<CTranspileStage>(StageId::Transpile, {StageId::Lowering});
 
   return rules;
 }

@@ -1,4 +1,3 @@
-import lib.test
+module main
 
-let a: lib.test.Test
-
+import a

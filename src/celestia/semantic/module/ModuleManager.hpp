@@ -4,6 +4,7 @@
 #include "celestia/semantic/module/Module.hpp"
 
 #include <cstddef>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -12,6 +13,8 @@
 #include <vector>
 
 namespace celestia::semantic {
+
+using ModuleProvider = std::filesystem::path;
 
 class ModuleManager {
 public:
@@ -40,32 +43,6 @@ public:
     return it->second;
   }
 
-  void add_provider(ModuleId module, CompilationUnitId unit) {
-
-    if (!module.is_valid() || !unit.is_valid()) { return; }
-
-    auto &units = providers_[module];
-
-    for (auto existing : units) {
-      if (existing == unit) { return; }
-    }
-
-    units.push_back(unit);
-  }
-
-  const std::vector<CompilationUnitId> &providers(ModuleId module) const {
-
-    static const std::vector<CompilationUnitId> empty;
-
-    if (!module.is_valid()) { return empty; }
-
-    auto it = providers_.find(module);
-
-    if (it == providers_.end()) { return empty; }
-
-    return it->second;
-  }
-
   Module &get(ModuleId id) {
 
     if (!id.is_valid()) { throw std::runtime_error("ModuleManager: invalid module id"); }
@@ -89,12 +66,8 @@ public:
   }
 
 private:
-
   std::vector<std::unique_ptr<Module>> storage_;
   std::unordered_map<std::string, ModuleId> modules_;
-
-  // ModuleId -> CompilationUnitId[]
-  std::unordered_map<ModuleId, std::vector<CompilationUnitId>> providers_;
 };
 
 } // namespace celestia::semantic

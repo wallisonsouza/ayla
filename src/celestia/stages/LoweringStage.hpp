@@ -10,7 +10,7 @@ class LoweringStage : public Stage {
 public:
   void run(Compiler &compiler, CompilationUnit &unit) override {
 
-    auto &program = compiler.program;
+    // auto &program = compiler.program;
 
     if (!unit.ir_module.is_valid()) {
 
@@ -25,12 +25,12 @@ public:
 
     std::cerr << "[Lowering] unit.ir_module = " << unit.ir_module.index() << '\n';
 
-    celestia::ir::IRContext ir(program, unit.ir_module);
+    // celestia::ir::IRContext ir(program, unit.ir_module);
 
-    celestia::lowering::LoweringContext ctx(ir, compiler, unit);
+    // celestia::lowering::LoweringContext ctx(ir, compiler, unit);
 
-    celestia::lowering::Lowering lowering(ctx);
+    // celestia::lowering::Lowering lowering(ctx);
 
-    lowering.lower();
+    // lowering.lower();
   }
 };

@@ -1,5 +1,12 @@
 #include "celestia/semantic/collector/SymbolCollector.hpp"
 
+#include "celestia/ast/declarations/StructDeclaration.hpp"
+#include "celestia/ast/declarations/FunctionDeclaration.hpp"
+#include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/declarations/TypeDeclaration.hpp"
+
+#include "celestia/ast/patterns/NamedPatternNode.hpp"
+
 namespace celestia::semantic {
 inline void report_redeclaration(SymbolCollectorContext &context, const std::string &name, SourceSlice slice) {
 

@@ -1,4 +1,3 @@
-struct Test {
-    a: Int
-    b: Int
-}
+module lib.math
+
+struct Sub {}
