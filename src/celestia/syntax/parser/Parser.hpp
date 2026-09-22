@@ -1,6 +1,10 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
+#include "celestia/ast/declarations/EnumDeclaration.hpp"
+#include "celestia/ast/names/GenericIdentifierNode.hpp"
+#include "celestia/ast/names/IdentifierNode.hpp"
+#include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include "celestia/syntax/parser/ParseStatus.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 #include "celestia/syntax/parser/ParserDiagnostics.hpp"
@@ -29,7 +33,7 @@ public:
   ParseResult<celestia::ast::IdentifierNode *> parse_identifier();
   // ParseResult<ast::QualifiedNameNode *> parse_qualified_name();
   ParseResult<ast::IdentifierNode *> parse_identifier_name();
-  ParseResult<std::vector<ast::IdentifierNode *>> parse_generic_parameters();
+  ParseResult<std::vector<ast::GenericParameter *>> parse_generic_parameters();
   ParseResult<celestia::ast::NameNode *> parse_name();
 
   // types
@@ -48,17 +52,26 @@ public:
 
   ParseResult<ast::ImportDeclaration *> parse_import_declaration();
 
+  ParseResult<ast::GenericIdentifierNode *> parse_declaration_name();
+
+  ParseResult<ast::ImplDeclaration *> parse_impl_declaration();
+
   ParseResult<ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(DeclarationSpecifiers specifiers, bool require_body);
 
-  ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(DeclarationSpecifiers specifiers);
+  ParseResult<ast::EnumVariant *> parse_enum_variant();
 
-  ParseResult<ast::ImplDeclaration *> parse_impl_declaration(DeclarationSpecifiers specifiers);
+  ParseResult<ast::EnumDeclaration *> parse_enum_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::StructDeclaration *> parse_struct_declaration(DeclarationSpecifiers specifiers);
+  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers, bool require_body = true);
 
-  ParseResult<ast::TypeDeclaration *> parse_type_declaration(DeclarationSpecifiers specifiers);
+  ParseResult<ast::Declaration *> parse_capability_member(DeclarationSpecifiers specifiers);
+
+  ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+
+  ParseResult<ast::StructDeclaration *> parse_struct_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+
+  ParseResult<ast::TypeDeclaration *> parse_type_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
 
   ParseResult<ast::Declaration *> named(DeclarationSpecifiers specifiers);
 
@@ -95,6 +108,7 @@ private:
   ast::Expression *parse_postfix_expression();
 
   ast::Expression *parse_primary_expression();
+  ast::Expression *parse_literal_expression();
 
   ast::Expression *parse_struct_literal(celestia::ast::IdentifierNode *name);
 
@@ -112,7 +126,7 @@ private:
 
   ast::Expression *parse_index_access(ast::Expression *);
 
-  ast::Expression *parse_call(ast::Expression *);
+  ast::CallExpressionNode *parse_call(ast::Expression *);
 
   ast::Expression *parse_identifier_expression();
   ast::Expression *parse_array_literal();
@@ -227,6 +241,46 @@ private:
     return ParseResult<std::vector<T>>::fail();
   }
 
+  template <typename T, typename Parser> ParseResult<std::vector<T>> parse_delimited_items(ParseContext &context, TokenKind open, TokenKind close, Parser &&parse_element) {
+
+    auto &tokens = context.tokens();
+    std::vector<T> elements;
+
+    if (!tokens.match(open)) return ParseResult<std::vector<T>>::no_match();
+
+    tokens.skip_trivia();
+
+    if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+
+    while (!tokens.is_end()) {
+
+      auto result = parse_element();
+
+      if (result.is_error()) return ParseResult<std::vector<T>>::fail();
+
+      if (result.is_no_match()) return ParseResult<std::vector<T>>::fail();
+
+      elements.push_back(result.value());
+
+      tokens.skip_trivia();
+
+
+      if (tokens.match(TokenKind::COMMA)) {
+        tokens.skip_trivia();
+
+        if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+
+        continue;
+      }
+
+      if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+
+    }
+
+    parser::diagnostics::report_expected(context, close);
+
+    return ParseResult<std::vector<T>>::fail();
+  }
   template <typename Parser> auto speculate(Parser &&parser) {
 
     context.tokens().add_checkpoint();

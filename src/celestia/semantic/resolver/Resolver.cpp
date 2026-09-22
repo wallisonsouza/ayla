@@ -74,6 +74,8 @@ void Resolver::bind_types() {
   dispatcher.bind<ast::NamedType, &Resolver::resolve_named_type>();
 
   dispatcher.bind<ast::GenericTypeNode, &Resolver::resolve_generic_type>();
+  
+  dispatcher.bind<ast::GenericParameter, &Resolver::resolve_generic_parameter>();
 
   dispatcher.bind<ast::FunctionType, &Resolver::resolve_function_type>();
 }

@@ -5,12 +5,11 @@
 #include "celestia/ast/declarations/ModuleDeclaration.hpp"
 #include "celestia/ast/names/QualifiedNameNode.hpp"
 
-
 #include <vector>
 
 namespace celestia::syntax {
 
-Parser::Parser(ParseContext &context) : context(context) { }
+Parser::Parser(ParseContext &context) : context(context) {}
 
 Parser::~Parser() = default;
 
@@ -142,7 +141,7 @@ void Parser::parse_module_body(ast::ModuleDeclaration *module) {
 
       if (!script) { script = context.get_ast().alloc<ast::BlockStatement>(); }
 
-      script->statements.push_back(statement);
+      script->items.push_back(statement);
 
       continue;
     }

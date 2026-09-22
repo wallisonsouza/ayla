@@ -3,6 +3,7 @@
 #include "celestia/syntax/parser/Parser.hpp"
 
 namespace celestia::syntax {
+
 celestia::ast::Expression *Parser::parse_number_literal() {
   auto &tokens = context.tokens();
 
@@ -35,28 +36,12 @@ celestia::ast::Expression *Parser::parse_bool_literal() {
   return context.get_ast().alloc<celestia::ast::BoolLiteralNode>(value);
 }
 
-celestia::ast::Expression *Parser::parse_grouped_expression() {
-  auto &tokens = context.tokens();
-
-  if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;
-
-  auto *expr = parse_expression();
-
-  if (!expr) return nullptr;
-
-  if (!tokens.match(TokenKind::CLOSE_PAREN)) return nullptr;
-
-  return expr;
-}
-
-celestia::ast::Expression *Parser::parse_primary_expression() {
-
+ast::Expression *Parser::parse_literal_expression() {
   auto *token = context.tokens().current();
 
   if (!token) return nullptr;
 
   switch (token->desc->kind) {
-
   case TokenKind::NUMBER_LITERAL: return parse_number_literal();
 
   case TokenKind::STRING_LITERAL: return parse_string_literal();
@@ -64,15 +49,11 @@ celestia::ast::Expression *Parser::parse_primary_expression() {
   case TokenKind::TRUE:
   case TokenKind::FALSE: return parse_bool_literal();
 
-  case TokenKind::IDENTIFIER: return parse_identifier_expression();
-
-  case TokenKind::OPEN_PAREN: return parse_grouped_expression();
-
-  case TokenKind::OPEN_BRACKET: return parse_array_literal();
-
   default: return nullptr;
   }
 }
+
+
 celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::IdentifierNode *name) {
 
   auto &tokens = context.tokens();

@@ -1,0 +1,6 @@
+module collections
+
+export extern Array<T>: type
+export extern Map<K, V>: type
+export extern Set<T>: type
+export extern Ref<T>: type

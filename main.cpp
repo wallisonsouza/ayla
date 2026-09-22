@@ -1,10 +1,10 @@
 #include "ayla/AylaMain.hpp"
 #include "ayla/comand/CommandLine.hpp"
+#include "celestia/semantic/resolver/Trace.hpp"
 
 int main(int argc, char **argv) {
-    
-  celestia::debug::Trace::enable(celestia::debug::Category::Parser);
-  celestia::debug::Trace::enable(celestia::debug::Category::Resolver);
+
+  celestia::debug::Trace::enable(celestia::debug::Category::SymbolCollector);
 
   return AylaApplication{}.run(parse_command_line(argc, argv));
 }

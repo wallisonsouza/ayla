@@ -1,17 +1,36 @@
 #pragma once
 
 #include "Declaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
+
+#include "celestia/ast/names/GenericIdentifierNode.hpp"
+#include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
+
+#include <utility>
+#include <vector>
 
 namespace celestia::ast {
 
-struct CapabilityDeclaration : NamedDeclaration {
+struct CapabilityDeclaration : Declaration {
 
-  std::vector<FunctionDeclaration *> members;
+  IdentifierNode *name;
 
-  CapabilityDeclaration(IdentifierNode *name, std::vector<IdentifierNode *> generic_parameters, std::vector<FunctionDeclaration *> members, DeclarationSpecifiers specifiers)
-      : NamedDeclaration(NodeKind::CapabilityDeclaration, name, specifiers, std::move(generic_parameters)), members(std::move(members)) {}
+  std::vector<GenericParameter *> generic_parameters;
+
+  DeclarationSpecifiers specifiers;
+
+  std::vector<Declaration *> members;
+
+  CapabilityDeclaration(
+      IdentifierNode *name,
+      std::vector<GenericParameter *> generic_parameters,
+      std::vector<Declaration *> members,
+      DeclarationSpecifiers specifiers)
+
+      : Declaration(NodeKind::CapabilityDeclaration),
+        name(name),
+        generic_parameters(std::move(generic_parameters)),
+        specifiers(specifiers),
+        members(std::move(members)) {}
 };
 
 } // namespace celestia::ast

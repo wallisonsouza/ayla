@@ -7,6 +7,7 @@
 #include "celestia/ast/Node.hpp"
 #include "celestia/ast/RootNode.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
+#include "celestia/ast/declarations/EnumDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/ast/declarations/ImportDeclaration.hpp"
@@ -94,6 +95,8 @@ private:
 
     // Declarations
     dispatcher.bind<ast::VariableDeclaration, &AstDumper::dump_variable_declaration>();
+    dispatcher.bind<ast::EnumVariant, &AstDumper::dump_enum_variant>();
+    dispatcher.bind<ast::EnumDeclaration, &AstDumper::dump_enum_declaration>();
 
     dispatcher.bind<ast::FunctionDeclaration, &AstDumper::dump_function_declaration>();
 
@@ -130,10 +133,12 @@ private:
 
     dispatcher.bind<ast::GenericTypeNode, &AstDumper::dump_generic_type>();
     dispatcher.bind<ast::TypeDeclaration, &AstDumper::dump_type_declaration>();
-    //  dispatcher.bind<ast::NameNode, &AstDumper::dump_name>();
+    dispatcher.bind<ast::GenericParameter, &AstDumper::dump_generic>();
+    dispatcher.bind<ast::GenericIdentifierNode, &AstDumper::dump_generic_name>();
   }
 
   void dump_root(const ast::RootNode *node);
+  void dump_generic_name(const ast::GenericIdentifierNode *node);
   void dump_impl_declaration(const ast::ImplDeclaration *node);
   void dump_number_literal(const ast::NumberLiteralNode *node);
   void dump_string_literal(const ast::StringLiteralNode *node);
@@ -143,6 +148,7 @@ private:
   void dump_null_literal(const ast::NullLiteralNode *node);
   void dump_identifier(const ast::IdentifierNode *node);
   void dump_qualified_name(const ast::QualifiedNameNode *node);
+  void dump_generic(const ast::GenericParameter *node);
 
   // Expressions
   void dump_identifier_expression(const ast::IdentifierExpressionNode *node);
@@ -162,6 +168,8 @@ private:
   void dump_import_statement(const ast::ImportDeclaration *node);
 
   // Declarations
+  void dump_enum_variant(const ast::EnumVariant *node);
+  void dump_enum_declaration(const ast::EnumDeclaration *node);
   void dump_variable_declaration(const ast::VariableDeclaration *node);
   void dump_function_declaration(const ast::FunctionDeclaration *node);
   void dump_module_declaration(const ast::ModuleDeclaration *node);

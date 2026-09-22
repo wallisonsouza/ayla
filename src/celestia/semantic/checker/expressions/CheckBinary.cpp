@@ -24,7 +24,7 @@ void TypeChecker::binary_expression(ast::BinaryExpressionNode *node) {
 
   semantic.set_type(node, lhs_type);
 
-  debug::trace(debug::Category::TypeChecker, "binary expression type = {}", context.env().types.get(lhs_type).to_string());
+  debug::Trace::log(debug::Category::TypeChecker, "binary expression type = {}", context.env().types.get(lhs_type).to_string());
 }
 
 } // namespace celestia::semantic

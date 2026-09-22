@@ -1,8 +1,10 @@
+#pragma once
+
 #include "celestia/ast/declarations/ImportDeclaration.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
 
-bool load_module(Compiler &compiler, const celestia::ast::ImportDeclaration *node, CompilationUnit &importer) {
+inline bool load_module(Compiler &compiler, const celestia::ast::ImportDeclaration *node, CompilationUnit &importer) {
   if (!node || !node->name) return false;
 
   auto module_id = compiler.environment().modules.find(node->name->get_str());

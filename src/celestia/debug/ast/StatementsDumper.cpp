@@ -9,11 +9,13 @@ void AstDumper::dump_while_statement(const ast::WhileStatement *node) {
   g.field("Body", node->body);
 }
 
+
+
 void AstDumper::dump_block_statement(const ast::BlockStatement *node) {
 
   auto g = context.object("BlockStatement");
 
-  g.list("Statements", node->statements);
+  g.list("items", node->items);
 }
 
 void AstDumper::dump_if_statement(const ast::IfStatement *node) {

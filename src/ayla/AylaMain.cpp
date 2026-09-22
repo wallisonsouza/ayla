@@ -3,6 +3,7 @@
 #include "ayla/language/AylaLanguage.hpp"
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/ModuleIndexer.hpp"
+#include "celestia/debug/ast/AstDumper.hpp"
 #include "celestia/diagnostic/diagnostic_debug.hpp"
 #include <memory.h>
 
@@ -16,7 +17,7 @@ int AylaApplication::run(const CommandLine &cmd) {
 
   ayla::language::LanguageBootstrap::bootstrap_builtin(compiler.environment());
 
-  compiler.environment().root = "../src/ayla/scripts/";
+  compiler.environment().root = "../src/ayla/src/";
 
   ModuleIndexer::run(compiler.environment());
 
@@ -27,9 +28,13 @@ int AylaApplication::run(const CommandLine &cmd) {
     return 1;
   }
 
-  compiler.require(*user, StageId::Resolver, CompilationRules::normal());
+  compiler.require(*user, StageId::Check, CompilationRules::normal());
 
   for (auto &unit : compiler.environment().units.all()) {
+
+    celestia::debug::AstDumper dump;
+
+    dump.dump(unit->_root);
     for (auto &diag : unit->diagnostics.all()) { diagnostic::print_diagnostic(diag, unit->source, compiler.environment()); }
   }
 

@@ -17,8 +17,6 @@ CompilationRules CompilationRules::discovery() {
 
   rules.add<ParserStage>(StageId::Parser, {StageId::Lex});
 
-  // rules.add<ModuleDiscoveryStage>(stages::ModuleParser, {stages::Parser});
-
   return rules;
 }
 
@@ -29,8 +27,6 @@ CompilationRules CompilationRules::normal() {
   rules.add<LexerStage>(StageId::Lex, {});
 
   rules.add<ParserStage>(StageId::Parser, {StageId::Lex});
-
-  // rules.add<ModuleDiscoveryStage>(StageId::ModuleParser, {StageId::Parser});
 
   rules.add<celestia::semantic::SymbolCollectorStage>(StageId::SymbolCollector, {StageId::Parser});
 

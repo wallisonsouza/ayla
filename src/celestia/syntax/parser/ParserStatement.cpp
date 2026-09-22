@@ -48,7 +48,7 @@ celestia::ast::BlockStatement *Parser::parse_block_statement() {
     return nullptr;
   }
 
-  std::vector<celestia::ast::Statement *> statements;
+  std::vector<celestia::ast::BlockItem *> items;
 
   tokens.skip_trivia();
 
@@ -57,9 +57,9 @@ celestia::ast::BlockStatement *Parser::parse_block_statement() {
     auto decl = parse_declaration();
 
     if (decl.is_ok()) {
-      statements.push_back(decl.value());
+      items.push_back(decl.value());
     } else if (auto *stmt_node = parse_statement()) {
-      statements.push_back(stmt_node);
+      items.push_back(stmt_node);
     } else {
       // context.//report_error("Comando ou declaração inválida dentro do bloco");
       tokens.consume();
@@ -73,7 +73,7 @@ celestia::ast::BlockStatement *Parser::parse_block_statement() {
     return nullptr;
   }
 
-  return context.get_ast().alloc<celestia::ast::BlockStatement>(std::move(statements));
+  return context.get_ast().alloc<celestia::ast::BlockStatement>(std::move(items));
 }
 
 // while

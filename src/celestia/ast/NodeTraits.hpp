@@ -5,6 +5,7 @@
 // Declarations
 #include "celestia/ast/RootNode.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
+#include "celestia/ast/declarations/EnumDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/ast/declarations/ImportDeclaration.hpp"
@@ -44,6 +45,23 @@
 namespace celestia::ast {
 
 template <typename T> struct NodeTraits;
+
+template <> struct NodeTraits<EnumVariant> {
+  static constexpr NodeKind kind = NodeKind::EnumVariant;
+};
+
+template <> struct NodeTraits<EnumDeclaration> {
+  static constexpr NodeKind kind = NodeKind::EnumDeclaration;
+};
+
+template <> struct NodeTraits<GenericIdentifierNode> {
+  static constexpr NodeKind kind = NodeKind::GenericIdentifier;
+};
+
+template <> struct NodeTraits<GenericParameter> {
+  static constexpr NodeKind kind = NodeKind::GenericParameter;
+};
+
 
 template <> struct NodeTraits<RootNode> {
   static constexpr NodeKind kind = NodeKind::Root;

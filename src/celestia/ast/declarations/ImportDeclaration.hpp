@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Declaration.hpp"
+#include "celestia/ast/names/NameNode.hpp"
 #include <optional>
+#include <filesystem>
 
 namespace celestia::ast {
 

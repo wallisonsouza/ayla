@@ -4,15 +4,27 @@
 #include <format>
 
 namespace celestia::debug {
-void AstDumper::dump_identifier(const ast::IdentifierNode *node) {
-  auto g = context.object(std::format("Identifier(\"{}\")", node->str));
 
-  (void)g;
+void AstDumper::dump_identifier(const ast::IdentifierNode *node) {
+
+  //
+  auto g = context.object(std::format("Identifier(\"{}\")", node->get_str()));
 }
 
 void AstDumper::dump_qualified_name(const ast::QualifiedNameNode *node) {
+  
   auto g = context.object("QualifiedName");
 
   g.list("Parts", node->parts);
 }
+
+void AstDumper::dump_generic_name(const ast::GenericIdentifierNode *node) {
+  
+  auto g = context.object("GenericName");
+
+  g.field("name", node->name);
+
+  g.list("generics", node->parameters);
+}
+
 } // namespace celestia::debug

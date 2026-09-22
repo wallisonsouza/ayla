@@ -67,83 +67,47 @@ ParseResult<ast::NamedType *> Parser::parse_named_type() {
   return ParseResult<ast::NamedType *>::ok(type);
 }
 
-ParseResult<ast::GenericTypeNode *> Parser::parse_generic_type(ast::NameNode *name) {
+ParseResult<ast::GenericTypeNode *>
+Parser::parse_generic_type(ast::NameNode *name) {
 
   auto &tokens = context.tokens();
 
-  // Type<
-  if (!tokens.match(TokenKind::LESS)) {
+  auto result =
+      parse_delimited_list<ast::TypeNode *>(
+          context,
+          TokenKind::LESS,
+          TokenKind::GREATER,
+          TokenKind::COMMA,
+          [&]() -> ParseResult<ast::TypeNode *> {
+            return parse_type();
+          }
+      );
 
-    parser::diagnostics::report_expected(context, TokenKind::LESS);
-
+  if (result.is_error()) {
     return ParseResult<ast::GenericTypeNode *>::fail();
   }
 
-  std::vector<ast::TypeNode *> arguments;
+  if (result.is_no_match()) {
+    return ParseResult<ast::GenericTypeNode *>::no_match();
+  }
 
-  tokens.skip_trivia();
+  auto arguments = std::move(result.value());
 
   // Type<>
-  if (tokens.match(TokenKind::GREATER)) {
-
+  if (arguments.empty()) {
     parser::diagnostics::report_expected_type(context);
-
     return ParseResult<ast::GenericTypeNode *>::fail();
   }
 
-  while (!tokens.is_end()) {
+  auto *type =
+      context.get_ast().alloc<ast::GenericTypeNode>(
+          name,
+          std::move(arguments)
+      );
 
-    // Type<int, ...>
-    auto result = parse_type();
+  type->slice = name->slice;
 
-    // O parser interno já gerou o diagnóstico.
-    if (result.is_error()) { return ParseResult<ast::GenericTypeNode *>::fail(); }
-
-    // Aqui um tipo é obrigatório.
-    if (result.is_no_match()) {
-
-      parser::diagnostics::report_expected_type(context);
-
-      return ParseResult<ast::GenericTypeNode *>::fail();
-    }
-
-    arguments.push_back(result.value());
-
-    tokens.skip_trivia();
-
-    // Type<int>
-    if (tokens.match(TokenKind::GREATER)) {
-
-      auto *type = context.get_ast().alloc<ast::GenericTypeNode>(name, std::move(arguments));
-
-      type->slice = name->slice;
-
-      return ParseResult<ast::GenericTypeNode *>::ok(type);
-    }
-
-    // Type<int, ...>
-    if (!tokens.match(TokenKind::COMMA)) {
-
-      parser::diagnostics::report_expected(context, TokenKind::GREATER);
-
-      return ParseResult<ast::GenericTypeNode *>::fail();
-    }
-
-    tokens.skip_trivia();
-
-    // Type<int,>
-    if (tokens.match(TokenKind::GREATER)) {
-
-      parser::diagnostics::report_expected_type(context);
-
-      return ParseResult<ast::GenericTypeNode *>::fail();
-    }
-  }
-
-  // Type<int EOF
-  parser::diagnostics::report_expected(context, TokenKind::GREATER);
-
-  return ParseResult<ast::GenericTypeNode *>::fail();
+  return ParseResult<ast::GenericTypeNode *>::ok(type);
 }
 
 ParseResult<ast::FunctionType *> Parser::parse_function_type() {

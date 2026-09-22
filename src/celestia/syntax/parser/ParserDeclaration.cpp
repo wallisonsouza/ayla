@@ -1,29 +1,69 @@
 #include "celestia/ast/ASTFwd.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
+#include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/ast/declarations/ImportDeclaration.hpp"
 #include "celestia/ast/declarations/StructDeclaration.hpp"
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/patterns/NamedPatternNode.hpp"
-#include "celestia/ast/types/NamedType.hpp"
+#include "celestia/ast/names/GenericIdentifierNode.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 
 namespace celestia::syntax {
 
-ParseResult<std::vector<ast::IdentifierNode *>> Parser::parse_generic_parameters() {
+ParseResult<std::vector<ast::GenericParameter *>> Parser::parse_generic_parameters() {
 
-  auto result =
-      parse_delimited_list<ast::IdentifierNode *>(context, TokenKind::LESS, TokenKind::GREATER, TokenKind::COMMA, [&]() -> ParseResult<ast::IdentifierNode *> { return parse_identifier_name(); });
+  auto &tokens = context.tokens();
 
-  if (result.is_error()) return ParseResult<std::vector<ast::IdentifierNode *>>::fail();
+  auto result = parse_delimited_list<ast::GenericParameter *>(context, TokenKind::LESS, TokenKind::GREATER, TokenKind::COMMA, [&]() -> ParseResult<ast::GenericParameter *> {
+    auto name_result = parse_identifier_name();
 
-  if (result.is_no_match()) return ParseResult<std::vector<ast::IdentifierNode *>>::no_match();
+    if (name_result.is_error()) { return ParseResult<ast::GenericParameter *>::fail(); }
 
-  return ParseResult<std::vector<ast::IdentifierNode *>>::ok(std::move(result.value()));
+    if (name_result.is_no_match()) {
+
+      parser::diagnostics::report_expected(context, diagnostic::ExpectedKind::Identifier);
+
+      return ParseResult<ast::GenericParameter *>::fail();
+    }
+
+    auto *name = name_result.value();
+
+    std::vector<ast::TypeNode *> constraints;
+
+    tokens.skip_trivia();
+
+    // T: {Printable, Drawable}
+    if (tokens.match(TokenKind::COLON)) {
+
+      tokens.skip_trivia();
+
+      auto constraints_result =
+          parse_delimited_list<ast::TypeNode *>(context, TokenKind::OPEN_BRACE, TokenKind::CLOSE_BRACE, TokenKind::COMMA, [&]() -> ParseResult<ast::TypeNode *> { return parse_type(); });
+
+      if (constraints_result.is_error()) { return ParseResult<ast::GenericParameter *>::fail(); }
+
+      if (constraints_result.is_no_match()) {
+
+        parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
+
+        return ParseResult<ast::GenericParameter *>::fail();
+      }
+
+      constraints = std::move(constraints_result.value());
+    }
+
+    return ParseResult<ast::GenericParameter *>::ok(context.get_ast().alloc<ast::GenericParameter>(name, std::move(constraints)));
+  });
+
+  if (result.is_error()) { return ParseResult<std::vector<ast::GenericParameter *>>::fail(); }
+
+  if (result.is_no_match()) { return ParseResult<std::vector<ast::GenericParameter *>>::no_match(); }
+
+  return ParseResult<std::vector<ast::GenericParameter *>>::ok(std::move(result.value()));
 }
 
 ParseResult<ast::Declaration *> Parser::parse_declaration() {
@@ -37,21 +77,54 @@ ParseResult<ast::Declaration *> Parser::parse_declaration() {
 
   case TokenKind::IMPORT_KEYWORD: return upcast<ast::Declaration>(parse_import_declaration());
 
-  case TokenKind::FUN_KEYWORD: return upcast<ast::Declaration>(parse_function_declaration(specifiers, true));
-
-  case TokenKind::CAP_KEYWORD: return upcast<ast::Declaration>(parse_capability_declaration(specifiers));
-
-  case TokenKind::STRUCT_KEYWORD: return upcast<ast::Declaration>(parse_struct_declaration(specifiers));
-
-  case TokenKind::IMPL_KEYWORD: return upcast<ast::Declaration>(parse_impl_declaration(specifiers));
-
-  case TokenKind::TYPE_KEYWORD: return upcast<ast::Declaration>(parse_type_declaration(specifiers));
+  case TokenKind::IMPL_KEYWORD: return upcast<ast::Declaration>(parse_impl_declaration());
 
   case TokenKind::LET_KEYWORD:
   case TokenKind::MUT_KEYWORD:
   case TokenKind::CONST_KEYWORD: return upcast<ast::Declaration>(parse_variable_declaration(specifiers));
 
-  default: return ParseResult<ast::Declaration *>::no_match();
+  default: break;
+  }
+
+  auto name_result = parse_identifier_name();
+
+  if (name_result.is_error()) { return ParseResult<ast::Declaration *>::fail(); }
+
+  if (name_result.is_no_match()) { return ParseResult<ast::Declaration *>::no_match(); }
+
+  auto *name = name_result.value();
+
+  tokens.skip_trivia();
+
+  if (!tokens.match(TokenKind::COLON)) {
+
+    parser::diagnostics::report_expected(context, TokenKind::COLON);
+
+    synchronize_declaration();
+
+    return ParseResult<ast::Declaration *>::fail();
+  }
+
+  tokens.skip_trivia();
+
+  switch (tokens.kind()) {
+
+  case TokenKind::FUN_KEYWORD: return upcast<ast::Declaration>(parse_function_declaration(name, specifiers));
+
+  case TokenKind::CAP_KEYWORD: return upcast<ast::Declaration>(parse_capability_declaration(name, specifiers));
+
+  case TokenKind::STRUCT_KEYWORD: return upcast<ast::Declaration>(parse_struct_declaration(name, specifiers));
+
+  case TokenKind::TYPE_KEYWORD: return upcast<ast::Declaration>(parse_type_declaration(name, specifiers));
+
+  case TokenKind::ENUM_KEYWORD: return upcast<ast::Declaration>(parse_enum_declaration(name, specifiers));
+
+  default:
+    // parser::diagnostics::report_expected_declaration_kind(context);
+
+    synchronize_declaration();
+
+    return ParseResult<ast::Declaration *>::fail();
   }
 }
 
@@ -93,6 +166,73 @@ DeclarationSpecifiers Parser::parse_specifiers() {
   return specifiers;
 }
 
+// Enum variant
+ParseResult<ast::EnumVariant *> Parser::parse_enum_variant() {
+
+  auto &tokens = context.tokens();
+
+  tokens.skip_trivia();
+
+  auto name_result = parse_identifier_name();
+
+  if (name_result.is_error()) { return ParseResult<ast::EnumVariant *>::fail(); }
+
+  if (name_result.is_no_match()) { return ParseResult<ast::EnumVariant *>::no_match(); }
+
+  auto *name = name_result.value();
+
+  tokens.skip_trivia();
+
+  std::vector<ast::TypeNode *> arguments;
+
+  if (tokens.check(TokenKind::OPEN_PAREN)) {
+
+    auto arguments_result = parse_delimited_list<ast::TypeNode *>(context, TokenKind::OPEN_PAREN, TokenKind::CLOSE_PAREN, TokenKind::COMMA, [&]() { return parse_type(); });
+
+    if (arguments_result.is_error()) { return ParseResult<ast::EnumVariant *>::fail(); }
+
+    if (arguments_result.is_no_match()) { return ParseResult<ast::EnumVariant *>::fail(); }
+
+    arguments = std::move(arguments_result.value());
+  }
+
+  return ParseResult<ast::EnumVariant *>::ok(context.get_ast().alloc<ast::EnumVariant>(name, std::move(arguments)));
+}
+// Enum declaration
+ParseResult<ast::EnumDeclaration *> Parser::parse_enum_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+
+  auto &tokens = context.tokens();
+
+  // enum
+  if (!tokens.match(TokenKind::ENUM_KEYWORD)) { return ParseResult<ast::EnumDeclaration *>::no_match(); }
+
+  tokens.skip_trivia();
+
+  // enum<T, U>
+  auto generic_parameters_result = parse_generic_parameters();
+
+  if (generic_parameters_result.is_error()) { return ParseResult<ast::EnumDeclaration *>::fail(); }
+
+  std::vector<ast::GenericParameter *> generic_parameters;
+
+  if (!generic_parameters_result.is_no_match()) { generic_parameters = std::move(generic_parameters_result.value()); }
+
+  tokens.skip_trivia();
+
+  auto variants_result = parse_delimited_items<ast::EnumVariant *>(context, TokenKind::OPEN_BRACE, TokenKind::CLOSE_BRACE, [&]() { return parse_enum_variant(); });
+
+  if (variants_result.is_error()) { return ParseResult<ast::EnumDeclaration *>::fail(); }
+
+  if (variants_result.is_no_match()) {
+
+    parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
+
+    return ParseResult<ast::EnumDeclaration *>::fail();
+  }
+
+  return ParseResult<ast::EnumDeclaration *>::ok(context.get_ast().alloc<ast::EnumDeclaration>(name, std::move(generic_parameters), std::move(variants_result.value()), specifiers));
+}
+
 // Module declaration
 ParseResult<ast::ModuleDeclaration *> Parser::parse_module_declaration() {
 
@@ -102,16 +242,16 @@ ParseResult<ast::ModuleDeclaration *> Parser::parse_module_declaration() {
 
   auto name_result = parse_name();
 
-  if (name_result.is_error()) { return ParseResult<ast::ModuleDeclaration *>::fail(); }
-
   if (name_result.is_no_match()) {
 
-    parser::diagnostics::report_expected(context, diagnostic::ExpectedKind::Identifier);
+    parser::diagnostics::report_expected_identifier(context);
 
     return ParseResult<ast::ModuleDeclaration *>::fail();
   }
 
-  celestia::debug::trace(debug::Category::Parser, "parsed module declaration '{}'", name_result.value()->get_str());
+  if (name_result.is_error()) { return ParseResult<ast::ModuleDeclaration *>::fail(); }
+
+  celestia::debug::Trace::log(debug::Category::Parser, "parsed module declaration '{}'", name_result.value()->get_str());
 
   return ParseResult<ast::ModuleDeclaration *>::ok(context.get_ast().alloc<ast::ModuleDeclaration>(name_result.value()));
 }
@@ -121,13 +261,11 @@ ParseResult<ast::ImportDeclaration *> Parser::parse_import_declaration() {
 
   auto &tokens = context.tokens();
 
-  if (!tokens.match(TokenKind::IMPORT_KEYWORD)) return ParseResult<ast::ImportDeclaration *>::no_match();
+  if (!tokens.match(TokenKind::IMPORT_KEYWORD)) { return ParseResult<ast::ImportDeclaration *>::no_match(); }
 
   auto module_result = parse_name();
 
-  if (module_result.is_error()) return ParseResult<ast::ImportDeclaration *>::fail();
-
-  if (module_result.is_no_match()) {
+  if (!module_result.is_ok()) {
 
     parser::diagnostics::report_expected(context, diagnostic::ExpectedKind::Identifier);
 
@@ -145,7 +283,7 @@ ParseResult<ast::ImportDeclaration *> Parser::parse_import_declaration() {
     if (node) { path = node->value; }
   }
 
-  celestia::debug::trace(debug::Category::Parser, "parsed import declaration '{}'", module_result.value()->get_str());
+  celestia::debug::Trace::log(debug::Category::Parser, "parsed import declaration '{}'", module_result.value()->get_str());
 
   return ParseResult<ast::ImportDeclaration *>::ok(context.get_ast().alloc<ast::ImportDeclaration>(module_result.value(), std::move(path)));
 }
@@ -159,9 +297,9 @@ ParseResult<ast::FieldDeclaration *> Parser::parse_field_declaration() {
 
   auto name_result = parse_identifier_name();
 
-  if (name_result.is_error()) return ParseResult<ast::FieldDeclaration *>::fail();
+  if (name_result.is_error()) { return ParseResult<ast::FieldDeclaration *>::fail(); }
 
-  if (name_result.is_no_match()) return ParseResult<ast::FieldDeclaration *>::no_match();
+  if (name_result.is_no_match()) { return ParseResult<ast::FieldDeclaration *>::no_match(); }
 
   auto *identifier = name_result.value();
 
@@ -174,7 +312,7 @@ ParseResult<ast::FieldDeclaration *> Parser::parse_field_declaration() {
 
   auto type_result = parse_type();
 
-  if (type_result.is_error()) return ParseResult<ast::FieldDeclaration *>::fail();
+  if (type_result.is_error()) { return ParseResult<ast::FieldDeclaration *>::fail(); }
 
   if (type_result.is_no_match()) {
 
@@ -200,35 +338,9 @@ ParseResult<ast::VariableDeclaration *> Parser::parse_variable_declaration(Decla
   default: return ParseResult<ast::VariableDeclaration *>::no_match();
   }
 
-  auto name_result = parse_identifier_name();
+  auto pattern_result = parse_pattern();
 
-  if (name_result.is_error()) return ParseResult<ast::VariableDeclaration *>::fail();
-
-  if (name_result.is_no_match()) return ParseResult<ast::VariableDeclaration *>::no_match();
-
-  auto *identifier = name_result.value();
-
-  // let x:
-  if (!tokens.match(TokenKind::COLON)) {
-
-    parser::diagnostics::report_expected(context, TokenKind::COLON);
-
-    return ParseResult<ast::VariableDeclaration *>::fail();
-  }
-
-  // let x: Int
-  auto type_result = parse_type();
-
-  if (type_result.is_error()) return ParseResult<ast::VariableDeclaration *>::fail();
-
-  if (type_result.is_no_match()) {
-
-    parser::diagnostics::report_expected_type(context);
-
-    return ParseResult<ast::VariableDeclaration *>::fail();
-  }
-
-  auto *type = type_result.value();
+  if (pattern_result.is_error() || pattern_result.is_no_match()) { return ParseResult<ast::VariableDeclaration *>::fail(); }
 
   ast::Expression *initializer = nullptr;
 
@@ -246,61 +358,339 @@ ParseResult<ast::VariableDeclaration *> Parser::parse_variable_declaration(Decla
     initializer = initializer_result;
   }
 
-  auto *pattern = context.get_ast().alloc<ast::NamedPattern>(identifier, type);
-
-  return ParseResult<ast::VariableDeclaration *>::ok(context.get_ast().alloc<ast::VariableDeclaration>(pattern, initializer, specifiers));
+  return ParseResult<ast::VariableDeclaration *>::ok(context.get_ast().alloc<ast::VariableDeclaration>(pattern_result.value(), initializer, specifiers));
 }
 
-// Struct declaration
-ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(DeclarationSpecifiers specifiers) {
+// Capability member
+ParseResult<ast::Declaration *> Parser::parse_capability_member(DeclarationSpecifiers specifiers) {
 
   auto &tokens = context.tokens();
 
-  if (!tokens.match(TokenKind::STRUCT_KEYWORD)) return ParseResult<ast::StructDeclaration *>::no_match();
+  /*
+   * Named members use:
+   *
+   * foo: fun(...)
+   * T: type
+   */
 
   auto name_result = parse_identifier_name();
 
-  if (name_result.is_error()) return ParseResult<ast::StructDeclaration *>::fail();
+  if (name_result.is_error()) { return ParseResult<ast::Declaration *>::fail(); }
 
-  if (name_result.is_no_match()) return ParseResult<ast::StructDeclaration *>::no_match();
+  if (name_result.is_no_match()) { return ParseResult<ast::Declaration *>::no_match(); }
 
-  auto *identifier = name_result.value();
+  auto *name = name_result.value();
 
-  auto generic_parameters = parse_generic_parameters();
+  tokens.skip_trivia();
 
-  if (generic_parameters.is_error()) return ParseResult<ast::StructDeclaration *>::fail();
+  if (!tokens.match(TokenKind::COLON)) {
 
-  std::vector<ast::TypeNode *> compositions;
+    parser::diagnostics::report_expected(context, TokenKind::COLON);
 
-  // struct Name: Type, ...
-  if (tokens.match(TokenKind::COLON)) {
+    return ParseResult<ast::Declaration *>::fail();
+  }
+
+  tokens.skip_trivia();
+
+  switch (tokens.kind()) {
+
+  case TokenKind::TYPE_KEYWORD: {
+
+    auto result = parse_type_declaration(name, specifiers);
+
+    if (result.is_error()) { return ParseResult<ast::Declaration *>::fail(); }
+
+    return ParseResult<ast::Declaration *>::ok(result.value());
+  }
+
+  case TokenKind::FUN_KEYWORD: {
+
+    auto result = parse_function_declaration(name, specifiers, false);
+
+    if (result.is_error()) { return ParseResult<ast::Declaration *>::fail(); }
+
+    return ParseResult<ast::Declaration *>::ok(result.value());
+  }
+
+  default: return ParseResult<ast::Declaration *>::no_match();
+  }
+}
+
+// Implementation declaration
+ParseResult<ast::ImplDeclaration *> Parser::parse_impl_declaration() {
+
+  auto &tokens = context.tokens();
+
+  if (!tokens.match(TokenKind::IMPL_KEYWORD)) { return ParseResult<ast::ImplDeclaration *>::no_match(); }
+
+  tokens.skip_trivia();
+
+  // impl Iterable<Int>
+  auto capability_result = parse_type();
+
+  if (capability_result.is_error() || capability_result.is_no_match()) {
+
+    parser::diagnostics::report_expected_type(context);
+
+    return ParseResult<ast::ImplDeclaration *>::fail();
+  }
+
+  auto *capability = capability_result.value();
+
+  tokens.skip_trivia();
+
+  // for
+  if (!tokens.match(TokenKind::FOR_KEYWORD)) {
+
+    parser::diagnostics::report_expected(context, TokenKind::FOR_KEYWORD);
+
+    return ParseResult<ast::ImplDeclaration *>::fail();
+  }
+
+  tokens.skip_trivia();
+
+  // Array<Int>
+  auto target_result = parse_type();
+
+  if (target_result.is_error() || target_result.is_no_match()) {
+
+    parser::diagnostics::report_expected_type(context);
+
+    return ParseResult<ast::ImplDeclaration *>::fail();
+  }
+
+  auto *target = target_result.value();
+
+  tokens.skip_trivia();
+
+  // {
+  if (!tokens.match(TokenKind::OPEN_BRACE)) {
+
+    parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
+
+    return ParseResult<ast::ImplDeclaration *>::fail();
+  }
+
+  std::vector<ast::FunctionDeclaration *> members;
+
+  tokens.skip_trivia();
+
+  bool closed = false;
+
+  while (!tokens.is_end()) {
 
     tokens.skip_trivia();
 
-    while (true) {
+    if (tokens.match(TokenKind::CLOSE_BRACE)) {
 
-      auto type_result = parse_type();
+      closed = true;
+      break;
+    }
 
-      if (type_result.is_error()) return ParseResult<ast::StructDeclaration *>::fail();
+    /*
+     * impl members:
+     *
+     * add: fun(a: Int) -> Int { ... }
+     */
 
-      if (type_result.is_no_match()) {
+    auto name_result = parse_identifier_name();
 
-        parser::diagnostics::report_expected_type(context);
+    if (name_result.is_error()) { return ParseResult<ast::ImplDeclaration *>::fail(); }
+
+    if (name_result.is_no_match()) {
+
+      parser::diagnostics::report_expected(context, diagnostic::ExpectedKind::Identifier);
+
+      return ParseResult<ast::ImplDeclaration *>::fail();
+    }
+
+    auto *name = name_result.value();
+
+    tokens.skip_trivia();
+
+    if (!tokens.match(TokenKind::COLON)) {
+
+      parser::diagnostics::report_expected(context, TokenKind::COLON);
+
+      return ParseResult<ast::ImplDeclaration *>::fail();
+    }
+
+    tokens.skip_trivia();
+
+    auto function_result = parse_function_declaration(name, {}, true);
+
+    if (function_result.is_error()) { return ParseResult<ast::ImplDeclaration *>::fail(); }
+
+    if (function_result.is_no_match()) {
+
+      parser::diagnostics::report_expected(context, TokenKind::FUN_KEYWORD);
+
+      return ParseResult<ast::ImplDeclaration *>::fail();
+    }
+
+    members.push_back(function_result.value());
+
+    tokens.skip_trivia();
+  }
+
+  if (!closed) {
+
+    parser::diagnostics::report_expected(context, TokenKind::CLOSE_BRACE);
+
+    return ParseResult<ast::ImplDeclaration *>::fail();
+  }
+
+  return ParseResult<ast::ImplDeclaration *>::ok(context.get_ast().alloc<ast::ImplDeclaration>(target, capability, std::move(members)));
+}
+
+// Capability declaration
+ParseResult<ast::CapabilityDeclaration *> Parser::parse_capability_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+
+  auto &tokens = context.tokens();
+
+  // cap
+  if (!tokens.match(TokenKind::CAP_KEYWORD)) { return ParseResult<ast::CapabilityDeclaration *>::no_match(); }
+
+  tokens.skip_trivia();
+
+  // cap<T, U>
+  auto generic_parameters_result = parse_generic_parameters();
+
+  // {
+  if (!tokens.match(TokenKind::OPEN_BRACE)) {
+
+    parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
+
+    return ParseResult<ast::CapabilityDeclaration *>::fail();
+  }
+
+  debug::Trace::log(debug::Category::Parser, "capability body started");
+
+  std::vector<ast::Declaration *> members;
+
+  tokens.skip_trivia();
+
+  bool closed = false;
+
+  while (!tokens.is_end()) {
+
+    tokens.skip_trivia();
+
+    if (tokens.match(TokenKind::CLOSE_BRACE)) {
+
+      closed = true;
+
+      debug::Trace::log(debug::Category::Parser, "capability body ended");
+
+      break;
+    }
+
+    auto member_result = parse_capability_member(specifiers);
+
+    if (member_result.is_error()) { return ParseResult<ast::CapabilityDeclaration *>::fail(); }
+
+    if (member_result.is_no_match()) {
+
+      parser::diagnostics::report_expected(context, TokenKind::FUN_KEYWORD);
+
+      return ParseResult<ast::CapabilityDeclaration *>::fail();
+    }
+
+    members.push_back(member_result.value());
+  }
+
+  if (!closed) {
+
+    parser::diagnostics::report_expected(context, TokenKind::CLOSE_BRACE);
+
+    return ParseResult<ast::CapabilityDeclaration *>::fail();
+  }
+
+  debug::Trace::log(debug::Category::Parser, "creating CapabilityDeclaration with {} members", members.size());
+
+  return ParseResult<ast::CapabilityDeclaration *>::ok(context.get_ast().alloc<ast::CapabilityDeclaration>(name, std::move(generic_parameters_result.value()), std::move(members), specifiers));
+}
+
+// Type declaration
+ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+
+  auto &tokens = context.tokens();
+
+  tokens.skip_trivia();
+
+  // type<T, U>
+  auto generic_parameters_result = parse_generic_parameters();
+
+  if (!tokens.match(TokenKind::TYPE_KEYWORD)) { return ParseResult<ast::TypeDeclaration *>::no_match(); }
+
+  return ParseResult<ast::TypeDeclaration *>::ok(context.get_ast().alloc<ast::TypeDeclaration>(name, std::move(generic_parameters_result.value()), specifiers));
+}
+
+// Struct declaration
+ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+
+  auto &tokens = context.tokens();
+
+  // struct
+  if (!tokens.match(TokenKind::STRUCT_KEYWORD)) { return ParseResult<ast::StructDeclaration *>::no_match(); }
+
+  tokens.skip_trivia();
+
+  // struct<T, U>
+  auto generic_parameters_result = parse_generic_parameters();
+
+  if (generic_parameters_result.is_error()) { return ParseResult<ast::StructDeclaration *>::fail(); }
+
+  std::vector<ast::GenericParameter *> generic_parameters;
+
+  if (!generic_parameters_result.is_no_match()) { generic_parameters = std::move(generic_parameters_result.value()); }
+
+  tokens.skip_trivia();
+
+  std::vector<ast::TypeNode *> compositions;
+
+  // struct(Type, Type, ...)
+  if (tokens.match(TokenKind::OPEN_PAREN)) {
+
+    tokens.skip_trivia();
+
+    // Empty composition list: struct()
+    if (!tokens.match(TokenKind::CLOSE_PAREN)) {
+
+      while (true) {
+
+        auto type_result = parse_type();
+
+        if (type_result.is_error()) { return ParseResult<ast::StructDeclaration *>::fail(); }
+
+        if (type_result.is_no_match()) {
+
+          parser::diagnostics::report_expected_type(context);
+
+          return ParseResult<ast::StructDeclaration *>::fail();
+        }
+
+        compositions.push_back(type_result.value());
+
+        tokens.skip_trivia();
+
+        if (!tokens.match(TokenKind::COMMA)) { break; }
+
+        tokens.skip_trivia();
+      }
+
+      if (!tokens.match(TokenKind::CLOSE_PAREN)) {
+
+        parser::diagnostics::report_expected(context, TokenKind::CLOSE_PAREN);
 
         return ParseResult<ast::StructDeclaration *>::fail();
       }
-
-      compositions.push_back(type_result.value());
-
-      tokens.skip_trivia();
-
-      if (!tokens.match(TokenKind::COMMA)) break;
-
-      tokens.skip_trivia();
     }
   }
 
-  // require "{"
+  tokens.skip_trivia();
+
+  // {
   if (!tokens.match(TokenKind::OPEN_BRACE)) {
 
     parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
@@ -317,15 +707,17 @@ ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(Declarati
     tokens.skip_trivia();
 
     if (tokens.match(TokenKind::CLOSE_BRACE)) {
+
       closed = true;
       break;
     }
 
     auto field_result = parse_field_declaration();
 
-    if (field_result.is_error()) return ParseResult<ast::StructDeclaration *>::fail();
+    if (field_result.is_error()) { return ParseResult<ast::StructDeclaration *>::fail(); }
 
     if (field_result.is_no_match()) {
+
       parser::diagnostics::report_expected(context, diagnostic::ExpectedKind::Identifier);
 
       return ParseResult<ast::StructDeclaration *>::fail();
@@ -338,251 +730,29 @@ ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(Declarati
   }
 
   if (!closed) {
+
     parser::diagnostics::report_expected(context, TokenKind::CLOSE_BRACE);
 
     return ParseResult<ast::StructDeclaration *>::fail();
   }
 
-  std::vector<ast::IdentifierNode *> generics;
-
-  if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
-
-  return ParseResult<ast::StructDeclaration *>::ok(context.get_ast().alloc<ast::StructDeclaration>(identifier, std::move(generics), std::move(compositions), std::move(fields), specifiers));
-}
-
-// Capability declaration
-ParseResult<ast::CapabilityDeclaration *> Parser::parse_capability_declaration(DeclarationSpecifiers specifiers) {
-
-  auto &tokens = context.tokens();
-
-  debug::trace(debug::Category::Parser, "parsing capability declaration");
-
-  if (!tokens.match(TokenKind::CAP_KEYWORD)) return ParseResult<ast::CapabilityDeclaration *>::no_match();
-
-  // cap Add
-  auto name_result = parse_identifier_name();
-
-  if (name_result.is_error()) return ParseResult<ast::CapabilityDeclaration *>::fail();
-
-  if (name_result.is_no_match()) return ParseResult<ast::CapabilityDeclaration *>::no_match();
-
-  auto *identifier = name_result.value();
-
-  auto generic_parameters = parse_generic_parameters();
-
-  if (generic_parameters.is_error()) return ParseResult<ast::CapabilityDeclaration *>::fail();
-
-  // {
-  if (!tokens.match(TokenKind::OPEN_BRACE)) {
-
-    parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
-
-    return ParseResult<ast::CapabilityDeclaration *>::fail();
-  }
-
-  debug::trace(debug::Category::Parser, "capability body started");
-
-  std::vector<ast::FunctionDeclaration *> members;
-
-  tokens.skip_trivia();
-
-  while (!tokens.is_end()) {
-
-    if (tokens.match(TokenKind::CLOSE_BRACE)) {
-
-      debug::trace(debug::Category::Parser, "capability body ended");
-
-      break;
-    }
-
-    auto function_result = parse_function_declaration(specifiers, false);
-
-    if (function_result.is_error()) return ParseResult<ast::CapabilityDeclaration *>::fail();
-
-    if (function_result.is_no_match()) {
-
-      parser::diagnostics::report_expected(context, TokenKind::FUN_KEYWORD);
-
-      return ParseResult<ast::CapabilityDeclaration *>::fail();
-    }
-
-    members.push_back(function_result.value());
-
-    tokens.skip_trivia();
-  }
-
-  if (tokens.is_end()) {
-
-    parser::diagnostics::report_expected(context, TokenKind::CLOSE_BRACE);
-
-    return ParseResult<ast::CapabilityDeclaration *>::fail();
-  }
-
-  debug::trace(debug::Category::Parser, "creating CapabilityDeclaration with {} members", members.size());
-
-  std::vector<ast::IdentifierNode *> generics;
-
-  if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
-
-  return ParseResult<ast::CapabilityDeclaration *>::ok(context.get_ast().alloc<ast::CapabilityDeclaration>(identifier, std::move(generics), std::move(members), specifiers));
-}
-
-// Implementation declaration
-ParseResult<ast::ImplDeclaration *> Parser::parse_impl_declaration(DeclarationSpecifiers specifiers) {
-
-  auto &tokens = context.tokens();
-
-  if (!tokens.match(TokenKind::IMPL_KEYWORD)) return ParseResult<ast::ImplDeclaration *>::no_match();
-
-  // impl Int
-  auto target_name_result = parse_name();
-
-  if (target_name_result.is_error()) return ParseResult<ast::ImplDeclaration *>::fail();
-
-  if (target_name_result.is_no_match()) {
-
-    parser::diagnostics::report_expected_identifier(context);
-
-    return ParseResult<ast::ImplDeclaration *>::fail();
-  }
-
-  auto *target_name = target_name_result.value();
-
-  auto *target = context.get_ast().alloc<ast::NamedType>(target_name);
-
-  auto generic_parameters = parse_generic_parameters();
-
-  if (generic_parameters.is_error()) return ParseResult<ast::ImplDeclaration *>::fail();
-
-  // impl Int: Add
-  auto capability_result = parse_type();
-
-  if (capability_result.is_error()) return ParseResult<ast::ImplDeclaration *>::fail();
-
-  if (capability_result.is_no_match()) {
-
-    parser::diagnostics::report_expected_type(context);
-
-    return ParseResult<ast::ImplDeclaration *>::fail();
-  }
-
-  auto *capability = capability_result.value();
-
-  // {
-  if (!tokens.match(TokenKind::OPEN_BRACE)) {
-
-    parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
-
-    return ParseResult<ast::ImplDeclaration *>::fail();
-  }
-
-  std::vector<ast::FunctionDeclaration *> members;
-
-  tokens.skip_trivia();
-
-  while (!tokens.is_end()) {
-
-    if (tokens.match(TokenKind::CLOSE_BRACE)) break;
-
-    auto function_result = parse_function_declaration(specifiers, true);
-
-    if (function_result.is_error()) return ParseResult<ast::ImplDeclaration *>::fail();
-
-    if (function_result.is_no_match()) {
-
-      parser::diagnostics::report_expected(context, TokenKind::FUN_KEYWORD);
-
-      return ParseResult<ast::ImplDeclaration *>::fail();
-    }
-
-    members.push_back(function_result.value());
-
-    tokens.skip_trivia();
-  }
-
-  if (tokens.is_end()) {
-
-    parser::diagnostics::report_expected(context, TokenKind::CLOSE_BRACE);
-
-    return ParseResult<ast::ImplDeclaration *>::fail();
-  }
-
-  std::vector<ast::IdentifierNode *> generics;
-
-  if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
-
-  return ParseResult<ast::ImplDeclaration *>::ok(context.get_ast().alloc<ast::ImplDeclaration>(std::move(generics), target, capability, std::move(members)));
-}
-
-// Type declaration
-ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(DeclarationSpecifiers specifiers) {
-
-  auto &tokens = context.tokens();
-
-  if (!tokens.match(TokenKind::TYPE_KEYWORD)) return ParseResult<ast::TypeDeclaration *>::no_match();
-
-  auto name_result = parse_identifier_name();
-
-  if (name_result.is_error()) return ParseResult<ast::TypeDeclaration *>::fail();
-
-  if (name_result.is_no_match()) {
-
-    parser::diagnostics::report_expected_identifier(context);
-
-    return ParseResult<ast::TypeDeclaration *>::fail();
-  }
-  auto generic_parameters = parse_generic_parameters();
-
-  if (generic_parameters.is_error()) return ParseResult<ast::TypeDeclaration *>::fail();
-
-  std::vector<ast::IdentifierNode *> generics;
-
-  if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
-
-  return ParseResult<ast::TypeDeclaration *>::ok(context.get_ast().alloc<ast::TypeDeclaration>(name_result.value(), std::move(generics), specifiers));
+  return ParseResult<ast::StructDeclaration *>::ok(context.get_ast().alloc<ast::StructDeclaration>(name, std::move(generic_parameters), std::move(compositions), std::move(fields), specifiers));
 }
 
 // Function declaration
-ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(DeclarationSpecifiers specifiers, bool require_body) {
+ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers, bool require_body) {
 
   auto &tokens = context.tokens();
 
-  debug::trace(debug::Category::Parser, "parsing function declaration");
+  // fun
+  if (!tokens.match(TokenKind::FUN_KEYWORD)) { return ParseResult<ast::FunctionDeclaration *>::no_match(); }
 
-  if (!tokens.match(TokenKind::FUN_KEYWORD)) return ParseResult<ast::FunctionDeclaration *>::no_match();
+  tokens.skip_trivia();
 
-  debug::trace(debug::Category::Parser, "function keyword found");
+  // fun<T, U>
+  auto generic_parameters_result = parse_generic_parameters();
 
-  // fun name
-  auto name_result = parse_identifier_name();
-
-  if (name_result.is_error()) {
-
-    synchronize_declaration();
-
-    return ParseResult<ast::FunctionDeclaration *>::fail();
-  }
-
-  if (name_result.is_no_match()) {
-
-    synchronize_declaration();
-
-    return ParseResult<ast::FunctionDeclaration *>::fail();
-  }
-
-  auto *identifier = name_result.value();
-
-  // fun name<T, U>
-  auto generic_parameters = parse_generic_parameters();
-
-  if (generic_parameters.is_error()) {
-
-    debug::trace(debug::Category::Parser, "error in generic parameters");
-
-    return ParseResult<ast::FunctionDeclaration *>::fail();
-  }
-
-  // (
+  // Parameters
   if (!tokens.check(TokenKind::OPEN_PAREN)) {
 
     parser::diagnostics::report_expected(context, TokenKind::OPEN_PAREN);
@@ -595,7 +765,7 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(Decla
   auto parameters = parse_delimited_list<ast::PatternNode *>(context, TokenKind::OPEN_PAREN, TokenKind::CLOSE_PAREN, TokenKind::COMMA, [&]() -> ParseResult<ast::PatternNode *> {
     auto result = parse_pattern();
 
-    if (result.is_error()) return ParseResult<ast::PatternNode *>::fail();
+    if (result.is_error()) { return ParseResult<ast::PatternNode *>::fail(); }
 
     if (result.is_no_match()) {
 
@@ -641,14 +811,6 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(Decla
 
   } else {
 
-    // Detect:
-    //
-    // fun add(a: Int, b: Int) Int {
-    //
-    // instead of producing the less useful:
-    //
-    // expected '{', found 'Int'
-
     auto result = speculate([&] { return parse_type(); });
 
     if (result.is_error()) { return ParseResult<ast::FunctionDeclaration *>::fail(); }
@@ -667,19 +829,6 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(Decla
   ast::BlockStatement *body = nullptr;
 
   if (tokens.check(TokenKind::OPEN_BRACE)) {
-
-    //  auto body_result = parse_block_statement();
-
-    // if (body_result.is_error()) return ParseResult<ast::FunctionDeclaration *>::fail();
-
-    // if (body_result.is_no_match()) {
-
-    //   parser::diagnostics::report_expected(context, TokenKind::OPEN_BRACE);
-
-    //   return ParseResult<ast::FunctionDeclaration *>::fail();
-    // }
-
-    // body = body_result.value();
 
     auto body_result = parse_block_statement();
 
@@ -701,13 +850,10 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(Decla
     return ParseResult<ast::FunctionDeclaration *>::fail();
   }
 
-  debug::trace(debug::Category::Parser, "creating FunctionDeclaration");
+  debug::Trace::log(debug::Category::Parser, "creating FunctionDeclaration");
 
-  std::vector<ast::IdentifierNode *> generics;
-
-  if (!generic_parameters.is_no_match()) generics = std::move(generic_parameters.value());
-
-  return ParseResult<ast::FunctionDeclaration *>::ok(context.get_ast().alloc<ast::FunctionDeclaration>(identifier, std::move(generics), std::move(parameters.value()), return_type, body, specifiers));
+  return ParseResult<ast::FunctionDeclaration *>::ok(
+      context.get_ast().alloc<ast::FunctionDeclaration>(name, std::move(generic_parameters_result.value()), std::move(parameters.value()), return_type, body, specifiers));
 }
 
 } // namespace celestia::syntax

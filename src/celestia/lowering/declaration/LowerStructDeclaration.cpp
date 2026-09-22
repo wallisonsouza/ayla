@@ -8,7 +8,7 @@ void Lowering::lower_struct_declaration(const ast::StructDeclaration *node) {
 
   if (!node || !node->name) return;
 
-  const auto &struct_name = node->name->str;
+  const auto &struct_name = node->name->get_str();
 
   std::cout << "[Lowering] struct '" << struct_name << "'\n";
 

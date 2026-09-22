@@ -14,8 +14,7 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
 
   if (first.is_error()) return ParseResult<celestia::ast::NameNode *>::fail();
 
-  // Começou como um identificador simples.
-  if (!tokens.check(TokenKind::DOT)) { return ParseResult<celestia::ast::NameNode *>::ok(first.value()); }
+  if (!tokens.check(TokenKind::DOT)) return ParseResult<celestia::ast::NameNode *>::ok(first.value());
 
   std::vector<celestia::ast::IdentifierNode *> parts;
   parts.push_back(first.value());
@@ -41,7 +40,6 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
 
   return ParseResult<celestia::ast::NameNode *>::ok(qualified);
 }
-
 ParseResult<celestia::ast::IdentifierNode *> Parser::parse_identifier() {
   auto &tokens = context.tokens();
 
@@ -62,19 +60,13 @@ ParseResult<ast::IdentifierNode *> Parser::parse_identifier_name() {
 
   auto result = parse_name();
 
-  if (result.is_error()) return ParseResult<ast::IdentifierNode *>::fail();
+  if (result.is_error()) { return ParseResult<ast::IdentifierNode *>::fail(); }
 
-  if (result.is_no_match()) {
-    parser::diagnostics::report_expected_identifier(context);
-    return ParseResult<ast::IdentifierNode *>::fail();
-  }
+  if (result.is_no_match()) { return ParseResult<ast::IdentifierNode *>::no_match(); }
 
   auto *name = result.value();
 
-  if (name->kind != ast::NodeKind::Identifier) {
-    parser::diagnostics::report_expected_identifier(context);
-    return ParseResult<ast::IdentifierNode *>::fail();
-  }
+  if (name->kind != ast::NodeKind::Identifier) { return ParseResult<ast::IdentifierNode *>::no_match(); }
 
   return ParseResult<ast::IdentifierNode *>::ok(static_cast<ast::IdentifierNode *>(name));
 }

@@ -12,6 +12,7 @@ enum class TokenKind : uint8_t {
 
   EXTERN,
   MODULE_KEYWORD,
+  ENUM_KEYWORD,
   MUT_KEYWORD,
   LET_KEYWORD,
   FOR_KEYWORD,
@@ -164,6 +165,7 @@ constexpr std::string_view token_kind_name(TokenKind kind) noexcept {
   case TokenKind::EXPORT_KEYWORD: return "EXPORT_KEYWORD";
   case TokenKind::LET_KEYWORD: return "LET_KEYWORD";
   case TokenKind::FROM_KEYWORD: return "FROM_KEYWORD";
+  case TokenKind::ENUM_KEYWORD: return "ENUM_KEYWORD";
   }
 
   return "UNKNOWN";

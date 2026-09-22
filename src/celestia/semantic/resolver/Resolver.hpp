@@ -72,6 +72,7 @@ private:
   void resolve_variable_declaration(celestia::ast::VariableDeclaration *node);
   void resolve_module_init_declaration(ast::ModuleInitDeclaration *node);
 
+  void resolve_generic_parameter(ast::GenericParameter *node);
   void resolve_struct_declaration(celestia::ast::StructDeclaration *node);
   void resolve_field_declaration(celestia::ast::FieldDeclaration *node);
   void resolve_function_declaration(celestia::ast::FunctionDeclaration *node);

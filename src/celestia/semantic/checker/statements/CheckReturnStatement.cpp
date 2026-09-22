@@ -95,9 +95,9 @@ void TypeChecker::check_return_statement(ast::ReturnStatement *node) {
   // Compatibilidade
   // ------------------------------------------------
 
-  debug::trace(debug::Category::TypeChecker, "return expected = {}", context.env().types.get(expected).to_string());
+  debug::Trace::log(debug::Category::TypeChecker, "return expected = {}", context.env().types.get(expected).to_string());
 
-  debug::trace(debug::Category::TypeChecker, "return actual = {}", context.env().types.get(actual).to_string());
+  debug::Trace::log(debug::Category::TypeChecker, "return actual = {}", context.env().types.get(actual).to_string());
 
   if (!is_assignable(expected, actual)) {
 

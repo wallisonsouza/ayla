@@ -13,7 +13,7 @@ void Resolver::type_node(ast::TypeNode *node) {
 
   assert(node && "Resolver::type_node received null");
 
-  debug::trace(debug::Category::Resolver, "resolving type node '{}'", ast::node_kind_name(node->kind));
+  debug::Trace::log(debug::Category::Resolver, "resolving type node '{}'", ast::node_kind_name(node->kind));
 
   switch (node->kind) {
 
@@ -59,68 +59,25 @@ void Resolver::resolve_named_type(ast::NamedType *node) {
 }
 void Resolver::resolve_generic_type(ast::GenericTypeNode *node) {
 
-  // assert(node && "Resolver::resolve_generic_type received null");
-  // assert(node->name && "GenericType has no name");
+  assert(node);
+  assert(node->name);
 
-  // SymbolId symbol_id = resolve_name(node->name);
+  std::cout << "no generic" << std::endl;
 
-  // if (!symbol_id.is_valid()) {
+  // Resolve Add
+  resolve_node(node->name);
 
-  //   context.unit.diagnostics.report({
-  //       .severity = diagnostic::Severity::Error,
-  //       .code = diagnostic::DiagnosticCode::UnknownType,
-  //       .arguments =
-  //           {
-  //               diagnostic::name(node->name->get_str()),
-  //           },
-  //       .labels =
-  //           {
-  //               diagnostic::location(node->slice),
-  //           },
-  //   });
-
-  //   return;
-  // }
-
-  // auto &symbol = context.get_env().symbols.get(symbol_id);
-
-  // debug::trace(debug::Category::Resolver, "resolving generic type '{}<{} arguments>'", symbol.name, node->arguments.size());
-
-  // if (symbol.kind != SymbolKind::Type) {
-
-  //   context.unit.diagnostics.report({
-  //       .severity = diagnostic::Severity::Error,
-  //       .code = diagnostic::DiagnosticCode::NotAType,
-  //       .arguments =
-  //           {
-  //               diagnostic::name(node->name->get_str()),
-  //               diagnostic::symbol(symbol_id),
-  //           },
-  //       .labels =
-  //           {
-  //               diagnostic::location(node->slice),
-  //           },
-  //   });
-
-  //   return;
-  // }
-
-  // context.unit.semantic.set_symbol(node, symbol_id);
-
-  // debug::trace(debug::Category::Resolver, "resolved generic constructor '{}' -> SymbolId({})", symbol.name, symbol_id.index());
-
-  // for (auto *argument : node->arguments) {
-
-  //   assert(argument && "GenericType contains null argument");
-
-  //   type_node(argument);
-  // }
+  // Resolve B e F
+  for (auto *argument : node->arguments) {
+    assert(argument);
+    type_node(argument);
+  }
 }
 void Resolver::resolve_function_type(ast::FunctionType *node) {
 
   // assert(node && "Resolver::resolve_function_type received null");
 
-  // debug::trace(debug::Category::Resolver, "resolving function type with {} parameters", node->parameters.size());
+  // debug::Trace::log(debug::Category::Resolver, "resolving function type with {} parameters", node->parameters.size());
 
   // for (auto *parameter : node->parameters) {
 
@@ -131,12 +88,12 @@ void Resolver::resolve_function_type(ast::FunctionType *node) {
 
   // if (node->return_type) {
 
-  //   debug::trace(debug::Category::Resolver, "resolving function return type");
+  //   debug::Trace::log(debug::Category::Resolver, "resolving function return type");
 
   //   type_node(node->return_type);
   // }
 
-  // debug::trace(debug::Category::Resolver, "function type resolved");
+  // debug::Trace::log(debug::Category::Resolver, "function type resolved");
 }
 
 } // namespace celestia::semantic

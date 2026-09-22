@@ -5,10 +5,10 @@ void celestia::semantic::TypeChecker::check_block_statement(ast::BlockStatement 
 
   std::cout << "[TypeChecker] checking block\n";
 
-  for (auto *statement : node->statements) {
+  for (auto *item : node->items) {
 
-    if (!statement) continue;
+    if (!item) continue;
 
-    check(statement);
+    check(item);
   }
 }

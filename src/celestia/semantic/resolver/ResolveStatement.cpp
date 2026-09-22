@@ -33,7 +33,7 @@ void Resolver::block_statement(ast::BlockStatement *node) {
     return;
   }
 
-  for (auto *stmt : node->statements) {
+  for (auto *stmt : node->items) {
 
     if (!stmt) {
       std::cout << "ERRO: statement nulo no bloco\n";

@@ -1,8 +1,4 @@
 #include "celestia/compiler/Compiler.hpp"
-
-#include "celestia/debug/ast/AstDumper.hpp"
-#include "celestia/diagnostic/diagnostic_debug.hpp"
-
 #include <stdexcept>
 
 Compiler::Compiler(celestia::LanguageDefinition &lang) : environment_(), pipeline_(*this) { environment_.language = lang; }

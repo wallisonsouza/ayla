@@ -28,4 +28,4 @@ ninja -j "$THREADS"
 
 clear
 
-./ayla run ../src/ayla/scripts/main.ayla --dump ast
+./ayla run ../src/ayla/src/main.ayla --dump ast

@@ -7,7 +7,7 @@ void TypeChecker::check_variable_declaration(ast::VariableDeclaration *node) {
 
   if (!node) return;
 
-  debug::trace(debug::Category::TypeChecker, "checking variable declaration");
+  debug::Trace::log(debug::Category::TypeChecker, "checking variable declaration");
 
   if (!node->pattern) {
     error(node, "variable has no pattern");
@@ -22,7 +22,7 @@ void TypeChecker::check_variable_declaration(ast::VariableDeclaration *node) {
 
   if (node->initializer) {
 
-    debug::trace(debug::Category::TypeChecker, "checking variable initializer");
+    debug::Trace::log(debug::Category::TypeChecker, "checking variable initializer");
 
     check(node->initializer);
 
@@ -33,7 +33,7 @@ void TypeChecker::check_variable_declaration(ast::VariableDeclaration *node) {
       return;
     }
 
-    debug::trace(debug::Category::TypeChecker, "initializer type = {}", context.env().types.get(initializer_type).to_string());
+    debug::Trace::log(debug::Category::TypeChecker, "initializer type = {}", context.env().types.get(initializer_type).to_string());
   }
 
   // --------------------------------------------------
@@ -50,7 +50,7 @@ void TypeChecker::check_variable_declaration(ast::VariableDeclaration *node) {
 
   context.unit.semantic.set_type(node, variable_type);
 
-  debug::trace(debug::Category::TypeChecker, "variable type = {}", context.env().types.get(variable_type).to_string());
+  debug::Trace::log(debug::Category::TypeChecker, "variable type = {}", context.env().types.get(variable_type).to_string());
 }
 
 } // namespace celestia::semantic

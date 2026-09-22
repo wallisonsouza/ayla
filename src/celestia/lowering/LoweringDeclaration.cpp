@@ -12,7 +12,7 @@ void Lowering::lower_function_declaration(const ast::FunctionDeclaration *node) 
 
   if (!return_type_id.is_valid()) return;
 
-  ir::StringId name = context.global().intern_string(node->name->str);
+  ir::StringId name = context.global().intern_string(node->name->get_str());
 
   ir::TypeId return_type = lower_type(return_type_id);
 

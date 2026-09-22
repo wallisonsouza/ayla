@@ -49,7 +49,7 @@ void TypeChecker::array_literal(ast::ArrayLiteralNode *node) {
 
   semantic.set_type(node, array_type);
 
-  debug::trace(debug::Category::TypeChecker, "array type = {}", context.env().types.get(array_type).to_string());
+  debug::Trace::log(debug::Category::TypeChecker, "array type = {}", context.env().types.get(array_type).to_string());
 }
 
 } // namespace celestia::semantic

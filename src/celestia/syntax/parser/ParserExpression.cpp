@@ -19,6 +19,41 @@ celestia::ast::Expression *Parser::parse_expression() {
   return parse_binary_expression(0, lhs);
 }
 
+celestia::ast::Expression *Parser::parse_grouped_expression() {
+  auto &tokens = context.tokens();
+
+  if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;
+
+  auto *expr = parse_expression();
+
+  if (!expr) return nullptr;
+
+  if (!tokens.match(TokenKind::CLOSE_PAREN)) return nullptr;
+
+  return expr;
+}
+
+ast::Expression *Parser::parse_primary_expression() {
+  auto *token = context.tokens().current();
+
+  if (!token) return nullptr;
+
+  switch (token->desc->kind) {
+  case TokenKind::NUMBER_LITERAL:
+  case TokenKind::STRING_LITERAL:
+  case TokenKind::TRUE:
+  case TokenKind::FALSE: return parse_literal_expression();
+
+  case TokenKind::IDENTIFIER: return parse_identifier_expression();
+
+  case TokenKind::OPEN_PAREN: return parse_grouped_expression();
+
+  case TokenKind::OPEN_BRACKET: return parse_array_literal();
+
+  default: return nullptr;
+  }
+}
+
 celestia::ast::Expression *Parser::parse_assignment(celestia::ast::Expression *target) {
   auto &tokens = context.tokens();
 
@@ -131,13 +166,10 @@ celestia::ast::Expression *Parser::parse_unary_expression() {
   return context.get_ast().alloc<celestia::ast::UnaryExpressionNode>(op, operand);
 }
 
-celestia::ast::Expression *Parser::parse_identifier_expression() {
-
+ast::Expression *Parser::parse_identifier_expression() {
   auto name = parse_identifier_name();
 
   if (!name.is_ok()) return nullptr;
-
-  if (context.tokens().check(TokenKind::OPEN_BRACE)) { return parse_struct_literal(name.value()); }
 
   return context.get_ast().alloc<celestia::ast::IdentifierExpressionNode>(name.value());
 }
@@ -156,7 +188,8 @@ celestia::ast::Expression *Parser::parse_index_access(celestia::ast::Expression 
   return context.get_ast().alloc<celestia::ast::IndexAccessExpressionNode>(base, index);
 }
 
-celestia::ast::Expression *Parser::parse_call(celestia::ast::Expression *callee) {
+celestia::ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression *callee) {
+
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;

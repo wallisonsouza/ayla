@@ -2,8 +2,6 @@
 #include "celestia/semantic/resolver/Resolver.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 
-#include <stdexcept>
-
 namespace celestia::semantic {
 
 namespace {
@@ -32,7 +30,7 @@ const char *module_state_name(ModuleState state) {
 
 void log_module_state(Module &module) {
 
-  debug::trace(debug::Category::Resolver, "module '{}' state: {}{}{}{}{}{}", module.name(),
+  debug::Trace::log(debug::Category::Resolver, "module '{}' state: {}{}{}{}{}{}", module.name(),
 
                module.has_state(ModuleState::Discovered) ? "Discovered " : "",
 
@@ -53,13 +51,13 @@ void Resolver::resolve_module_init_declaration(ast::ModuleInitDeclaration *node)
 
   if (!node || !node->body) return;
 
-  debug::trace(debug::Category::Resolver, "resolving module init");
+  debug::Trace::log(debug::Category::Resolver, "resolving module init");
 
-  debug::trace(debug::Category::Resolver, "module init body = {}", static_cast<void *>(node->body));
+  debug::Trace::log(debug::Category::Resolver, "module init body = {}", static_cast<void *>(node->body));
 
   resolve_node(node->body);
 
-  debug::trace(debug::Category::Resolver, "module init body resolved");
+  debug::Trace::log(debug::Category::Resolver, "module init body resolved");
 }
 
 } // namespace celestia::semantic

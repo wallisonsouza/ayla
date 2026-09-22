@@ -1,0 +1,26 @@
+
+trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+}
+
+impl Iterator for MyIterator {
+    type Item = Int;
+}
+
+
+
+cap Iterator<Item> {
+    fun next(self: Self) -> Option<Item>
+}
+
+impl Iterator<Int>: MyIterator {
+    fun next(self) -> Option<Int> {
+        ...
+    }
+}
+
+fun update_actor<T: {Updatable, Debug}>(actor_ref: ref<T>) {
+    actor_ref.update(Time.delta); 
+}

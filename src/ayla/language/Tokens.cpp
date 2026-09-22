@@ -18,8 +18,11 @@ void register_tokens(celestia::LanguageDefinition &def) {
   def.tokens.add(TokenKind::FUN_KEYWORD, "fun", TokenGroup::Keyword);
   def.tokens.add(TokenKind::STRUCT_KEYWORD, "struct", TokenGroup::Keyword);
   def.tokens.add(TokenKind::TYPE_KEYWORD, "type", TokenGroup::Keyword);
+  def.tokens.add(TokenKind::ENUM_KEYWORD, "enum", TokenGroup::Keyword);
+
   def.tokens.add(TokenKind::CAP_KEYWORD, "cap", TokenGroup::Keyword);
   def.tokens.add(TokenKind::IMPL_KEYWORD, "impl", TokenGroup::Keyword);
+  def.tokens.add(TokenKind::FOR_KEYWORD, "for", TokenGroup::Keyword);
 
   def.tokens.add(TokenKind::PUBLIC, "public", TokenGroup::Keyword);
   def.tokens.add(TokenKind::PRIVATE, "private", TokenGroup::Keyword);
@@ -32,7 +35,7 @@ void register_tokens(celestia::LanguageDefinition &def) {
 
   def.tokens.add(TokenKind::MODULE_KEYWORD, "module", TokenGroup::Keyword);
   def.tokens.add(TokenKind::IMPORT_KEYWORD, "import", TokenGroup::Keyword);
-   def.tokens.add(TokenKind::FROM_KEYWORD, "from", TokenGroup::Keyword);
+  def.tokens.add(TokenKind::FROM_KEYWORD, "from", TokenGroup::Keyword);
   def.tokens.add(TokenKind::EXPORT_KEYWORD, "export", TokenGroup::Keyword);
 
   // punctuaction

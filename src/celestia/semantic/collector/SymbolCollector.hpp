@@ -1,6 +1,7 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
+#include "celestia/ast/names/GenericIdentifierNode.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/semantic/collector/SymbolCollectorContext.hpp"
@@ -28,11 +29,14 @@ private:
   void collect_variable(ast::VariableDeclaration *node);
   void collect_type(ast::TypeDeclaration *node);
   void collect_block(ast::BlockStatement *node);
+  void collect_capability(ast::CapabilityDeclaration *node);
+  void collect_impl(ast::ImplDeclaration *node);
 
   void collect_pattern(ast::PatternNode *pattern);
   void collect_named_pattern(ast::NamedPattern *pattern);
-  void collect_generics(const std::vector<ast::IdentifierNode *> &parameters);
   void collect_field(ast::FieldDeclaration *node);
+  void collect_generic_parameter(ast::GenericParameter *node);
+  
   SymbolId declare_symbol(const std::string &name, SymbolKind kind, Visibility visibility, ast::Node *node);
 
   bool can_have_visibility(core::ScopeKind kind, Visibility visibility);

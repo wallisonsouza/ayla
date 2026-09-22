@@ -4,6 +4,9 @@
 namespace celestia::ast {
 
 enum class NodeKind {
+
+  EnumVariant,
+  EnumDeclaration,
   Unknown,
   Root,
   NumberLiteral,
@@ -135,6 +138,8 @@ constexpr std::string_view node_kind_name(NodeKind kind) noexcept {
   case NodeKind::ArrayLiteral: return "ArrayLiteral";
   case NodeKind::FunctionType: return "FunctionType";
   case NodeKind::ModuleInitDeclaration: return "ModuleInitDeclaration";
+  case NodeKind::EnumVariant: return "EnumVariant";
+  case NodeKind::EnumDeclaration: return "EnumDeclaration";
   }
 
   return "Unknown";

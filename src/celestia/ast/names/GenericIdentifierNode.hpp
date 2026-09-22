@@ -8,22 +8,39 @@
 
 namespace celestia::ast {
 
-// T
-// T: Comparable
-struct GenericParameterNode : Node {
+
+class GenericParameter : public Node {
+public:
   IdentifierNode *name;
   std::vector<TypeNode *> constraints;
 
-  GenericParameterNode(IdentifierNode *name, std::vector<TypeNode *> constraints = {}) : Node(NodeKind::GenericParameter), name(name), constraints(std::move(constraints)) {}
+  GenericParameter(IdentifierNode *name, std::vector<TypeNode *> constraints) : Node(NodeKind::GenericParameter), name(name), constraints(std::move(constraints)) {}
 };
 
-// Iterator<T>
-// Pair<T, U>
+
 struct GenericIdentifierNode : NameNode {
   IdentifierNode *name;
-  std::vector<GenericParameterNode *> parameters;
+  std::vector<GenericParameter *> parameters;
 
-  GenericIdentifierNode(IdentifierNode *name, std::vector<GenericParameterNode *> parameters = {}) : NameNode(NodeKind::GenericIdentifier), name(name), parameters(std::move(parameters)) {}
+  std::string get_str() const override {
+    std::string result = name->get_str();
+
+    if (!parameters.empty()) {
+      result += "<";
+
+      for (size_t i = 0; i < parameters.size(); ++i) {
+        if (i > 0) result += ", ";
+
+        result += parameters[i]->name->get_str();
+      }
+
+      result += ">";
+    }
+
+    return result;
+  }
+
+  GenericIdentifierNode(IdentifierNode *name, std::vector<GenericParameter *> parameters = {}) : NameNode(NodeKind::GenericIdentifier), name(name), parameters(std::move(parameters)) {}
 };
 
 } // namespace celestia::ast
