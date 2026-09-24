@@ -48,7 +48,7 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
 
     if (!composition) continue;
 
-    TypeId composed_type = type_from_node(composition);
+    TypeId composed_type = infer(composition);
 
     if (!composed_type.is_valid()) {
       error(composition, "could not resolve struct composition type");
@@ -102,7 +102,7 @@ void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {
       continue;
     }
 
-    TypeId field_type = type_from_node(field->type);
+    TypeId field_type = infer(field->type);
 
     if (!field_type.is_valid()) {
       error(field, "could not resolve field type");

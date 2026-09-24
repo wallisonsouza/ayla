@@ -2,9 +2,9 @@
 
 #include "Declaration.hpp"
 
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
-#include "celestia/ast/types/TypeNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
+#include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/types/Type.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 
 #include <utility>
@@ -14,28 +14,28 @@ namespace celestia::ast {
 
 struct FieldDeclaration : Declaration {
 
-  IdentifierNode *name;
-  TypeNode *type;
+  Identifier *name;
+  Type *type;
 
-  FieldDeclaration(IdentifierNode *name, TypeNode *type) : Declaration(NodeKind::FieldDeclaration), name(name), type(type) {}
+  FieldDeclaration(Identifier *name, Type *type) : Declaration(NodeKind::FieldDeclaration), name(name), type(type) {}
 };
 
 struct StructDeclaration : Declaration {
 
-  IdentifierNode *name;
+  Identifier *name;
 
   std::vector<GenericParameter *> generic_parameters;
 
   DeclarationSpecifiers specifiers;
 
-  std::vector<TypeNode *> compositions;
+  std::vector<Type *> compositions;
 
   std::vector<FieldDeclaration *> fields;
 
   StructDeclaration(
-      IdentifierNode *name,
+      Identifier *name,
       std::vector<GenericParameter *> parameters,
-      std::vector<TypeNode *> compositions,
+      std::vector<Type *> compositions,
       std::vector<FieldDeclaration *> fields,
       DeclarationSpecifiers specifiers)
 

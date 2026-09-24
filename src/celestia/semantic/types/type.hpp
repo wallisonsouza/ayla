@@ -80,10 +80,10 @@ struct GenericDeclarationType : Type {
 };
 
 struct GenericInstanceType : Type {
-  SymbolId constructor;
+  TypeId constructor;
   std::vector<TypeId> arguments;
 
-  GenericInstanceType(SymbolId constructor, std::vector<TypeId> arguments) : Type(TypeKind::GenericInstance), constructor(constructor), arguments(std::move(arguments)) {}
+  GenericInstanceType(TypeId constructor, std::vector<TypeId> arguments) : Type(TypeKind::GenericInstance), constructor(constructor), arguments(std::move(arguments)) {}
 };
 
 struct StructMember {

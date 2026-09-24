@@ -55,6 +55,7 @@ ast::Expression *Parser::parse_primary_expression() {
 }
 
 celestia::ast::Expression *Parser::parse_assignment(celestia::ast::Expression *target) {
+
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::ASSIGN)) return nullptr;
@@ -67,7 +68,9 @@ celestia::ast::Expression *Parser::parse_assignment(celestia::ast::Expression *t
 }
 
 celestia::ast::Expression *Parser::parse_binary_expression(int min_bp, celestia::ast::Expression *left) {
+
   while (true) {
+
     auto *token = context.tokens().current();
 
     if (!token) break;
@@ -97,14 +100,35 @@ celestia::ast::Expression *Parser::parse_binary_expression(int min_bp, celestia:
 }
 
 celestia::ast::Expression *Parser::parse_postfix_expression() {
+
   auto *expr = parse_primary_expression();
 
   if (!expr) return nullptr;
 
   while (true) {
-    auto *token = context.tokens().current();
+
+    auto &tokens = context.tokens();
+    auto *token = tokens.current();
 
     if (!token) break;
+
+    /*
+     * foo<T, U>(...)
+     */
+    if (token->desc->kind == TokenKind::LESS) {
+
+      auto generic_arguments = parse_type_arguments();
+
+      if (!generic_arguments) return nullptr;
+
+      if (tokens.current()->desc->kind != TokenKind::OPEN_PAREN) return nullptr;
+
+      expr = parse_call(expr, std::move(*generic_arguments));
+
+      if (!expr) return nullptr;
+
+      continue;
+    }
 
     auto *info = context.operators().get(token->desc->kind);
 
@@ -112,12 +136,13 @@ celestia::ast::Expression *Parser::parse_postfix_expression() {
 
     if (!std::holds_alternative<PostfixOperation>(info->op)) return nullptr;
 
-    context.tokens().consume();
+    tokens.consume();
 
     auto op = std::get<PostfixOperation>(info->op);
 
     switch (op) {
-    case PostfixOperation::Call: expr = parse_call(expr); break;
+
+    case PostfixOperation::Call: expr = parse_call(expr, {}); break;
 
     case PostfixOperation::IndexAccess: expr = parse_index_access(expr); break;
 
@@ -133,6 +158,7 @@ celestia::ast::Expression *Parser::parse_postfix_expression() {
 }
 
 celestia::ast::Expression *Parser::parse_member_access(celestia::ast::Expression *base) {
+
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::DOT)) return nullptr;
@@ -145,13 +171,14 @@ celestia::ast::Expression *Parser::parse_member_access(celestia::ast::Expression
 }
 
 celestia::ast::Expression *Parser::parse_unary_expression() {
+
   auto *token = context.tokens().current();
 
   if (!token) return parse_postfix_expression();
 
   auto *info = context.operators().get(token->desc->kind);
 
-  if (!info || info->kind != core::OperatorKind::Prefix) { return parse_postfix_expression(); }
+  if (!info || info->kind != core::OperatorKind::Prefix) return parse_postfix_expression();
 
   if (!std::holds_alternative<UnaryOperation>(info->op)) return nullptr;
 
@@ -167,6 +194,7 @@ celestia::ast::Expression *Parser::parse_unary_expression() {
 }
 
 ast::Expression *Parser::parse_identifier_expression() {
+
   auto name = parse_identifier_name();
 
   if (!name.is_ok()) return nullptr;
@@ -175,6 +203,7 @@ ast::Expression *Parser::parse_identifier_expression() {
 }
 
 celestia::ast::Expression *Parser::parse_index_access(celestia::ast::Expression *base) {
+
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::OPEN_BRACKET)) return nullptr;
@@ -188,15 +217,40 @@ celestia::ast::Expression *Parser::parse_index_access(celestia::ast::Expression 
   return context.get_ast().alloc<celestia::ast::IndexAccessExpressionNode>(base, index);
 }
 
-celestia::ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression *callee) {
+std::optional<std::vector<ast::Type *>> Parser::parse_type_arguments() {
+
+  auto &tokens = context.tokens();
+
+  if (!tokens.match(TokenKind::LESS)) return std::nullopt;
+
+  std::vector<ast::Type *> arguments;
+
+  while (!tokens.is_end()) {
+
+    auto *type = parse_type().value();
+
+    if (!type) return std::nullopt;
+
+    arguments.push_back(type);
+
+    if (tokens.match(TokenKind::GREATER)) break;
+
+    if (!tokens.match(TokenKind::COMMA)) return std::nullopt;
+  }
+
+  return arguments;
+}
+
+ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression *callee, std::vector<ast::Type *> generic_arguments) {
 
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;
 
-  std::vector<celestia::ast::Expression *> args;
+  std::vector<ast::Expression *> args;
 
   while (!tokens.is_end()) {
+
     if (tokens.match(TokenKind::CLOSE_PAREN)) break;
 
     auto *expr = parse_expression();
@@ -206,13 +260,14 @@ celestia::ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression 
     args.push_back(expr);
 
     if (!tokens.match(TokenKind::COMMA)) {
+
       if (!tokens.match(TokenKind::CLOSE_PAREN)) return nullptr;
 
       break;
     }
   }
 
-  return context.get_ast().alloc<celestia::ast::CallExpressionNode>(callee, std::move(args));
+  return context.get_ast().alloc<ast::CallExpressionNode>(callee, std::move(generic_arguments), std::move(args));
 }
 
 } // namespace celestia::syntax

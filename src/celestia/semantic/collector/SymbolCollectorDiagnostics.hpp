@@ -1,10 +1,9 @@
 
 #include "celestia/semantic/collector/SymbolCollectorContext.hpp"
 
-namespace celestia::semantic::collector {
+namespace celestia::semantic::collector::diagnostics {
 
-inline static void report_redeclaration(SymbolCollectorContext &context, const std::string &name, SourceSlice slice) {
-
+inline void report_redeclaration(SymbolCollectorContext &context, const std::string &name, SourceSlice slice) {
   context.unit.diagnostics.report({
       .severity = diagnostic::Severity::Error,
       .code = diagnostic::DiagnosticCode::RedefinedSymbol,
@@ -19,4 +18,4 @@ inline static void report_redeclaration(SymbolCollectorContext &context, const s
   });
 }
 
-}; // namespace celestia::semantic
+} // namespace celestia::semantic::collector::diagnostics

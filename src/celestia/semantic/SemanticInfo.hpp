@@ -3,6 +3,7 @@
 #include "celestia/ast/Node.hpp"
 #include "celestia/semantic/id/ids.hpp"
 
+#include <cassert>
 #include <unordered_map>
 
 namespace celestia::semantic {
@@ -41,13 +42,14 @@ public:
   void set_scope(ast::Node *node, ScopeId scope) { scopes[node] = scope; }
 
   ScopeId scope(const ast::Node *node) const {
+    assert(node);
+
     auto it = scopes.find(node);
 
     if (it == scopes.end()) return ScopeId::invalid();
 
     return it->second;
   }
-
   // Module
   void set_module(ast::Node *node, ModuleId module) { modules[node] = module; }
 

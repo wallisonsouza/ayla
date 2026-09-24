@@ -1,15 +1,15 @@
 #pragma once
 
 #include "celestia/ast/expressions/ExpressionNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
+#include "celestia/ast/names/Identifier.hpp"
 
 namespace celestia::ast {
 
 struct MemberAccessExpressionNode : Expression {
   Expression *base;
-  IdentifierNode *member;
+  Identifier *member;
 
-  MemberAccessExpressionNode(Expression *b, IdentifierNode *f) : Expression(NodeKind::MemberAccess), base(b), member(f) {}
+  MemberAccessExpressionNode(Expression *b, Identifier *f) : Expression(NodeKind::MemberAccess), base(b), member(f) {}
 
   
 };

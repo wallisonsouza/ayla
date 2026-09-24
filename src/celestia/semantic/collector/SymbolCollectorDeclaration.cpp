@@ -1,47 +1,84 @@
-#include "celestia/semantic/collector/SymbolCollector.hpp"
-
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
+#include "celestia/ast/declarations/EnumDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/ast/declarations/StructDeclaration.hpp"
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/semantic/collector/SymbolCollector.hpp"
+#include "celestia/semantic/collector/SymbolCollectorDiagnostics.hpp"
+
 namespace celestia::semantic {
 
-void SymbolCollector::collect_generic_parameter(ast::GenericParameter *node) {
-
-  if (!node || !node->name) return;
-
-  auto symbol = declare_symbol(node->name->get_str(), SymbolKind::GenericParameter, Visibility::Private, node);
-
-  if (!symbol.is_valid()) return;
-
-  debug::Trace::log(debug::Category::SymbolCollector, "generic: {} -> {}", node->name->get_str(), symbol.index());
-}
-
-void SymbolCollector::collect_struct(ast::StructDeclaration *node) {
+void SymbolCollector::collect_function_declaration(ast::FunctionDeclaration *node) {
 
   assert(node && node->name);
 
-  auto struct_symbol = declare_symbol(node->name->get_str(), SymbolKind::Struct, node->specifiers.visibility, node);
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Function, node->specifiers.visibility, node);
 
-  if (!struct_symbol.is_valid()) return;
+  if (!symbol.is_valid()) return;
 
-  ScopeId struct_scope = context.env().scopes.create_scope(core::ScopeKind::Struct, context.stack.current());
+  auto scope = enter_scope(core::ScopeKind::Function, node);
 
-  if (!struct_scope.is_valid()) return;
+  if (!scope.is_valid()) return;
 
-  context.unit.semantic.set_scope(node, struct_scope);
-
-  context.stack.push(struct_scope);
-
-  debug::Trace::header(debug::Category::SymbolCollector, "Struct '{}' (scope {})", node->name->get_str(), struct_scope.index());
+  debug::Trace::header(debug::Category::SymbolCollector, "Function '{}' (scope {})", node->name->get_str(), scope.index());
 
   for (auto *generic : node->generic_parameters) {
     if (generic) collect_node(generic);
   }
 
-  // Fields
+  for (auto *parameter : node->parameters) {
+    if (parameter) collect_node(parameter);
+  }
+
+  if (node->body) collect_node(node->body);
+
+  context.stack.pop();
+}
+
+void SymbolCollector::collect_field_declaration(ast::FieldDeclaration *node) {
+
+  assert(node && node->name);
+
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Field, Visibility::Private, node);
+
+  if (!symbol.is_valid()) return;
+
+  debug::Trace::log(debug::Category::SymbolCollector, "field '{}' -> symbol {}", node->name->get_str(), symbol.index());
+
+  // The field type is resolved later by the Resolver.
+}
+
+void SymbolCollector::collect_generic_parameter(ast::GenericParameter *node) {
+
+  assert(node && node->name);
+
+  auto symbol = declare_named_symbol(node->name, SymbolKind::GenericParameter, Visibility::Private, node);
+
+  if (!symbol.is_valid()) return;
+
+  debug::Trace::log(debug::Category::SymbolCollector, "GenericParameter '{}' -> symbol {}", node->name->get_str(), symbol.index());
+}
+
+void SymbolCollector::collect_struct_declaration(ast::StructDeclaration *node) {
+
+  assert(node && node->name);
+
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Struct, node->specifiers.visibility, node);
+
+  if (!symbol.is_valid()) return;
+
+  auto scope = enter_scope(core::ScopeKind::Struct, node);
+
+  if (!scope.is_valid()) return;
+
+  debug::Trace::header(debug::Category::SymbolCollector, "Struct '{}' (scope {})", node->name->get_str(), scope.index());
+
+  for (auto *generic : node->generic_parameters) {
+    if (generic) collect_node(generic);
+  }
+
   for (auto *field : node->fields) {
     if (field) collect_node(field);
   }
@@ -49,21 +86,19 @@ void SymbolCollector::collect_struct(ast::StructDeclaration *node) {
   context.stack.pop();
 }
 
-void SymbolCollector::collect_type(ast::TypeDeclaration *node) {
+void SymbolCollector::collect_type_declaration(ast::TypeDeclaration *node) {
 
-  if (!node || !node->name) return;
+  assert(node && node->name);
 
-  auto type_symbol = declare_symbol(node->name->get_str(), SymbolKind::Type, node->specifiers.visibility, node);
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Type, node->specifiers.visibility, node);
 
-  if (!type_symbol.is_valid()) return;
+  if (!symbol.is_valid()) return;
 
-  ScopeId type_scope = context.env().scopes.create_scope(core::ScopeKind::Type, context.stack.current());
+  auto scope = enter_scope(core::ScopeKind::Type, node);
 
-  if (!type_scope.is_valid()) return;
+  if (!scope.is_valid()) return;
 
-  context.unit.semantic.set_scope(node, type_scope);
-
-  context.stack.push(type_scope);
+  debug::Trace::header(debug::Category::SymbolCollector, "Type '{}' (scope {})", node->name->get_str(), scope.index());
 
   for (auto *generic : node->generic_parameters) {
     if (generic) collect_node(generic);
@@ -72,47 +107,73 @@ void SymbolCollector::collect_type(ast::TypeDeclaration *node) {
   context.stack.pop();
 }
 
-void SymbolCollector::collect_variable(ast::VariableDeclaration *node) {
+void SymbolCollector::collect_variable_declaration(ast::VariableDeclaration *node) {
 
-  if (!node) return;
+  assert(node && node->pattern);
 
-  if (node->pattern) { collect_pattern(node->pattern); }
+  collect_node(node->pattern);
 }
 
-void SymbolCollector::collect_field(ast::FieldDeclaration *node) {
+void SymbolCollector::collect_enum_declaration(ast::EnumDeclaration *node) {
 
   assert(node && node->name);
 
-  auto field_symbol = declare_symbol(node->name->get_str(), SymbolKind::Field, Visibility::Private, node);
+  // The enum symbol belongs to the enclosing scope.
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Enum, node->specifiers.visibility, node);
 
-  if (!field_symbol.is_valid()) return;
+  if (!symbol.is_valid()) return;
 
-  // Type is resolved later by the Resolver.
-}
+  // Enum members live in the enum's own scope.
+  auto scope = enter_scope(core::ScopeKind::Enum, node);
 
-void SymbolCollector::collect_capability(ast::CapabilityDeclaration *node) {
+  if (!scope.is_valid()) return;
 
-  assert(node && node->name);
-
-  auto capability_symbol = declare_symbol(node->name->get_str(), SymbolKind::Capability, node->specifiers.visibility, node);
-
-  if (!capability_symbol.is_valid()) return;
-
-  ScopeId capability_scope = context.env().scopes.create_scope(core::ScopeKind::Capability, context.stack.current());
-
-  if (!capability_scope.is_valid()) return;
-
-  debug::Trace::header(debug::Category::SymbolCollector, "Capability '{}' (scope {})", node->name->get_str(), capability_scope.index());
-
-  context.unit.semantic.set_scope(node, capability_scope);
-
-  context.stack.push(capability_scope);
+  debug::Trace::header(debug::Category::SymbolCollector, "Enum '{}' (scope {})", node->name->get_str(), scope.index());
 
   for (auto *generic : node->generic_parameters) {
     if (generic) collect_node(generic);
   }
 
-  // Capability functions
+  for (auto *variant : node->variants) {
+    if (variant) collect_node(variant);
+  }
+
+  context.stack.pop();
+}
+
+void SymbolCollector::collect_enum_variant(ast::EnumVariant *node) {
+
+  assert(node && node->name);
+
+  auto symbol = declare_named_symbol(node->name, SymbolKind::EnumVariant, Visibility::Private, node);
+
+  if (!symbol.is_valid()) return;
+
+  debug::Trace::log(debug::Category::SymbolCollector, "variant '{}' -> symbol {}", node->name->get_str(), symbol.index());
+
+  for (auto *field : node->payload) {
+    if (field) collect_node(field);
+  }
+}
+
+void SymbolCollector::collect_capability_declaration(ast::CapabilityDeclaration *node) {
+
+  assert(node && node->name);
+
+  auto symbol = declare_named_symbol(node->name, SymbolKind::Capability, node->specifiers.visibility, node);
+
+  if (!symbol.is_valid()) return;
+
+  auto scope = enter_scope(core::ScopeKind::Capability, node);
+
+  if (!scope.is_valid()) return;
+
+  debug::Trace::header(debug::Category::SymbolCollector, "Capability '{}' (scope {})", node->name->get_str(), scope.index());
+
+  for (auto *generic : node->generic_parameters) {
+    if (generic) collect_node(generic);
+  }
+
   for (auto *member : node->members) {
     if (member) collect_node(member);
   }
@@ -120,19 +181,16 @@ void SymbolCollector::collect_capability(ast::CapabilityDeclaration *node) {
   context.stack.pop();
 }
 
-void SymbolCollector::collect_impl(ast::ImplDeclaration *node) {
+void SymbolCollector::collect_impl_declaration(ast::ImplDeclaration *node) {
 
-  if (!node) return;
+  assert(node);
 
-  ScopeId impl_scope = context.env().scopes.create_scope(core::ScopeKind::Impl, context.stack.current());
+  auto scope = enter_scope(core::ScopeKind::Impl, node);
 
-  if (!impl_scope.is_valid()) return;
+  if (!scope.is_valid()) return;
 
-  context.unit.semantic.set_scope(node, impl_scope);
+  debug::Trace::header(debug::Category::SymbolCollector, "Impl (scope {})", scope.index());
 
-  context.stack.push(impl_scope);
-
-  // Implementation members
   for (auto *member : node->members) {
     if (member) collect_node(member);
   }

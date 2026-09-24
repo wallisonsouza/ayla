@@ -22,6 +22,7 @@ enum class DiagnosticCode : std::uint32_t {
   UndefinedSymbol,
   UnknownModule,
   RedefinedSymbol,
+  RedefinedField,
   ShadowedSymbol,
   UnknownType,
   NotAType,
@@ -30,6 +31,8 @@ enum class DiagnosticCode : std::uint32_t {
 
   // Type checker
   TypeMismatch,
+  CannotInferType,
+  InvalidType,
   InvalidAssignment,
   InvalidConversion,
 };

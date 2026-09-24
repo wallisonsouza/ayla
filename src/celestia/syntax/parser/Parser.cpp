@@ -3,7 +3,7 @@
 #include "ParserContext.hpp"
 
 #include "celestia/ast/declarations/ModuleDeclaration.hpp"
-#include "celestia/ast/names/QualifiedNameNode.hpp"
+#include "celestia/ast/names/Qualified.hpp"
 
 #include <vector>
 
@@ -73,7 +73,7 @@ ast::ModuleDeclaration *Parser::create_implicit_module() {
 
   auto relative = std::filesystem::relative(context.unit.source.path, context.env.root);
 
-  std::vector<ast::IdentifierNode *> parts;
+  std::vector<ast::Identifier *> parts;
 
   for (const auto &part : relative) {
 
@@ -86,10 +86,10 @@ ast::ModuleDeclaration *Parser::create_implicit_module() {
 
     if (name.empty() || name == ".") continue;
 
-    parts.push_back(context.get_ast().alloc<ast::IdentifierNode>(name));
+    parts.push_back(context.get_ast().alloc<ast::Identifier>(name));
   }
 
-  auto *name = context.get_ast().alloc<ast::QualifiedNameNode>(std::move(parts));
+  auto *name = context.get_ast().alloc<ast::QualifiedName>(std::move(parts));
 
   return context.get_ast().alloc<ast::ModuleDeclaration>(name);
 }

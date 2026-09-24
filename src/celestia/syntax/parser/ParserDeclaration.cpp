@@ -7,7 +7,7 @@
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
@@ -32,7 +32,7 @@ ParseResult<std::vector<ast::GenericParameter *>> Parser::parse_generic_paramete
 
     auto *name = name_result.value();
 
-    std::vector<ast::TypeNode *> constraints;
+    std::vector<ast::Type *> constraints;
 
     tokens.skip_trivia();
 
@@ -41,8 +41,7 @@ ParseResult<std::vector<ast::GenericParameter *>> Parser::parse_generic_paramete
 
       tokens.skip_trivia();
 
-      auto constraints_result =
-          parse_delimited_list<ast::TypeNode *>(context, TokenKind::OPEN_BRACE, TokenKind::CLOSE_BRACE, TokenKind::COMMA, [&]() -> ParseResult<ast::TypeNode *> { return parse_type(); });
+      auto constraints_result = parse_delimited_list<ast::Type *>(context, TokenKind::OPEN_BRACE, TokenKind::CLOSE_BRACE, TokenKind::COMMA, [&]() -> ParseResult<ast::Type *> { return parse_type(); });
 
       if (constraints_result.is_error()) { return ParseResult<ast::GenericParameter *>::fail(); }
 
@@ -86,6 +85,8 @@ ParseResult<ast::Declaration *> Parser::parse_declaration() {
   default: break;
   }
 
+  if (tokens.kind(1) != TokenKind::COLON) return ParseResult<ast::Declaration *>::no_match();
+
   auto name_result = parse_identifier_name();
 
   if (name_result.is_error()) { return ParseResult<ast::Declaration *>::fail(); }
@@ -119,12 +120,7 @@ ParseResult<ast::Declaration *> Parser::parse_declaration() {
 
   case TokenKind::ENUM_KEYWORD: return upcast<ast::Declaration>(parse_enum_declaration(name, specifiers));
 
-  default:
-    // parser::diagnostics::report_expected_declaration_kind(context);
-
-    synchronize_declaration();
-
-    return ParseResult<ast::Declaration *>::fail();
+  default: synchronize_declaration(); return ParseResult<ast::Declaration *>::fail();
   }
 }
 
@@ -183,11 +179,11 @@ ParseResult<ast::EnumVariant *> Parser::parse_enum_variant() {
 
   tokens.skip_trivia();
 
-  std::vector<ast::TypeNode *> arguments;
+  std::vector<ast::Type *> arguments;
 
   if (tokens.check(TokenKind::OPEN_PAREN)) {
 
-    auto arguments_result = parse_delimited_list<ast::TypeNode *>(context, TokenKind::OPEN_PAREN, TokenKind::CLOSE_PAREN, TokenKind::COMMA, [&]() { return parse_type(); });
+    auto arguments_result = parse_delimited_list<ast::Type *>(context, TokenKind::OPEN_PAREN, TokenKind::CLOSE_PAREN, TokenKind::COMMA, [&]() { return parse_type(); });
 
     if (arguments_result.is_error()) { return ParseResult<ast::EnumVariant *>::fail(); }
 
@@ -199,7 +195,7 @@ ParseResult<ast::EnumVariant *> Parser::parse_enum_variant() {
   return ParseResult<ast::EnumVariant *>::ok(context.get_ast().alloc<ast::EnumVariant>(name, std::move(arguments)));
 }
 // Enum declaration
-ParseResult<ast::EnumDeclaration *> Parser::parse_enum_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+ParseResult<ast::EnumDeclaration *> Parser::parse_enum_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers) {
 
   auto &tokens = context.tokens();
 
@@ -358,7 +354,13 @@ ParseResult<ast::VariableDeclaration *> Parser::parse_variable_declaration(Decla
     initializer = initializer_result;
   }
 
-  return ParseResult<ast::VariableDeclaration *>::ok(context.get_ast().alloc<ast::VariableDeclaration>(pattern_result.value(), initializer, specifiers));
+  auto *node = context.get_ast().alloc<ast::VariableDeclaration>(pattern_result.value(), initializer, specifiers);
+
+  node->slice = pattern_result.value()->slice;
+
+  if (initializer) node->slice.extend_to(initializer->slice);
+
+  return ParseResult<ast::VariableDeclaration *>::ok(node);
 }
 
 // Capability member
@@ -544,7 +546,7 @@ ParseResult<ast::ImplDeclaration *> Parser::parse_impl_declaration() {
 }
 
 // Capability declaration
-ParseResult<ast::CapabilityDeclaration *> Parser::parse_capability_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+ParseResult<ast::CapabilityDeclaration *> Parser::parse_capability_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers) {
 
   auto &tokens = context.tokens();
 
@@ -612,7 +614,7 @@ ParseResult<ast::CapabilityDeclaration *> Parser::parse_capability_declaration(a
 }
 
 // Type declaration
-ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers) {
 
   auto &tokens = context.tokens();
 
@@ -627,7 +629,7 @@ ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(ast::Identifi
 }
 
 // Struct declaration
-ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers) {
+ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers) {
 
   auto &tokens = context.tokens();
 
@@ -647,7 +649,7 @@ ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(ast::Iden
 
   tokens.skip_trivia();
 
-  std::vector<ast::TypeNode *> compositions;
+  std::vector<ast::Type *> compositions;
 
   // struct(Type, Type, ...)
   if (tokens.match(TokenKind::OPEN_PAREN)) {
@@ -740,7 +742,7 @@ ParseResult<ast::StructDeclaration *> Parser::parse_struct_declaration(ast::Iden
 }
 
 // Function declaration
-ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers, bool require_body) {
+ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers, bool require_body) {
 
   auto &tokens = context.tokens();
 
@@ -785,7 +787,7 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(ast::
   }
 
   // -> Type
-  ast::TypeNode *return_type = nullptr;
+  ast::Type *return_type = nullptr;
 
   if (tokens.match(TokenKind::ARROW)) {
 

@@ -1,8 +1,12 @@
+#include "celestia/ast/statements/ExpressionStatementNode.hpp"
+#include "celestia/ast/statements/IfStatementNode.hpp"
+#include "celestia/ast/statements/ReturnStatementNode.hpp"
+#include "celestia/ast/statements/WhileStatementNode.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 
 #include <iostream>
 namespace celestia::semantic {
-  
+
 void Resolver::if_statement(celestia::ast::IfStatement *node) {
   if (node->condition) { resolve_node(node->condition); }
 
@@ -26,19 +30,8 @@ void Resolver::block_statement(ast::BlockStatement *node) {
 
   if (!node) return;
 
-  ScopeId scope_id = context.unit.semantic.scope(node);
-
-  if (!scope_id.is_valid()) {
-    std::cout << "ERRO: bloco sem scope associado\n";
-    return;
-  }
-
   for (auto *stmt : node->items) {
-
-    if (!stmt) {
-      std::cout << "ERRO: statement nulo no bloco\n";
-      continue;
-    }
+    if (!stmt) continue;
 
     resolve_node(stmt);
   }

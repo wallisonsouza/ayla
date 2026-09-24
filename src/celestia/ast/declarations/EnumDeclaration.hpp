@@ -1,8 +1,8 @@
 #pragma once
 #include "celestia/ast/Node.hpp"
 #include "celestia/ast/declarations/Declaration.hpp"
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
+#include "celestia/ast/names/Identifier.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include <vector>
 
@@ -10,15 +10,15 @@ namespace celestia::ast {
 
 struct EnumVariant : Node {
 
-  IdentifierNode *name;
-  std::vector<TypeNode *> arguments;
+  Identifier *name;
+  std::vector<Type *> payload;
 
-  EnumVariant(IdentifierNode *name, std::vector<TypeNode *> args) : Node(NodeKind::EnumVariant), name(name), arguments(std::move(args)) {}
+  EnumVariant(Identifier *name, std::vector<Type *> args) : Node(NodeKind::EnumVariant), name(name), payload(std::move(args)) {}
 };
 
 struct EnumDeclaration : Declaration {
 
-  IdentifierNode *name;
+  Identifier *name;
 
   std::vector<GenericParameter *> generic_parameters;
 
@@ -26,7 +26,7 @@ struct EnumDeclaration : Declaration {
 
   std::vector<EnumVariant *> variants;
 
-  EnumDeclaration(IdentifierNode *name, std::vector<GenericParameter *> generic_parameters, std::vector<EnumVariant *> variants, DeclarationSpecifiers specifiers)
+  EnumDeclaration(Identifier *name, std::vector<GenericParameter *> generic_parameters, std::vector<EnumVariant *> variants, DeclarationSpecifiers specifiers)
       : Declaration(NodeKind::EnumDeclaration), name(name), generic_parameters(std::move(generic_parameters)), specifiers(specifiers), variants(std::move(variants)) {}
 };
 

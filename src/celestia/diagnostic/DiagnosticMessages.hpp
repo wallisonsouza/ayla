@@ -74,6 +74,11 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
          .text = "undefined symbol '{name}'",
      }},
 
+    {DiagnosticCode::RedefinedField,
+     {
+         .title = "redefined field",
+         .text = "redefinition of field {kind} '{name}'",
+     }},
     {DiagnosticCode::RedefinedSymbol,
      {
          .title = "redefined symbol",
@@ -123,8 +128,15 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
     {DiagnosticCode::TypeMismatch,
      {
          .title = "type mismatch",
-         .text = "type mismatch: expected {expected}, found {found}",
+         .text = "type mismatch: expected '{name}', found '{found}'",
      }},
+
+      {DiagnosticCode::CannotInferType,
+     {
+         .title = "cannot infer type",
+         .text = "cannot infer type: '{name}'",
+     }},
+
 
     {DiagnosticCode::InvalidAssignment,
      {

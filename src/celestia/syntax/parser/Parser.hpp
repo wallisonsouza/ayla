@@ -2,8 +2,9 @@
 
 #include "celestia/ast/ASTFwd.hpp"
 #include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
+#include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/types/GenericType.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include "celestia/syntax/parser/ParseStatus.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
@@ -30,16 +31,16 @@ public:
   DeclarationSpecifiers parse_specifiers();
 
   // names
-  ParseResult<celestia::ast::IdentifierNode *> parse_identifier();
-  // ParseResult<ast::QualifiedNameNode *> parse_qualified_name();
-  ParseResult<ast::IdentifierNode *> parse_identifier_name();
+  ParseResult<celestia::ast::Identifier *> parse_identifier();
+  // ParseResult<ast::QualifiedName *> parse_qualified_name();
+  ParseResult<ast::Identifier *> parse_identifier_name();
   ParseResult<std::vector<ast::GenericParameter *>> parse_generic_parameters();
   ParseResult<celestia::ast::NameNode *> parse_name();
 
   // types
-  ParseResult<ast::TypeNode *> parse_type();
+  ParseResult<ast::Type *> parse_type();
 
-  ParseResult<ast::GenericTypeNode *> parse_generic_type(ast::NameNode *name);
+  ParseResult<ast::GenericType *> parse_generic_type(ast::NameNode *name);
 
   ParseResult<ast::NamedType *> parse_named_type();
 
@@ -52,26 +53,25 @@ public:
 
   ParseResult<ast::ImportDeclaration *> parse_import_declaration();
 
-  ParseResult<ast::GenericIdentifierNode *> parse_declaration_name();
+  ParseResult<ast::GenericName *> parse_declaration_name();
 
   ParseResult<ast::ImplDeclaration *> parse_impl_declaration();
 
   ParseResult<ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
 
-
   ParseResult<ast::EnumVariant *> parse_enum_variant();
 
-  ParseResult<ast::EnumDeclaration *> parse_enum_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+  ParseResult<ast::EnumDeclaration *> parse_enum_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers, bool require_body = true);
+  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers, bool require_body = true);
 
   ParseResult<ast::Declaration *> parse_capability_member(DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+  ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::StructDeclaration *> parse_struct_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+  ParseResult<ast::StructDeclaration *> parse_struct_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::TypeDeclaration *> parse_type_declaration(ast::IdentifierNode *name, DeclarationSpecifiers specifiers);
+  ParseResult<ast::TypeDeclaration *> parse_type_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
   ParseResult<ast::Declaration *> named(DeclarationSpecifiers specifiers);
 
@@ -100,7 +100,7 @@ public:
 
 private:
   ast::Expression *parse_assignment(ast::Expression *);
-
+  std::optional<std::vector<ast::Type *>> parse_type_arguments();
   ast::Expression *parse_binary_expression(int, ast::Expression *);
 
   ast::Expression *parse_unary_expression();
@@ -110,7 +110,7 @@ private:
   ast::Expression *parse_primary_expression();
   ast::Expression *parse_literal_expression();
 
-  ast::Expression *parse_struct_literal(celestia::ast::IdentifierNode *name);
+  ast::Expression *parse_struct_literal(celestia::ast::Identifier *name);
 
   ast::Expression *parse_number_literal();
 
@@ -126,7 +126,7 @@ private:
 
   ast::Expression *parse_index_access(ast::Expression *);
 
-  ast::CallExpressionNode *parse_call(ast::Expression *);
+  ast::CallExpressionNode *parse_call(celestia::ast::Expression *callee, std::vector<ast::Type *> generic_arguments);
 
   ast::Expression *parse_identifier_expression();
   ast::Expression *parse_array_literal();
@@ -264,7 +264,6 @@ private:
 
       tokens.skip_trivia();
 
-
       if (tokens.match(TokenKind::COMMA)) {
         tokens.skip_trivia();
 
@@ -274,7 +273,6 @@ private:
       }
 
       if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
-
     }
 
     parser::diagnostics::report_expected(context, close);

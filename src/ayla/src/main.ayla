@@ -1,6 +1,1 @@
-
-
-Result: enum<T, E> {
-    Ok(T)
-    Error(E)
-}
+let a

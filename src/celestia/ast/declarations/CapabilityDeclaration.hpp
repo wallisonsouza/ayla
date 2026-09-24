@@ -2,7 +2,7 @@
 
 #include "Declaration.hpp"
 
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 
 #include <utility>
@@ -12,7 +12,7 @@ namespace celestia::ast {
 
 struct CapabilityDeclaration : Declaration {
 
-  IdentifierNode *name;
+  Identifier *name;
 
   std::vector<GenericParameter *> generic_parameters;
 
@@ -21,7 +21,7 @@ struct CapabilityDeclaration : Declaration {
   std::vector<Declaration *> members;
 
   CapabilityDeclaration(
-      IdentifierNode *name,
+      Identifier *name,
       std::vector<GenericParameter *> generic_parameters,
       std::vector<Declaration *> members,
       DeclarationSpecifiers specifiers)

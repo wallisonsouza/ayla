@@ -61,9 +61,9 @@ private:
     dispatcher.bind<ast::NullLiteralNode, &AstDumper::dump_null_literal>();
 
     // Names
-    dispatcher.bind<ast::IdentifierNode, &AstDumper::dump_identifier>();
+    dispatcher.bind<ast::Identifier, &AstDumper::dump_identifier>();
 
-    dispatcher.bind<ast::QualifiedNameNode, &AstDumper::dump_qualified_name>();
+    dispatcher.bind<ast::QualifiedName, &AstDumper::dump_qualified_name>();
 
     // Expressions
     dispatcher.bind<ast::IdentifierExpressionNode, &AstDumper::dump_identifier_expression>();
@@ -115,7 +115,7 @@ private:
     // Other nodes
     dispatcher.bind<ast::NamedPattern, &AstDumper::dump_named_pattern>();
 
-    dispatcher.bind<ast::TypeNode, &AstDumper::dump_type>();
+    dispatcher.bind<ast::Type, &AstDumper::dump_type>();
 
     dispatcher.bind<ast::ObjectLiteralNode, &AstDumper::dump_object_literal>();
 
@@ -131,14 +131,14 @@ private:
     // Types
     dispatcher.bind<ast::NamedType, &AstDumper::dump_named_type>();
 
-    dispatcher.bind<ast::GenericTypeNode, &AstDumper::dump_generic_type>();
+    dispatcher.bind<ast::GenericType, &AstDumper::dump_generic_type>();
     dispatcher.bind<ast::TypeDeclaration, &AstDumper::dump_type_declaration>();
     dispatcher.bind<ast::GenericParameter, &AstDumper::dump_generic>();
-    dispatcher.bind<ast::GenericIdentifierNode, &AstDumper::dump_generic_name>();
+    dispatcher.bind<ast::GenericName, &AstDumper::dump_generic_name>();
   }
 
   void dump_root(const ast::RootNode *node);
-  void dump_generic_name(const ast::GenericIdentifierNode *node);
+  void dump_generic_name(const ast::GenericName *node);
   void dump_impl_declaration(const ast::ImplDeclaration *node);
   void dump_number_literal(const ast::NumberLiteralNode *node);
   void dump_string_literal(const ast::StringLiteralNode *node);
@@ -146,8 +146,8 @@ private:
   void dump_struct_literal(const ast::StructLiteralNode *node);
   void dump_bool_literal(const ast::BoolLiteralNode *node);
   void dump_null_literal(const ast::NullLiteralNode *node);
-  void dump_identifier(const ast::IdentifierNode *node);
-  void dump_qualified_name(const ast::QualifiedNameNode *node);
+  void dump_identifier(const ast::Identifier *node);
+  void dump_qualified_name(const ast::QualifiedName *node);
   void dump_generic(const ast::GenericParameter *node);
 
   // Expressions
@@ -178,7 +178,7 @@ private:
 
   // Other nodes
   void dump_named_pattern(const ast::NamedPattern *node);
-  void dump_type(const ast::TypeNode *node);
+  void dump_type(const ast::Type *node);
   void dump_object_literal(const ast::ObjectLiteralNode *node);
   void dump_object_field(const ast::ObjectFieldNode *node);
   void dump_array_literal(const ast::ArrayLiteralNode *node);
@@ -186,7 +186,7 @@ private:
   void dump_struct_declaration(const ast::StructDeclaration *node);
   void dump_type_declaration(const ast::TypeDeclaration *node);
   void dump_named_type(const ast::NamedType *node);
-  void dump_generic_type(const ast::GenericTypeNode *node);
+  void dump_generic_type(const ast::GenericType *node);
   void dump_name(const ast::NameNode *node);
 
 private:

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Declaration.hpp"
-#include "celestia/ast/names/NameNode.hpp"
+#include "celestia/ast/names/Name.hpp"
 #include <optional>
 #include <filesystem>
 

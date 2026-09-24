@@ -28,7 +28,7 @@ inline constexpr std::string_view Void = "Void";
 
 } // namespace types
 
-namespace intrinsics {
+namespace constructors {
 
 inline constexpr std::string_view Array = "Array";
 inline constexpr std::string_view Map = "Map";

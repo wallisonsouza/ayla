@@ -1,13 +1,44 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-
 namespace celestia::semantic {
 
-TypeChecker::TypeChecker(TypeCheckerContext &context) : context(context), dispatcher() {
-  bind_literals();
-  bind_expressions();
-  bind_statements();
-  bind_declarations();
-  // bind_types();
+TypeChecker::TypeChecker(TypeCheckerContext &context) : context(context) {}
+
+bool TypeChecker::check(ast::Node *node, TypeId expected) {
+
+  if (!node) return false;
+
+  switch (node->kind) {
+
+  case ast::NodeKind::Root: check_root(static_cast<ast::RootNode *>(node)); return true;
+
+  case ast::NodeKind::ModuleDeclaration: check_module_declaration(static_cast<ast::ModuleDeclaration *>(node)); return true;
+
+  case ast::NodeKind::VariableDeclaration: check_variable_declaration(static_cast<ast::VariableDeclaration *>(node)); return true;
+
+  case ast::NodeKind::FunctionDeclaration: check_function_declaration(static_cast<ast::FunctionDeclaration *>(node)); return true;
+
+  case ast::NodeKind::StructDeclaration: check_struct_declaration(static_cast<ast::StructDeclaration *>(node)); return true;
+
+  case ast::NodeKind::ModuleInitDeclaration: check_module_init_declaration(static_cast<ast::ModuleInitDeclaration *>(node)); return true;
+
+  case ast::NodeKind::BlockStatement: check_block_statement(static_cast<ast::BlockStatement *>(node)); return true;
+
+  case ast::NodeKind::ReturnStatement: check_return_statement(static_cast<ast::ReturnStatement *>(node)); return true;
+
+  case ast::NodeKind::NumberLiteral: return check_number_literal(static_cast<ast::NumberLiteralNode *>(node), expected);
+
+  case ast::NodeKind::StringLiteral: return check_string_literal(static_cast<ast::StringLiteralNode *>(node), expected);
+
+  case ast::NodeKind::BooleanLiteral: return check_boolean_literal(static_cast<ast::BoolLiteralNode *>(node), expected);
+
+  case ast::NodeKind::ArrayLiteral: return check_array_literal(static_cast<ast::ArrayLiteralNode *>(node), expected);
+
+  case ast::NodeKind::StructLiteral: return check_struct_literal(static_cast<ast::StructLiteralNode *>(node), expected);
+
+  case ast::NodeKind::NamedPattern: return check_name_pattern(static_cast<ast::NamedPattern *>(node), expected);
+
+  default: error(node, "unsupported node in type checker"); return false;
+  }
 }
 
 bool TypeChecker::is_same_type(TypeId a, TypeId b) const {
@@ -57,65 +88,6 @@ bool TypeChecker::is_assignable(TypeId target, TypeId source) const {
   }
 
   return false;
-}
-
-void TypeChecker::bind_declarations() {
-
-  dispatcher.bind<ast::ModuleDeclaration, &TypeChecker::check_module_declaration>();
-
-  dispatcher.bind<ast::VariableDeclaration, &TypeChecker::check_variable_declaration>();
-
-  dispatcher.bind<ast::FunctionDeclaration, &TypeChecker::check_function_declaration>();
-
-  dispatcher.bind<ast::StructDeclaration, &TypeChecker::check_struct_declaration>();
-
-  dispatcher.bind<ast::ModuleInitDeclaration, &TypeChecker::check_module_init_declaration>();
-}
-
-void TypeChecker::bind_expressions() {
-
-  dispatcher.bind<ast::BinaryExpressionNode, &TypeChecker::binary_expression>();
-
-  // Adicione outros binds de expressões conforme necessário.
-}
-
-void TypeChecker::bind_statements() {
-
-  dispatcher.bind<ast::BlockStatement, &TypeChecker::check_block_statement>();
-
-  dispatcher.bind<ast::ReturnStatement, &TypeChecker::check_return_statement>();
-}
-
-void TypeChecker::bind_literals() {
-
-  dispatcher.bind<ast::NumberLiteralNode, &TypeChecker::number_literal>();
-
-  dispatcher.bind<ast::StringLiteralNode, &TypeChecker::string_literal>();
-
-  dispatcher.bind<ast::BoolLiteralNode, &TypeChecker::boolean_literal>();
-
-  dispatcher.bind<ast::ArrayLiteralNode, &TypeChecker::array_literal>();
-
-  dispatcher.bind<ast::StructLiteralNode, &TypeChecker::check_struct_literal>();
-}
-
-void TypeChecker::check(ast::Node *node) {
-  if (!node) return;
-
-  if ( dispatcher.dispatch(this, node)== DispatchResult::NotHandled) { std::cerr << "Checker: no handler for NodeKind: " << celestia::ast::node_kind_name(node->kind) << '\n'; }
-}
-
-TypeId TypeChecker::type_from_node(ast::TypeNode *node) {
-  if (!node) return TypeId::invalid();
-
-  switch (node->kind) {
-
-  case ast::NodeKind::NamedType: return check_named_type(static_cast<ast::NamedType *>(node));
-
-  case ast::NodeKind::GenericType: return check_generic_type(static_cast<ast::GenericTypeNode *>(node));
-
-  default: error(node, "unsupported type node"); return TypeId::invalid();
-  }
 }
 
 } // namespace celestia::semantic

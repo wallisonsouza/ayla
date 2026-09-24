@@ -1,8 +1,8 @@
 #pragma once
 
 #include "celestia/ast/expressions/ExpressionNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
-#include "celestia/ast/types/TypeNode.hpp"
+#include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/types/Type.hpp"
 #include <string>
 #include <vector>
 
@@ -50,19 +50,19 @@ struct ObjectLiteralNode : Expression {
 
 struct StructFieldInitializerNode : Node {
 
-  IdentifierNode *name;
+  Identifier *name;
   Expression *value;
 
-  StructFieldInitializerNode(IdentifierNode *name, Expression *value) : Node(NodeKind::StructFieldInitializer), name(name), value(value) {}
+  StructFieldInitializerNode(Identifier *name, Expression *value) : Node(NodeKind::StructFieldInitializer), name(name), value(value) {}
 };
 
 struct StructLiteralNode : Expression {
 
-  TypeNode *type;
+  Type *type;
 
   std::vector<StructFieldInitializerNode *> fields;
 
-  StructLiteralNode(TypeNode *type, std::vector<StructFieldInitializerNode *> fields) : Expression(NodeKind::StructLiteral), type(type), fields(std::move(fields)) {}
+  StructLiteralNode(Type *type, std::vector<StructFieldInitializerNode *> fields) : Expression(NodeKind::StructLiteral), type(type), fields(std::move(fields)) {}
 };
 
 } // namespace celestia::ast

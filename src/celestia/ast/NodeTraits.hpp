@@ -29,12 +29,12 @@
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
 #include "celestia/ast/statements/WhileStatementNode.hpp"
 // Names
-#include "celestia/ast/names/IdentifierNode.hpp"
-#include "celestia/ast/names/QualifiedNameNode.hpp"
+#include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/names/Qualified.hpp"
 
 // Types
 #include "celestia/ast/types/FunctionType.hpp"
-#include "celestia/ast/types/TypeNode.hpp"
+#include "celestia/ast/types/Type.hpp"
 
 // Patterns
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
@@ -54,8 +54,8 @@ template <> struct NodeTraits<EnumDeclaration> {
   static constexpr NodeKind kind = NodeKind::EnumDeclaration;
 };
 
-template <> struct NodeTraits<GenericIdentifierNode> {
-  static constexpr NodeKind kind = NodeKind::GenericIdentifier;
+template <> struct NodeTraits<GenericName> {
+  static constexpr NodeKind kind = NodeKind::GenericName;
 };
 
 template <> struct NodeTraits<GenericParameter> {
@@ -75,7 +75,7 @@ template <> struct NodeTraits<ModuleInitDeclaration> {
   static constexpr NodeKind kind = NodeKind::ModuleInitDeclaration;
 };
 
-template <> struct NodeTraits<GenericTypeNode> {
+template <> struct NodeTraits<GenericType> {
   static constexpr NodeKind kind = NodeKind::GenericType;
 };
 template <> struct NodeTraits<FunctionType> {
@@ -201,15 +201,15 @@ template <> struct NodeTraits<ImportDeclaration> {
   static constexpr NodeKind kind = NodeKind::ImportDeclaration;
 };
 
-template <> struct NodeTraits<IdentifierNode> {
+template <> struct NodeTraits<Identifier> {
   static constexpr NodeKind kind = NodeKind::Identifier;
 };
 
-template <> struct NodeTraits<QualifiedNameNode> {
+template <> struct NodeTraits<QualifiedName> {
   static constexpr NodeKind kind = NodeKind::QualifiedName;
 };
 
-template <> struct NodeTraits<TypeNode> {
+template <> struct NodeTraits<Type> {
   static constexpr NodeKind kind = NodeKind::Type;
 };
 

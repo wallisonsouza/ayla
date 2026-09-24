@@ -1,5 +1,5 @@
 
-#include "celestia/ast/names/QualifiedNameNode.hpp"
+#include "celestia/ast/names/Qualified.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 
 namespace celestia::syntax {
@@ -16,7 +16,7 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
 
   if (!tokens.check(TokenKind::DOT)) return ParseResult<celestia::ast::NameNode *>::ok(first.value());
 
-  std::vector<celestia::ast::IdentifierNode *> parts;
+  std::vector<celestia::ast::Identifier *> parts;
   parts.push_back(first.value());
 
   while (tokens.match(TokenKind::DOT)) {
@@ -33,42 +33,42 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
     parts.push_back(next.value());
   }
 
-  auto *qualified = context.get_ast().alloc<celestia::ast::QualifiedNameNode>(std::move(parts));
+  auto *qualified = context.get_ast().alloc<celestia::ast::QualifiedName>(std::move(parts));
 
   qualified->slice.begin = qualified->parts.front()->slice.begin;
   qualified->slice.end = qualified->parts.back()->slice.end;
 
   return ParseResult<celestia::ast::NameNode *>::ok(qualified);
 }
-ParseResult<celestia::ast::IdentifierNode *> Parser::parse_identifier() {
+ParseResult<celestia::ast::Identifier *> Parser::parse_identifier() {
   auto &tokens = context.tokens();
 
   auto *token = tokens.match(TokenKind::IDENTIFIER);
 
-  if (!token) { return ParseResult<celestia::ast::IdentifierNode *>::no_match(); }
+  if (!token) { return ParseResult<celestia::ast::Identifier *>::no_match(); }
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  auto *node = context.get_ast().alloc<celestia::ast::IdentifierNode>(text);
+  auto *node = context.get_ast().alloc<celestia::ast::Identifier>(text);
 
   node->slice = token->slice;
 
-  return ParseResult<celestia::ast::IdentifierNode *>::ok(node);
+  return ParseResult<celestia::ast::Identifier *>::ok(node);
 }
 
-ParseResult<ast::IdentifierNode *> Parser::parse_identifier_name() {
+ParseResult<ast::Identifier *> Parser::parse_identifier_name() {
 
   auto result = parse_name();
 
-  if (result.is_error()) { return ParseResult<ast::IdentifierNode *>::fail(); }
+  if (result.is_error()) { return ParseResult<ast::Identifier *>::fail(); }
 
-  if (result.is_no_match()) { return ParseResult<ast::IdentifierNode *>::no_match(); }
+  if (result.is_no_match()) { return ParseResult<ast::Identifier *>::no_match(); }
 
   auto *name = result.value();
 
-  if (name->kind != ast::NodeKind::Identifier) { return ParseResult<ast::IdentifierNode *>::no_match(); }
+  if (name->kind != ast::NodeKind::Identifier) { return ParseResult<ast::Identifier *>::no_match(); }
 
-  return ParseResult<ast::IdentifierNode *>::ok(static_cast<ast::IdentifierNode *>(name));
+  return ParseResult<ast::Identifier *>::ok(static_cast<ast::Identifier *>(name));
 }
 
 } // namespace celestia::syntax

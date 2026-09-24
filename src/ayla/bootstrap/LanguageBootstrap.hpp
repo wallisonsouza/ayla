@@ -45,6 +45,14 @@ public:
     env.builtins.string_type = bind_primitive(env, builtin, types::String, celestia::semantic::PrimitiveKind::String);
 
     env.builtins.void_type = bind_primitive(env, builtin, types::Void, celestia::semantic::PrimitiveKind::Void);
+
+    env.constructors.array_constructor = bind_generic(env, builtin, constructors::Array, 1);
+
+    env.constructors.map_constructor = bind_generic(env, builtin, constructors::Map, 2);
+
+    env.constructors.set_constructor = bind_generic(env, builtin, constructors::Set, 1);
+
+    env.constructors.ref_constructor = bind_generic(env, builtin, constructors::Ref, 1);
   }
 
 private:
@@ -64,6 +72,29 @@ private:
     auto type_id = env.types.get_or_create_primitive(symbol_id, kind);
 
     auto &symbol = env.symbols.get(symbol_id);
+    symbol.type = type_id;
+
+    return type_id;
+  }
+
+  static celestia::semantic::TypeId bind_generic(CompilerEnvironment &env, celestia::semantic::Module &module, std::string_view name, size_t arity) {
+
+    auto scope_id = module.scope_id();
+
+    if (!scope_id.is_valid()) { throw std::runtime_error("LanguageBootstrap: builtin module has no scope"); }
+
+    auto symbol_id = env.symbols.create_symbol(std::string(name), SymbolKind::Type, Visibility::Public, false, nullptr);
+
+    if (!symbol_id.is_valid()) { throw std::runtime_error("LanguageBootstrap: failed to create builtin type '" + std::string(name) + "'"); }
+
+    auto &scope = env.scopes.get(scope_id);
+
+    scope.symbols.insert(std::string(name), symbol_id);
+
+    auto type_id = env.types.get_or_create_generic(symbol_id, arity);
+
+    auto &symbol = env.symbols.get(symbol_id);
+
     symbol.type = type_id;
 
     return type_id;

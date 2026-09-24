@@ -6,6 +6,7 @@
 #include "celestia/ast/declarations/StructDeclaration.hpp"
 #include "celestia/ast/declarations/TypeDeclaration.hpp"
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/debug/ast/AstDumper.hpp"
 
 namespace celestia::debug {
@@ -94,7 +95,7 @@ void AstDumper::dump_enum_variant(const ast::EnumVariant *node) {
   auto g = context.object("EnumVariant");
 
   g.field("Name", node->name);
-  g.list("Arguments", node->arguments);
+  g.list("payload", node->payload);
 }
 
 

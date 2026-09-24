@@ -32,11 +32,11 @@ struct BuiltinTypes {
   celestia::semantic::TypeId void_type = celestia::semantic::TypeId::invalid();
 };
 
-struct BuiltinIntrinsics {
-  celestia::semantic::SymbolId array = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId map = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId set = celestia::semantic::SymbolId ::invalid();
-  celestia::semantic::SymbolId ref = celestia::semantic::SymbolId ::invalid();
+struct BuiltinConstructors {
+  celestia::semantic::TypeId array_constructor = celestia::semantic::TypeId ::invalid();
+  celestia::semantic::TypeId map_constructor = celestia::semantic::TypeId ::invalid();
+  celestia::semantic::TypeId set_constructor = celestia::semantic::TypeId ::invalid();
+  celestia::semantic::TypeId ref_constructor = celestia::semantic::TypeId ::invalid();
 };
 
 struct CompilerEnvironment {
@@ -61,7 +61,7 @@ struct CompilerEnvironment {
 
   ScopeManager scopes;
 
-  BuiltinIntrinsics intrinsics;
+  BuiltinConstructors constructors;
 
   celestia::semantic::ModuleId builtin_module;
 

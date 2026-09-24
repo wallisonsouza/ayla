@@ -53,7 +53,7 @@ bool TypeChecker::check_function_parameters(ast::FunctionDeclaration *node, Func
 
     if (!parameter) continue;
 
-    TypeId parameter_type = check_pattern(parameter);
+    TypeId parameter_type = infer(parameter);
 
     if (!parameter_type.is_valid()) return false;
 
@@ -68,7 +68,7 @@ bool TypeChecker::check_function_return_type(ast::FunctionDeclaration *node, Fun
 
   if (node->return_type) {
 
-    TypeId return_type = type_from_node(node->return_type);
+    TypeId return_type = infer(node->return_type);
 
     if (!return_type.is_valid()) {
 

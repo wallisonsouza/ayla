@@ -8,6 +8,7 @@
 #include <vector>
 
 class TypeManager {
+
 public:
   celestia::semantic::TypeId get_or_create(celestia::semantic::SymbolId symbol, celestia::semantic::TypeKind kind) {
 
@@ -26,7 +27,7 @@ public:
     default: return celestia::semantic::TypeId::invalid();
     }
 
-    celestia::semantic::TypeId id = insert(type);
+    auto id = insert(type);
 
     types_by_symbol.emplace(symbol, id);
 
@@ -41,7 +42,7 @@ public:
 
     auto *type = arena.alloc<celestia::semantic::PrimitiveType>(primitive);
 
-    celestia::semantic::TypeId id = insert(type);
+    auto id = insert(type);
 
     types_by_symbol.emplace(symbol, id);
 
@@ -56,14 +57,14 @@ public:
 
     auto *type = arena.alloc<celestia::semantic::GenericDeclarationType>(symbol, arity);
 
-    celestia::semantic::TypeId id = insert(type);
+    auto id = insert(type);
 
     types_by_symbol.emplace(symbol, id);
 
     return id;
   }
 
-  celestia::semantic::TypeId get_or_create_generic_instance(celestia::semantic::SymbolId constructor, const std::vector<celestia::semantic::TypeId> &arguments) {
+  celestia::semantic::TypeId get_or_create_generic_instance(celestia::semantic::TypeId constructor, const std::vector<celestia::semantic::TypeId> &arguments) {
 
     for (size_t i = 0; i < types.size(); ++i) {
 

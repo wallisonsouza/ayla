@@ -1,3 +1,4 @@
+#include "celestia/ast/names/Generic.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 namespace celestia::semantic {
 
@@ -11,8 +12,7 @@ void Resolver::resolve_generic_parameter(ast::GenericParameter *node) {
 
   // Resolve its constraints.
   for (auto *constraint : node->constraints) {
-    if (constraint) {
-      resolve_node(constraint);
-    }
+    if (constraint) { resolve_node(constraint); }
   }
-}}
+}
+} // namespace celestia::semantic

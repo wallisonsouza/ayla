@@ -1,56 +1,35 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-#include "celestia/semantic/resolver/Trace.hpp"
+#include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
 
 namespace celestia::semantic {
 
 void TypeChecker::check_variable_declaration(ast::VariableDeclaration *node) {
 
-  if (!node) return;
+  assert(node && node->pattern);
 
-  debug::Trace::log(debug::Category::TypeChecker, "checking variable declaration");
+  TypeId variable_type = TypeId::invalid();
 
-  if (!node->pattern) {
-    error(node, "variable has no pattern");
-    return;
-  }
+  variable_type = infer(node->pattern);
 
-  // --------------------------------------------------
-  // Initializer
-  // --------------------------------------------------
+  if (!variable_type.is_valid()) {
 
-  TypeId initializer_type = TypeId::invalid();
-
-  if (node->initializer) {
-
-    debug::Trace::log(debug::Category::TypeChecker, "checking variable initializer");
-
-    check(node->initializer);
-
-    initializer_type = context.unit.semantic.type(node->initializer);
-
-    if (!initializer_type.is_valid()) {
-      error(node, "initializer has no valid type");
+    if (!node->initializer) {
+      checker::diagnostics::report_cannot_infer_type(context, node->slice);
       return;
     }
 
-    debug::Trace::log(debug::Category::TypeChecker, "initializer type = {}", context.env().types.get(initializer_type).to_string());
+    variable_type = infer(node->initializer);
+
+    if (!variable_type.is_valid()) { return; }
   }
 
-  // --------------------------------------------------
-  // Pattern
-  // --------------------------------------------------
+  if (!check(node->pattern, variable_type)) return;
 
-  TypeId variable_type = check_pattern(node->pattern, initializer_type);
+  if (node->initializer) {
 
-  if (!variable_type.is_valid()) return;
-
-  // --------------------------------------------------
-  // Resultado
-  // --------------------------------------------------
+    if (!check(node->initializer, variable_type)) return;
+  }
 
   context.unit.semantic.set_type(node, variable_type);
-
-  debug::Trace::log(debug::Category::TypeChecker, "variable type = {}", context.env().types.get(variable_type).to_string());
 }
-
 } // namespace celestia::semantic

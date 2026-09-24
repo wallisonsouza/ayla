@@ -1,15 +1,15 @@
 #pragma once
 
-#include "celestia/ast/names/IdentifierNode.hpp"
-#include "celestia/ast/names/NameNode.hpp"
+#include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/names/Name.hpp"
 #include <string>
 #include <vector>
 
 namespace celestia::ast {
 
-struct QualifiedNameNode : NameNode {
+struct QualifiedName : NameNode {
 
-  std::vector<IdentifierNode *> parts;
+  std::vector<Identifier *> parts;
 
   std::string get_str() const override {
     std::string key;
@@ -23,7 +23,7 @@ struct QualifiedNameNode : NameNode {
     return key;
   }
 
-  QualifiedNameNode(std::vector<IdentifierNode *> parts) : NameNode(NodeKind::QualifiedName), parts(std::move(parts)) {}
+  QualifiedName(std::vector<Identifier *> parts) : NameNode(NodeKind::QualifiedName), parts(std::move(parts)) {}
 };
 
 } // namespace celestia::ast

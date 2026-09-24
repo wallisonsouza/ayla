@@ -3,7 +3,7 @@
 
 namespace celestia::semantic {
 
-void TypeChecker::binary_expression(ast::BinaryExpressionNode *node) {
+void TypeChecker::check_binary_expression(ast::BinaryExpressionNode *node) {
 
   if (!node || !node->lhs || !node->rhs) return;
 

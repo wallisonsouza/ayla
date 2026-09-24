@@ -1,6 +1,56 @@
-#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
+
+#include "celestia/ast/expressions/AssignmentExpression.hpp"
+#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
+#include "celestia/ast/expressions/CallExpressionNode.hpp"
+#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
+#include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
+#include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
+#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
+
 namespace celestia::semantic {
+
+
+void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node) {
+  auto current = context.stack.current();
+
+  debug::Trace::header(debug::Category::Resolver, "Resolving '{}' in scope {}", node->name->get_str(), current.index());
+
+  ScopeId scope_id = context.stack.current();
+
+  if (!scope_id.is_valid()) {
+
+    context.unit.diagnostics.report({
+        .severity = diagnostic::Severity::Error,
+        .code = diagnostic::DiagnosticCode::NotAType,
+        .arguments =
+            {
+                diagnostic::name(node->name->str),
+            },
+    });
+
+    return;
+  }
+
+  SymbolId id = context.get_env().scopes.lookup(scope_id, node->name->str);
+
+  if (!id.is_valid()) {
+
+    context.unit.diagnostics.report({
+        .severity = diagnostic::Severity::Error,
+        .code = diagnostic::DiagnosticCode::UndefinedSymbol,
+        .arguments =
+            {
+                diagnostic::name(node->name->str),
+            },
+    });
+
+    return;
+  }
+
+  context.unit.semantic.set_symbol(node, id);
+}
+
 void Resolver::binary_expression(celestia::ast::BinaryExpressionNode *node) {
   resolve_node(node->lhs);
   resolve_node(node->rhs);

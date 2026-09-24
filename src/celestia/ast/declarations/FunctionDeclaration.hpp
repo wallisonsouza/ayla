@@ -2,10 +2,10 @@
 
 #include "Declaration.hpp"
 
-#include "celestia/ast/names/GenericIdentifierNode.hpp"
+#include "celestia/ast/names/Generic.hpp"
 #include "celestia/ast/patterns/PatternNode.hpp"
 #include "celestia/ast/statements/BlockStatementNode.hpp"
-#include "celestia/ast/types/TypeNode.hpp"
+#include "celestia/ast/types/Type.hpp"
 
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 
@@ -16,7 +16,7 @@ namespace celestia::ast {
 
 struct FunctionDeclaration : Declaration {
 
-  IdentifierNode *name;
+  Identifier *name;
 
   std::vector<GenericParameter *> generic_parameters;
 
@@ -24,15 +24,15 @@ struct FunctionDeclaration : Declaration {
 
   std::vector<PatternNode *> parameters;
 
-  TypeNode *return_type;
+  Type *return_type;
 
   BlockStatement *body;
 
   FunctionDeclaration(
-      IdentifierNode *name = nullptr,
+      Identifier *name = nullptr,
       std::vector<GenericParameter *> generic_parameters = {},
       std::vector<PatternNode *> parameters = {},
-      TypeNode *return_type = nullptr,
+      Type *return_type = nullptr,
       BlockStatement *body = nullptr,
       DeclarationSpecifiers specifiers = {})
 

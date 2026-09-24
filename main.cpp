@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv) {
 
-  celestia::debug::Trace::enable(celestia::debug::Category::SymbolCollector);
+  celestia::debug::Trace::enable(celestia::debug::Category::SymbolCollector | celestia::debug::Category::Resolver | celestia::debug::Category::TypeChecker);
 
   return AylaApplication{}.run(parse_command_line(argc, argv));
 }

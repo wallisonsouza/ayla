@@ -4,8 +4,8 @@
 
 namespace celestia::ast {
 
-struct TypeNode : Node {
-  explicit TypeNode(NodeKind kind) : Node(kind) {}
+struct Type : Node {
+  explicit Type(NodeKind kind) : Node(kind) {}
 };
 
 } // namespace celestia::ast

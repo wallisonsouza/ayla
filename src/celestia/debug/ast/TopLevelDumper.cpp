@@ -21,15 +21,15 @@ void AstDumper::dump_name(const ast::NameNode *node) {
 
   switch (node->kind) {
 
-  case ast::NodeKind::Identifier: dump_identifier(static_cast<const ast::IdentifierNode *>(node)); break;
+  case ast::NodeKind::Identifier: dump_identifier(static_cast<const ast::Identifier *>(node)); break;
 
-  case ast::NodeKind::QualifiedName: dump_qualified_name(static_cast<const ast::QualifiedNameNode *>(node)); break;
+  case ast::NodeKind::QualifiedName: dump_qualified_name(static_cast<const ast::QualifiedName *>(node)); break;
 
   default: break;
   }
 }
 
-void AstDumper::dump_type(const ast::TypeNode *node) {
+void AstDumper::dump_type(const ast::Type *node) {
 
   if (!node) return;
 
@@ -50,7 +50,7 @@ void AstDumper::dump_named_type(const ast::NamedType *node) {
   g.field("name", node->name);
 }
 
-void AstDumper::dump_generic_type(const ast::GenericTypeNode *node) {
+void AstDumper::dump_generic_type(const ast::GenericType *node) {
 
   if (!node || !node->name) return;
 

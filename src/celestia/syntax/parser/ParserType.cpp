@@ -9,13 +9,13 @@
 
 namespace celestia::syntax {
 
-ParseResult<ast::TypeNode *> Parser::parse_type() {
+ParseResult<ast::Type *> Parser::parse_type() {
 
   auto &tokens = context.tokens();
 
   switch (tokens.kind()) {
 
-  case TokenKind::OPEN_PAREN: return upcast<ast::TypeNode>(parse_function_type());
+  case TokenKind::OPEN_PAREN: return upcast<ast::Type>(parse_function_type());
 
   case TokenKind::IDENTIFIER: {
 
@@ -27,23 +27,23 @@ ParseResult<ast::TypeNode *> Parser::parse_type() {
     // foo.Vec<Int>
     auto name_result = parse_name();
 
-    if (name_result.is_error()) { return ParseResult<ast::TypeNode *>::fail(); }
+    if (name_result.is_error()) { return ParseResult<ast::Type *>::fail(); }
 
-    if (name_result.is_no_match()) { return ParseResult<ast::TypeNode *>::no_match(); }
+    if (name_result.is_no_match()) { return ParseResult<ast::Type *>::no_match(); }
 
     auto *name = name_result.value();
 
-    // NamedType or GenericTypeNode
-    if (tokens.check(TokenKind::LESS)) { return upcast<ast::TypeNode>(parse_generic_type(name)); }
+    // NamedType or GenericType
+    if (tokens.check(TokenKind::LESS)) { return upcast<ast::Type>(parse_generic_type(name)); }
 
     auto *type = context.get_ast().alloc<ast::NamedType>(name);
 
     type->slice = name->slice;
 
-    return ParseResult<ast::TypeNode *>::ok(type);
+    return ParseResult<ast::Type *>::ok(type);
   }
 
-  default: return ParseResult<ast::TypeNode *>::no_match();
+  default: return ParseResult<ast::Type *>::no_match();
   }
 }
 
@@ -67,28 +67,28 @@ ParseResult<ast::NamedType *> Parser::parse_named_type() {
   return ParseResult<ast::NamedType *>::ok(type);
 }
 
-ParseResult<ast::GenericTypeNode *>
+ParseResult<ast::GenericType *>
 Parser::parse_generic_type(ast::NameNode *name) {
 
   auto &tokens = context.tokens();
 
   auto result =
-      parse_delimited_list<ast::TypeNode *>(
+      parse_delimited_list<ast::Type *>(
           context,
           TokenKind::LESS,
           TokenKind::GREATER,
           TokenKind::COMMA,
-          [&]() -> ParseResult<ast::TypeNode *> {
+          [&]() -> ParseResult<ast::Type *> {
             return parse_type();
           }
       );
 
   if (result.is_error()) {
-    return ParseResult<ast::GenericTypeNode *>::fail();
+    return ParseResult<ast::GenericType *>::fail();
   }
 
   if (result.is_no_match()) {
-    return ParseResult<ast::GenericTypeNode *>::no_match();
+    return ParseResult<ast::GenericType *>::no_match();
   }
 
   auto arguments = std::move(result.value());
@@ -96,18 +96,18 @@ Parser::parse_generic_type(ast::NameNode *name) {
   // Type<>
   if (arguments.empty()) {
     parser::diagnostics::report_expected_type(context);
-    return ParseResult<ast::GenericTypeNode *>::fail();
+    return ParseResult<ast::GenericType *>::fail();
   }
 
   auto *type =
-      context.get_ast().alloc<ast::GenericTypeNode>(
+      context.get_ast().alloc<ast::GenericType>(
           name,
           std::move(arguments)
       );
 
   type->slice = name->slice;
 
-  return ParseResult<ast::GenericTypeNode *>::ok(type);
+  return ParseResult<ast::GenericType *>::ok(type);
 }
 
 ParseResult<ast::FunctionType *> Parser::parse_function_type() {
@@ -116,7 +116,7 @@ ParseResult<ast::FunctionType *> Parser::parse_function_type() {
 
   if (!tokens.match(TokenKind::OPEN_PAREN)) { return ParseResult<ast::FunctionType *>::no_match(); }
 
-  std::vector<ast::TypeNode *> parameters;
+  std::vector<ast::Type *> parameters;
 
   tokens.skip_trivia();
 

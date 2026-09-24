@@ -18,25 +18,69 @@ void SymbolCollector::collect() {
   collect_node(context.unit._root);
 }
 
+bool SymbolCollector::has_symbol(const std::string &name) const {
+
+  auto scope_id = context.stack.current();
+
+  assert(scope_id.is_valid());
+
+  const auto &scope = context.env().scopes.get(scope_id);
+
+  return scope.symbols.contains(name);
+}
+
 SymbolId SymbolCollector::declare_symbol(const std::string &name, SymbolKind kind, Visibility visibility, ast::Node *node) {
 
-  ScopeId scope_id = context.stack.current();
+  auto scope_id = context.stack.current();
 
-  if (!scope_id.is_valid()) { return SymbolId::invalid(); }
+  assert(scope_id.is_valid());
 
-  auto &scope = context.env().scopes.get(scope_id);
-
-  if (scope.symbols.contains(name)) { return SymbolId::invalid(); }
+  if (has_symbol(name)) { return SymbolId::invalid(); }
 
   SymbolId symbol_id = context.env().symbols.create_symbol(name, kind, visibility, false, node);
 
-  if (!symbol_id.is_valid()) { return SymbolId::invalid(); }
+  assert(symbol_id.is_valid());
+
+  auto &scope = context.env().scopes.get(scope_id);
 
   scope.symbols.insert(name, symbol_id);
 
   if (node) { context.unit.semantic.set_symbol(node, symbol_id); }
 
   return symbol_id;
+}
+
+SymbolId SymbolCollector::declare_named_symbol(ast::Identifier *name, SymbolKind kind, Visibility visibility, ast::Node *node) {
+
+  assert(name);
+
+  const auto text = name->get_str();
+
+  if (has_symbol(text)) {
+    collector::diagnostics::report_redeclaration(context, text, name->slice);
+    return SymbolId::invalid();
+  }
+
+  auto symbol = declare_symbol(text, kind, visibility, node);
+
+  if (!symbol.is_valid()) return SymbolId::invalid();
+
+  return symbol;
+}
+
+ScopeId SymbolCollector::enter_scope(core::ScopeKind kind, ast::Node *node) {
+
+  auto parent = context.stack.current();
+
+  auto scope = context.env().scopes.create_scope(kind, parent);
+
+  if (!scope.is_valid()) return ScopeId::invalid();
+
+  if (node) context.unit.semantic.set_scope(node, scope);
+
+  context.stack.push(scope);
+
+  return scope;
 }
 
 void SymbolCollector::collect_root(ast::RootNode *node) {
@@ -71,25 +115,31 @@ void SymbolCollector::collect_node(ast::Node *node) {
 
   case ast::NodeKind::ModuleDeclaration: collect_module(ast::as<ast::ModuleDeclaration>(node)); break;
 
-  case ast::NodeKind::StructDeclaration: collect_struct(ast::as<ast::StructDeclaration>(node)); break;
+  case ast::NodeKind::StructDeclaration: collect_struct_declaration(ast::as<ast::StructDeclaration>(node)); break;
 
-  case ast::NodeKind::FunctionDeclaration: collect_function(ast::as<ast::FunctionDeclaration>(node)); break;
+  case ast::NodeKind::FunctionDeclaration: collect_function_declaration(ast::as<ast::FunctionDeclaration>(node)); break;
 
-  case ast::NodeKind::VariableDeclaration: collect_variable(ast::as<ast::VariableDeclaration>(node)); break;
+  case ast::NodeKind::VariableDeclaration: collect_variable_declaration(ast::as<ast::VariableDeclaration>(node)); break;
 
-  case ast::NodeKind::BlockStatement: collect_block(ast::as<ast::BlockStatement>(node)); break;
+  case ast::NodeKind::BlockStatement: collect_block_statement(ast::as<ast::BlockStatement>(node)); break;
 
   case ast::NodeKind::ModuleInitDeclaration: collect_module_init(ast::as<ast::ModuleInitDeclaration>(node)); break;
 
-  case ast::NodeKind::TypeDeclaration: collect_type(ast::as<ast::TypeDeclaration>(node)); break;
+  case ast::NodeKind::TypeDeclaration: collect_type_declaration(ast::as<ast::TypeDeclaration>(node)); break;
 
-  case ast::NodeKind::FieldDeclaration: collect_field(ast::as<ast::FieldDeclaration>(node)); break;
+  case ast::NodeKind::FieldDeclaration: collect_field_declaration(ast::as<ast::FieldDeclaration>(node)); break;
 
-  case ast::NodeKind::CapabilityDeclaration: collect_capability(ast::as<ast::CapabilityDeclaration>(node)); break;
+  case ast::NodeKind::CapabilityDeclaration: collect_capability_declaration(ast::as<ast::CapabilityDeclaration>(node)); break;
 
   case ast::NodeKind::GenericParameter: collect_generic_parameter(ast::as<ast::GenericParameter>(node)); break;
 
-  case ast::NodeKind::ImplementationDeclaration: collect_impl(ast::as<ast::ImplDeclaration>(node)); break;
+  case ast::NodeKind::ImplementationDeclaration: collect_impl_declaration(ast::as<ast::ImplDeclaration>(node)); break;
+
+  case ast::NodeKind::EnumDeclaration: collect_enum_declaration(ast::as<ast::EnumDeclaration>(node)); break;
+
+  case ast::NodeKind::EnumVariant: collect_enum_variant(ast::as<ast::EnumVariant>(node)); break;
+
+  case ast::NodeKind::NamedPattern: collect_named_pattern(ast::as<ast::NamedPattern>(node)); break;
 
   default: break;
   }
@@ -139,27 +189,13 @@ void SymbolCollector::collect_module(ast::ModuleDeclaration *node) {
   context.stack.pop();
 }
 
-void SymbolCollector::collect_block(ast::BlockStatement *node) {
+void SymbolCollector::collect_block_statement(ast::BlockStatement *node) {
 
   if (!node) return;
-
-  ScopeId parent = context.stack.current();
-
-  ScopeId block_scope = context.env().scopes.create_scope(core::ScopeKind::Block, parent);
-
-  if (!block_scope.is_valid()) return;
-
-  context.unit.semantic.set_scope(node, block_scope);
-
-  context.stack.push(block_scope);
 
   for (auto *item : node->items) {
     if (item) collect_node(item);
   }
-
-  context.stack.pop();
 }
-
-
 
 } // namespace celestia::semantic

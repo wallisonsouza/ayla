@@ -4,21 +4,26 @@ namespace celestia::semantic {
 #include "celestia/compiler/CompilationRules.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 
+void TypeChecker::check_root(ast::RootNode *node) {
+
+  for (auto *module : node->modules) {
+    if (module) check(module);
+  }
+}
+
 void TypeChecker::check_module_declaration(ast::ModuleDeclaration *node) {
   if (!node) return;
 
-  auto module = context.unit.semantic.module(node);
+  auto m_id = context.unit.semantic.module(node);
 
-  if (module.is_valid()) std::cout << "[TypeChecker] checking module: " << context.env().modules.get(module).name() << '\n';
+  if (m_id.is_valid()) std::cout << "[TypeChecker] checking module: " << context.env().modules.get(m_id).name() << '\n';
 
-  // auto module_id = context.unit.module;
+  auto &module = context.env().modules.get(m_id);
 
   // if (!module_id.is_valid()) {
   //   error(node, "module has invalid ModuleId");
   //   return;
   // }
-
-  // auto &module = context.env().modules.get(module_id);
 
   // for (auto imported_id : module.imports()) {
 
@@ -54,7 +59,7 @@ void TypeChecker::check_module_declaration(ast::ModuleDeclaration *node) {
     check(declaration);
   }
 
-  // module.add_state(ModuleState::Checked);
+  module.add_state(ModuleState::Checked);
 
   std::cout << "[TypeChecker] module checked\n";
 }

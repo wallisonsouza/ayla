@@ -5,37 +5,47 @@
 namespace celestia::syntax {
 
 celestia::ast::Expression *Parser::parse_number_literal() {
-  auto &tokens = context.tokens();
 
-  auto *token = tokens.match(TokenKind::NUMBER_LITERAL);
+  auto *token = context.tokens().match(TokenKind::NUMBER_LITERAL);
 
   if (!token) return nullptr;
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  return context.get_ast().alloc<celestia::ast::NumberLiteralNode>(text);
-}
+  auto *node = context.get_ast().alloc<celestia::ast::NumberLiteralNode>(text);
 
+  node->slice = token->slice;
+
+  return node;
+}
 celestia::ast::StringLiteralNode *Parser::parse_string_literal() {
+
   auto *token = context.tokens().match(TokenKind::STRING_LITERAL);
 
   if (!token) return nullptr;
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  return context.get_ast().alloc<celestia::ast::StringLiteralNode>(text);
-}
+  auto *node = context.get_ast().alloc<celestia::ast::StringLiteralNode>(text);
 
+  node->slice = token->slice;
+
+  return node;
+}
 celestia::ast::Expression *Parser::parse_bool_literal() {
+
   auto *token = context.tokens().consume();
 
   if (!token) return nullptr;
 
   bool value = token->desc->kind == TokenKind::TRUE;
 
-  return context.get_ast().alloc<celestia::ast::BoolLiteralNode>(value);
-}
+  auto *node = context.get_ast().alloc<celestia::ast::BoolLiteralNode>(value);
 
+  node->slice = token->slice;
+
+  return node;
+}
 ast::Expression *Parser::parse_literal_expression() {
   auto *token = context.tokens().current();
 
@@ -53,8 +63,7 @@ ast::Expression *Parser::parse_literal_expression() {
   }
 }
 
-
-celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::IdentifierNode *name) {
+celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::Identifier *name) {
 
   auto &tokens = context.tokens();
 
@@ -107,14 +116,23 @@ celestia::ast::Expression *Parser::parse_array_literal() {
 
   auto &tokens = context.tokens();
 
-  if (!tokens.match(TokenKind::OPEN_BRACKET)) return nullptr;
+  auto *open = tokens.match(TokenKind::OPEN_BRACKET);
+
+  if (!open) return nullptr;
 
   std::vector<celestia::ast::Expression *> elements;
 
   tokens.skip_trivia();
 
-  // []
-  if (tokens.match(TokenKind::CLOSE_BRACKET)) { return context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements)); }
+  if (tokens.match(TokenKind::CLOSE_BRACKET)) {
+
+    auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements));
+
+    node->slice.begin = open->slice.begin;
+    node->slice.end = tokens.previous()->slice.end;
+
+    return node;
+  }
 
   while (!tokens.check(TokenKind::CLOSE_BRACKET)) {
 
@@ -132,8 +150,6 @@ celestia::ast::Expression *Parser::parse_array_literal() {
 
       tokens.skip_trivia();
 
-      // trailing comma:
-      // [1, 2, 3,]
       if (tokens.check(TokenKind::CLOSE_BRACKET)) break;
 
       continue;
@@ -142,9 +158,15 @@ celestia::ast::Expression *Parser::parse_array_literal() {
     if (!tokens.check(TokenKind::CLOSE_BRACKET)) return nullptr;
   }
 
-  if (!tokens.match(TokenKind::CLOSE_BRACKET)) return nullptr;
+  auto *close = tokens.match(TokenKind::CLOSE_BRACKET);
 
-  return context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements));
+  if (!close) return nullptr;
+
+  auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements));
+
+  node->slice.begin = open->slice.begin;
+  node->slice.end = close->slice.end;
+
+  return node;
 }
-
 } // namespace celestia::syntax

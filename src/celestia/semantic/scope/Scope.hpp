@@ -8,13 +8,14 @@
 namespace core {
 
 enum class ScopeKind {
-  Module,
-  Function,
-  Struct,
-  Type,
-  Block,
-  Capability,
-  Impl,
+    Module,
+    Struct,
+    Enum,
+    Type,
+    Capability,
+    Impl,
+    Function,
+    Block
 };
 
 struct Scope {

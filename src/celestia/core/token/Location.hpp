@@ -20,4 +20,6 @@ struct SourceSlice {
         end.offset,
     };
   }
+
+  void extend_to(SourceSlice other) { end = other.end; }
 };

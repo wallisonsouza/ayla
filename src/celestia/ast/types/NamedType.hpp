@@ -1,17 +1,15 @@
 #pragma once
 
-#include "celestia/ast/names/NameNode.hpp"
-#include "celestia/ast/types/TypeNode.hpp"
+#include "celestia/ast/names/Name.hpp"
+#include "celestia/ast/types/Type.hpp"
 
 namespace celestia::ast {
 
-struct NamedType : TypeNode {
+struct NamedType : Type {
 
   NameNode *name;
 
-  bool is_primitive;
-
-  NamedType(NameNode *name, bool primitive = false) : TypeNode(NodeKind::NamedType), name(name), is_primitive(primitive) {}
+  NamedType(NameNode *name, bool primitive = false) : Type(NodeKind::NamedType), name(name) {}
 };
 
 } // namespace celestia::ast

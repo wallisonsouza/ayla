@@ -1,62 +1,22 @@
+#include "celestia/ast/NodeCast.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
-
 namespace celestia::semantic {
 
-void Resolver::identifier(ast::IdentifierExpressionNode *node) {
-
-  if (!node || !node->name) return;
-
-  ScopeId scope_id = context.stack.current();
-
-  if (!scope_id.is_valid()) {
-
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UndefinedSymbol,
-        .arguments =
-            {
-                diagnostic::name(node->name->str),
-            },
-    });
-
-    return;
-  }
-
-  SymbolId id = context.get_env().scopes.lookup(scope_id, node->name->str);
-
-  if (!id.is_valid()) {
-
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UndefinedSymbol,
-        .arguments =
-            {
-                diagnostic::name(node->name->str),
-            },
-    });
-
-    return;
-  }
-
-  context.unit.semantic.set_symbol(node, id);
-}
 SymbolId Resolver::resolve_name(ast::NameNode *name, ScopeId scope_id) {
 
   assert(name && "Resolver::resolve_name received null");
 
   switch (name->kind) {
 
-  case ast::NodeKind::Identifier: return lookup_symbol(scope_id, static_cast<ast::IdentifierNode *>(name)->get_str());
+  case ast::NodeKind::Identifier: return context.get_env().scopes.lookup(scope_id, ast::as<ast::Identifier>(name)->get_str());
 
-  case ast::NodeKind::QualifiedName: return lookup_qualified_name(static_cast<ast::QualifiedNameNode *>(name));
+  case ast::NodeKind::QualifiedName: return lookup_qualified_name(ast::as<ast::QualifiedName>(name));
 
   default: assert(false && "Unsupported NameNode kind"); return SymbolId::invalid();
   }
 }
 
-SymbolId Resolver::lookup_symbol(ScopeId scope_id, std::string_view name) const { return context.get_env().scopes.lookup(scope_id, name); }
-
-SymbolId Resolver::lookup_qualified_name(ast::QualifiedNameNode *name) {
+SymbolId Resolver::lookup_qualified_name(ast::QualifiedName *name) {
 
   assert(name && "lookup_qualified_name received null");
 
@@ -80,6 +40,28 @@ SymbolId Resolver::lookup_qualified_name(ast::QualifiedNameNode *name) {
   const auto &module = context.get_env().modules.get(module_id);
 
   return context.get_env().scopes.lookup(module.scope_id(), parts.back()->str);
+}
+
+SymbolId Resolver::require_symbol(ast::NameNode *name, ScopeId scope_id) {
+
+  auto symbol = resolve_name(name, scope_id);
+
+  if (symbol.is_valid()) return symbol;
+
+  context.unit.diagnostics.report({
+      .severity = diagnostic::Severity::Error,
+      .code = diagnostic::DiagnosticCode::UndefinedSymbol,
+      .arguments =
+          {
+              diagnostic::name(name->get_str()),
+          },
+      .labels =
+          {
+              diagnostic::location(name->slice),
+          },
+  });
+
+  return SymbolId::invalid();
 }
 
 } // namespace celestia::semantic

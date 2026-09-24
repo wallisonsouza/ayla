@@ -1,18 +1,7 @@
 #include "Resolver.hpp"
+#include "celestia/ast/patterns/NamedPatternNode.hpp"
 
 namespace celestia::semantic {
-
-void Resolver::pattern(ast::PatternNode *pattern) {
-
-  if (!pattern) return;
-
-  switch (pattern->kind) {
-
-  case ast::NodeKind::NamedPattern: named_pattern(static_cast<ast::NamedPattern *>(pattern)); break;
-
-  default: break;
-  }
-}
 
 void Resolver::named_pattern(ast::NamedPattern *pattern) {
 

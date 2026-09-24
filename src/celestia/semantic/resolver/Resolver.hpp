@@ -1,7 +1,6 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/AstDispacher.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/CompilerEnvironment.hpp"
@@ -24,29 +23,21 @@ struct Resolver {
 
 public:
   Resolver(Compiler &compiler, CompilationUnit &unit);
-void resolve_root(ast::RootNode *node);
-private:
-  AstDispatcher<Resolver, celestia::ast::Node> dispatcher;
+  void resolve_root(ast::RootNode *node);
 
+private:
   ResolverContext context;
 
-  void bind_literals();
-  void bind_expressions();
-  void bind_statements();
-  void bind_declarations();
-  void bind_types();
-
-  SymbolId lookup_symbol(ScopeId scope_id, std::string_view name) const;
-  SymbolId lookup_qualified_name(ast::QualifiedNameNode *name);
+  SymbolId lookup_qualified_name(ast::QualifiedName *name);
   SymbolId resolve_name(ast::NameNode *name, ScopeId scope_id);
 
   void resolve_node(celestia::ast::Node *node);
-
+  SymbolId require_symbol(ast::NameNode *name, ScopeId scope_id);
   void resolve_named_type(ast::NamedType *node);
-  void resolve_generic_type(ast::GenericTypeNode *node);
+  void resolve_enum_variant(ast::EnumVariant *node);
+  void resolve_enum_declaration(ast::EnumDeclaration *node);
+  void resolve_generic_type(ast::GenericType *node);
   void resolve_function_type(ast::FunctionType *node);
-
-  void pattern(celestia::ast::PatternNode *pat);
 
   void function_call(celestia::ast::CallExpressionNode *node);
   void assignment(celestia::ast::AssignmentExpressionNode *node);
@@ -54,15 +45,18 @@ private:
   void array_literal(celestia::ast::ArrayLiteralNode *node);
   void object_literal(celestia::ast::ObjectLiteralNode *node);
   void struct_literal(ast::StructLiteralNode *node);
+  
+  // SymbolId lookup_symbol(ScopeId scope_id, std::string_view name) const;
+  // void pattern(celestia::ast::PatternNode *pat);
   // void number_literal(celestia::ast::NumberLiteralNode *node);
   // void string_literal(celestia::ast::StringLiteralNode *node);
   // void boolean_literal(celestia::ast::BoolLiteralNode *node);
-  void type_node(celestia::ast::TypeNode *node);
+  // void resolve_type(celestia::ast::Type *node);
 
   void index_access(celestia::ast::IndexAccessExpressionNode *node);
   void member_access(celestia::ast::MemberAccessExpressionNode *node);
 
-  void identifier(celestia::ast::IdentifierExpressionNode *node);
+  void resolve_identifier_expression(celestia::ast::IdentifierExpressionNode *node);
   void binary_expression(celestia::ast::BinaryExpressionNode *node);
   void unary_expression(celestia::ast::UnaryExpressionNode *node);
   void if_statement(celestia::ast::IfStatement *node);
@@ -81,7 +75,7 @@ private:
   void resolve_impl_declaration(celestia::ast::ImplDeclaration *node);
   void resolve_type_declaration(ast::TypeDeclaration *node);
   void block_statement(celestia::ast::BlockStatement *node);
-  void declare_generics(const std::vector<ast::IdentifierNode *> &parameters);
+  void declare_generics(const std::vector<ast::Identifier *> &parameters);
   void return_statement(celestia::ast::ReturnStatement *node);
 
   void resolve_import_declaration(celestia::ast::ImportDeclaration *node);

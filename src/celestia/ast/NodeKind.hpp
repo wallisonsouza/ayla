@@ -56,7 +56,7 @@ enum class NodeKind {
   NamedType,
   TypeReference,
   GenericType,
-  GenericIdentifier,
+  GenericName,
   GenericParameter,
   FunctionType,
   Assignment,
@@ -128,7 +128,7 @@ constexpr std::string_view node_kind_name(NodeKind kind) noexcept {
   case NodeKind::NamedType: return "NamedType";
   case NodeKind::TypeReference: return "TypeReference";
   case NodeKind::GenericType: return "GenericType";
-  case NodeKind::GenericIdentifier: return "GenericIdentifier";
+  case NodeKind::GenericName: return "GenericName";
   case NodeKind::GenericParameter: return "GenericParameter";
 
   case NodeKind::Assignment: return "Assignment";

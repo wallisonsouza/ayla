@@ -2,14 +2,14 @@
 #pragma once
 
 #include "celestia/ast/expressions/ExpressionNode.hpp"
-#include "celestia/ast/names/IdentifierNode.hpp"
+#include "celestia/ast/names/Identifier.hpp"
 
 namespace celestia::ast {
 
 struct IdentifierExpressionNode : Expression {
 
-  IdentifierNode *name;
-  explicit IdentifierExpressionNode(IdentifierNode *n) : Expression(NodeKind::IdentifierExpression), name(n){}
+  Identifier *name;
+  explicit IdentifierExpressionNode(Identifier *n) : Expression(NodeKind::IdentifierExpression), name(n){}
 
   
 };
