@@ -16,11 +16,11 @@ void Resolver::resolve_node(ast::Node *node) {
   case ast::NodeKind::QualifiedName: break;
 
   // Literals
-  case ast::NodeKind::StructLiteral: struct_literal(ast::as<ast::StructLiteralNode>(node)); break;
+  case ast::NodeKind::StructLiteral: struct_literal(ast::as<ast::StructLiteral>(node)); break;
 
   case ast::NodeKind::ArrayLiteral: array_literal(ast::as<ast::ArrayLiteralNode>(node)); break;
 
-  case ast::NodeKind::ObjectLiteral: object_literal(ast::as<ast::ObjectLiteralNode>(node)); break;
+  case ast::NodeKind::ObjectLiteral: object_literal(ast::as<ast::ObjectLiteral>(node)); break;
 
   case ast::NodeKind::NumberLiteral:
   case ast::NodeKind::StringLiteral:
@@ -43,11 +43,11 @@ void Resolver::resolve_node(ast::Node *node) {
   case ast::NodeKind::IdentifierExpression: resolve_identifier_expression(ast::as<ast::IdentifierExpressionNode>(node)); break;
 
   // Statements
-  case ast::NodeKind::IfStatement: if_statement(ast::as<ast::IfStatement>(node)); break;
+  case ast::NodeKind::IfExpression: resolve_if_expression(ast::as<ast::IfExpression>(node)); break;
 
-  case ast::NodeKind::WhileStatement: while_statement(ast::as<ast::WhileStatement>(node)); break;
+  case ast::NodeKind::WhileExpression: while_expression(ast::as<ast::WhileExpression>(node)); break;
 
-  case ast::NodeKind::BlockStatement: block_statement(ast::as<ast::BlockStatement>(node)); break;
+  case ast::NodeKind::BlockExpression: resolve_block_expression(ast::as<ast::BlockExpression>(node)); break;
 
   case ast::NodeKind::ExpressionStatement: expression_statement(ast::as<ast::ExpressionStatement>(node)); break;
 

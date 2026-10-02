@@ -7,10 +7,10 @@ namespace celestia::ast {
 struct BinaryExpressionNode : Expression {
 
   Expression *lhs;
-  BinaryOperation op;
+  BinaryOperation operation;
   Expression *rhs;
 
-  BinaryExpressionNode(Expression *l, BinaryOperation o, Expression *r) : Expression(NodeKind::BinaryExpression), lhs(l), op(o), rhs(r) {}
+  BinaryExpressionNode(Expression *l, BinaryOperation o, Expression *r) : Expression(NodeKind::BinaryExpression), lhs(l), operation(o), rhs(r) {}
 
   
 };

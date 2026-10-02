@@ -1,10 +1,11 @@
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/literals/StructLiteral.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 
 namespace celestia::syntax {
 
-celestia::ast::Expression *Parser::parse_number_literal() {
+ast::Expression *Parser::parse_number_literal() {
 
   auto *token = context.tokens().match(TokenKind::NUMBER_LITERAL);
 
@@ -12,13 +13,13 @@ celestia::ast::Expression *Parser::parse_number_literal() {
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  auto *node = context.get_ast().alloc<celestia::ast::NumberLiteralNode>(text);
+  auto *node = context.get_ast().alloc<ast::NumberLiteralNode>(text);
 
   node->slice = token->slice;
 
   return node;
 }
-celestia::ast::StringLiteralNode *Parser::parse_string_literal() {
+ast::Expression *Parser::parse_string_literal() {
 
   auto *token = context.tokens().match(TokenKind::STRING_LITERAL);
 
@@ -26,13 +27,13 @@ celestia::ast::StringLiteralNode *Parser::parse_string_literal() {
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  auto *node = context.get_ast().alloc<celestia::ast::StringLiteralNode>(text);
+  auto *node = context.get_ast().alloc<ast::StringLiteralNode>(text);
 
   node->slice = token->slice;
 
   return node;
 }
-celestia::ast::Expression *Parser::parse_bool_literal() {
+ast::Expression *Parser::parse_bool_literal() {
 
   auto *token = context.tokens().consume();
 
@@ -40,7 +41,7 @@ celestia::ast::Expression *Parser::parse_bool_literal() {
 
   bool value = token->desc->kind == TokenKind::TRUE;
 
-  auto *node = context.get_ast().alloc<celestia::ast::BoolLiteralNode>(value);
+  auto *node = context.get_ast().alloc<ast::BoolLiteralNode>(value);
 
   node->slice = token->slice;
 
@@ -63,13 +64,13 @@ ast::Expression *Parser::parse_literal_expression() {
   }
 }
 
-celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::Identifier *name) {
+ast::Expression *Parser::parse_struct_literal(ast::Identifier *name) {
 
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::OPEN_BRACE)) return nullptr;
 
-  std::vector<celestia::ast::StructFieldInitializerNode *> fields;
+  std::vector<ast::StructField *> fields;
 
   while (!tokens.check(TokenKind::CLOSE_BRACE)) {
 
@@ -85,7 +86,7 @@ celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::Identifie
 
     if (!value) return nullptr;
 
-    fields.push_back(context.get_ast().alloc<celestia::ast::StructFieldInitializerNode>(field_name, value));
+    fields.push_back(context.get_ast().alloc<ast::StructField>(field_name, value));
 
     tokens.skip_trivia();
 
@@ -109,7 +110,7 @@ celestia::ast::Expression *Parser::parse_struct_literal(celestia::ast::Identifie
 
   auto *type = context.get_ast().alloc<celestia::ast::NamedType>(name);
 
-  return context.get_ast().alloc<celestia::ast::StructLiteralNode>(type, std::move(fields));
+  return context.get_ast().alloc<celestia::ast::StructLiteral>(type, std::move(fields));
 }
 
 celestia::ast::Expression *Parser::parse_array_literal() {

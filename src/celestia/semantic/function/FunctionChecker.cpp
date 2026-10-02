@@ -1,5 +1,5 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-
+#include "celestia/ast/declarations/FunctionDeclaration.hpp"
 namespace celestia::semantic {
 
 void TypeChecker::check_function_declaration(ast::FunctionDeclaration *node) {

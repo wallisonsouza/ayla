@@ -8,6 +8,7 @@
 #include "celestia/ast/declarations/VariableDeclaration.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/semantic/collector/SymbolCollectorDiagnostics.hpp"
+#include "celestia/semantic/scope/ScopeLookup.hpp"
 namespace celestia::semantic {
 
 SymbolCollector::SymbolCollector(Compiler &compiler, CompilationUnit &unit) : context(compiler, unit) {}
@@ -29,43 +30,34 @@ bool SymbolCollector::has_symbol(const std::string &name) const {
   return scope.symbols.contains(name);
 }
 
-SymbolId SymbolCollector::declare_symbol(const std::string &name, SymbolKind kind, Visibility visibility, ast::Node *node) {
+SymbolId SymbolCollector::declare_symbol(ast::Identifier *name, SymbolKind kind, Visibility visibility, ast::Node *node) {
+  assert(name);
 
-  auto scope_id = context.stack.current();
+  const auto text = name->get_str();
+  const auto scope_id = context.stack.current();
 
   assert(scope_id.is_valid());
 
-  if (has_symbol(name)) { return SymbolId::invalid(); }
+  auto existing = ScopeLookup::find_local(context.env(), scope_id, text);
 
-  SymbolId symbol_id = context.env().symbols.create_symbol(name, kind, visibility, false, node);
+  if (existing.is_valid()) {
+    collector::diagnostics::report_redeclaration(context, existing, name->slice);
+
+    return SymbolId::invalid();
+  }
+
+  auto symbol_id = context.env().symbols.create_symbol(text, kind, visibility, false, node);
 
   assert(symbol_id.is_valid());
 
   auto &scope = context.env().scopes.get(scope_id);
 
-  scope.symbols.insert(name, symbol_id);
+  const bool inserted = scope.symbols.insert(text, symbol_id);
+  assert(inserted);
 
   if (node) { context.unit.semantic.set_symbol(node, symbol_id); }
 
   return symbol_id;
-}
-
-SymbolId SymbolCollector::declare_named_symbol(ast::Identifier *name, SymbolKind kind, Visibility visibility, ast::Node *node) {
-
-  assert(name);
-
-  const auto text = name->get_str();
-
-  if (has_symbol(text)) {
-    collector::diagnostics::report_redeclaration(context, text, name->slice);
-    return SymbolId::invalid();
-  }
-
-  auto symbol = declare_symbol(text, kind, visibility, node);
-
-  if (!symbol.is_valid()) return SymbolId::invalid();
-
-  return symbol;
 }
 
 ScopeId SymbolCollector::enter_scope(core::ScopeKind kind, ast::Node *node) {
@@ -121,7 +113,7 @@ void SymbolCollector::collect_node(ast::Node *node) {
 
   case ast::NodeKind::VariableDeclaration: collect_variable_declaration(ast::as<ast::VariableDeclaration>(node)); break;
 
-  case ast::NodeKind::BlockStatement: collect_block_statement(ast::as<ast::BlockStatement>(node)); break;
+  case ast::NodeKind::BlockExpression: collect_block_expression(ast::as<ast::BlockExpression>(node)); break;
 
   case ast::NodeKind::ModuleInitDeclaration: collect_module_init(ast::as<ast::ModuleInitDeclaration>(node)); break;
 
@@ -138,8 +130,6 @@ void SymbolCollector::collect_node(ast::Node *node) {
   case ast::NodeKind::EnumDeclaration: collect_enum_declaration(ast::as<ast::EnumDeclaration>(node)); break;
 
   case ast::NodeKind::EnumVariant: collect_enum_variant(ast::as<ast::EnumVariant>(node)); break;
-
-  case ast::NodeKind::NamedPattern: collect_named_pattern(ast::as<ast::NamedPattern>(node)); break;
 
   default: break;
   }
@@ -189,7 +179,7 @@ void SymbolCollector::collect_module(ast::ModuleDeclaration *node) {
   context.stack.pop();
 }
 
-void SymbolCollector::collect_block_statement(ast::BlockStatement *node) {
+void SymbolCollector::collect_block_expression(ast::BlockExpression *node) {
 
   if (!node) return;
 

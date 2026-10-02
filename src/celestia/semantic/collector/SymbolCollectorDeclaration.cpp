@@ -14,7 +14,7 @@ void SymbolCollector::collect_function_declaration(ast::FunctionDeclaration *nod
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Function, node->specifiers.visibility, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Function, node->specifiers.visibility, node);
 
   if (!symbol.is_valid()) return;
 
@@ -29,7 +29,8 @@ void SymbolCollector::collect_function_declaration(ast::FunctionDeclaration *nod
   }
 
   for (auto *parameter : node->parameters) {
-    if (parameter) collect_node(parameter);
+
+    if (parameter) collect_pattern(parameter, SymbolKind::Parameter);
   }
 
   if (node->body) collect_node(node->body);
@@ -41,7 +42,7 @@ void SymbolCollector::collect_field_declaration(ast::FieldDeclaration *node) {
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Field, Visibility::Private, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Field, Visibility::Private, node);
 
   if (!symbol.is_valid()) return;
 
@@ -54,7 +55,7 @@ void SymbolCollector::collect_generic_parameter(ast::GenericParameter *node) {
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::GenericParameter, Visibility::Private, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::GenericParameter, Visibility::Private, node);
 
   if (!symbol.is_valid()) return;
 
@@ -65,7 +66,7 @@ void SymbolCollector::collect_struct_declaration(ast::StructDeclaration *node) {
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Struct, node->specifiers.visibility, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Struct, node->specifiers.visibility, node);
 
   if (!symbol.is_valid()) return;
 
@@ -90,7 +91,7 @@ void SymbolCollector::collect_type_declaration(ast::TypeDeclaration *node) {
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Type, node->specifiers.visibility, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Type, node->specifiers.visibility, node);
 
   if (!symbol.is_valid()) return;
 
@@ -111,7 +112,7 @@ void SymbolCollector::collect_variable_declaration(ast::VariableDeclaration *nod
 
   assert(node && node->pattern);
 
-  collect_node(node->pattern);
+  collect_pattern(node->pattern, SymbolKind::Variable);
 }
 
 void SymbolCollector::collect_enum_declaration(ast::EnumDeclaration *node) {
@@ -119,7 +120,7 @@ void SymbolCollector::collect_enum_declaration(ast::EnumDeclaration *node) {
   assert(node && node->name);
 
   // The enum symbol belongs to the enclosing scope.
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Enum, node->specifiers.visibility, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Enum, node->specifiers.visibility, node);
 
   if (!symbol.is_valid()) return;
 
@@ -145,7 +146,7 @@ void SymbolCollector::collect_enum_variant(ast::EnumVariant *node) {
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::EnumVariant, Visibility::Private, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::EnumVariant, Visibility::Private, node);
 
   if (!symbol.is_valid()) return;
 
@@ -160,7 +161,7 @@ void SymbolCollector::collect_capability_declaration(ast::CapabilityDeclaration 
 
   assert(node && node->name);
 
-  auto symbol = declare_named_symbol(node->name, SymbolKind::Capability, node->specifiers.visibility, node);
+  auto symbol = declare_symbol(node->name, SymbolKind::Capability, node->specifiers.visibility, node);
 
   if (!symbol.is_valid()) return;
 

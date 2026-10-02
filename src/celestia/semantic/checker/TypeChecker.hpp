@@ -1,7 +1,7 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/AstDispacher.hpp"
+#include "celestia/semantic/checker/TypeSystem.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/CompilerEnvironment.hpp"
@@ -41,6 +41,8 @@ public:
 private:
   TypeCheckerContext &context;
 
+  TypeSystem type_system;
+
   TypeId current_function = TypeId::invalid();
 
   // Expression
@@ -49,15 +51,24 @@ private:
   TypeId infer_string_literal(ast::StringLiteralNode *node);
   TypeId infer_boolean_literal(ast::BoolLiteralNode *node);
   TypeId infer_array_literal(ast::ArrayLiteralNode *node);
-  TypeId infer_struct_literal(ast::StructLiteralNode *node);
+  TypeId infer_struct_literal(ast::StructLiteral *node);
   TypeId infer_name_pattern(ast::NamedPattern *pattern);
+
+  TypeId infer_block_expression(ast::BlockExpression *node);
+  TypeId infer_if_expression(ast::IfExpression *node);
+  TypeId infer_binary_expression(ast::BinaryExpressionNode *node);
+  TypeId infer_while_expression(ast::WhileExpression *node);
 
   bool check_number_literal(ast::NumberLiteralNode *node, TypeId expected);
   bool check_string_literal(ast::StringLiteralNode *node, TypeId expected);
   bool check_boolean_literal(ast::BoolLiteralNode *node, TypeId expected);
   bool check_array_literal(ast::ArrayLiteralNode *node, TypeId expected);
-  bool check_struct_literal(ast::StructLiteralNode *node, TypeId expected);
+  bool check_struct_literal(ast::StructLiteral *node, TypeId expected);
   bool check_name_pattern(ast::NamedPattern *pattern, TypeId expected);
+
+  bool check_block_expression(ast::BlockExpression *node, TypeId expected);
+  bool check_if_expression(ast::IfExpression *pattern, TypeId expected);
+
   // --------------------------------------------------
   // Types
   // --------------------------------------------------
@@ -113,27 +124,17 @@ private:
 
   void check_expression_statement(ast::ExpressionStatement *node);
   void check_return_statement(ast::ReturnStatement *node);
-  void check_if_statement(ast::IfStatement *node);
-  void check_while_statement(ast::WhileStatement *node);
-  void check_block_statement(ast::BlockStatement *node);
-
+  void check_while_expression(ast::WhileExpression *node);
   // --------------------------------------------------
   // Declarations
   // --------------------------------------------------
   void check_root(ast::RootNode *node);
+  void check_import_declaration(ast::ImportDeclaration *node);
   void check_variable_declaration(ast::VariableDeclaration *node);
   void check_function_declaration(ast::FunctionDeclaration *node);
   void check_struct_declaration(ast::StructDeclaration *node);
   void check_module_declaration(ast::ModuleDeclaration *node);
   void check_module_init_declaration(ast::ModuleInitDeclaration *node);
-
-  // --------------------------------------------------
-  // Type relations
-  // --------------------------------------------------
-
-  bool is_same_type(TypeId a, TypeId b) const;
-
-  bool is_assignable(TypeId target, TypeId source) const;
 
   void error(ast::Node *node, std::string message) { std::cerr << message << '\n'; }
 };

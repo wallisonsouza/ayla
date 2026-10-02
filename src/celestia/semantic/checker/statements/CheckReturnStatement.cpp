@@ -1,6 +1,6 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
-
+#include "celestia/ast/statements/ReturnStatementNode.hpp"
 namespace celestia::semantic {
 
 void TypeChecker::check_return_statement(ast::ReturnStatement *node) {
@@ -99,7 +99,7 @@ void TypeChecker::check_return_statement(ast::ReturnStatement *node) {
 
   debug::Trace::log(debug::Category::TypeChecker, "return actual = {}", context.env().types.get(actual).to_string());
 
-  if (!is_assignable(expected, actual)) {
+  if (!type_system.is_assignable(expected, actual)) {
 
     error(node, "return type is not assignable "
                 "to function return type");

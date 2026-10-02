@@ -1,4 +1,6 @@
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/literals/ObjectLiteral.hpp"
+#include "celestia/ast/literals/StructLiteral.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 #include <iostream>
 
@@ -10,7 +12,7 @@ namespace celestia::semantic {
 
 // void Resolver::boolean_literal(celestia::ast::BoolLiteralNode *node) {}
 
-void Resolver::object_literal(celestia::ast::ObjectLiteralNode *node) {
+void Resolver::object_literal(celestia::ast::ObjectLiteral *node) {
 
   if (!node) return;
 
@@ -28,7 +30,7 @@ void Resolver::array_literal(celestia::ast::ArrayLiteralNode *node) {
   }
 }
 
-void Resolver::struct_literal(ast::StructLiteralNode *node) {
+void Resolver::struct_literal(ast::StructLiteral *node) {
 
   if (!node) return;
 

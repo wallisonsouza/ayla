@@ -64,7 +64,9 @@ enum class TokenKind : uint8_t {
   CLOSE_PAREN,
 
   OPEN_BRACE,
+  MATCH,
   CLOSE_BRACE,
+  UNDERSCORE,
 
   SEMI_COLON,
   DOT,

@@ -62,7 +62,7 @@ void AstDumper::dump_generic_type(const ast::GenericType *node) {
   g.list("Arguments", node->arguments);
 }
 
-void AstDumper::dump_object_field(const ast::ObjectFieldNode *node) {
+void AstDumper::dump_object_field(const ast::ObjectField *node) {
 
   if (!node) return;
 

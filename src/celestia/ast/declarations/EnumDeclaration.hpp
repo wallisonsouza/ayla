@@ -3,6 +3,7 @@
 #include "celestia/ast/declarations/Declaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/patterns/PatternNode.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include <vector>
 
@@ -15,6 +16,8 @@ struct EnumVariant : Node {
 
   EnumVariant(Identifier *name, std::vector<Type *> args) : Node(NodeKind::EnumVariant), name(name), payload(std::move(args)) {}
 };
+
+
 
 struct EnumDeclaration : Declaration {
 

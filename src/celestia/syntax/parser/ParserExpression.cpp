@@ -1,11 +1,16 @@
 #include "celestia/ast/expressions/AssignmentExpression.hpp"
 #include "celestia/ast/expressions/BinaryExpressionNode.hpp"
+#include "celestia/ast/expressions/BlockExpression.hpp"
 #include "celestia/ast/expressions/CallExpressionNode.hpp"
 #include "celestia/ast/expressions/ExpressionNode.hpp"
 #include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
+#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
+#include "celestia/ast/expressions/MatchExpression.hpp"
 #include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
 #include "celestia/ast/expressions/UnaryExpressionNode.hpp"
+#include "celestia/ast/expressions/While.hpp"
+#include "celestia/ast/statements/ExpressionStatementNode.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 
@@ -34,21 +39,37 @@ celestia::ast::Expression *Parser::parse_grouped_expression() {
 }
 
 ast::Expression *Parser::parse_primary_expression() {
+
   auto *token = context.tokens().current();
 
   if (!token) return nullptr;
 
   switch (token->desc->kind) {
-  case TokenKind::NUMBER_LITERAL:
-  case TokenKind::STRING_LITERAL:
+
+
+  case TokenKind::NUMBER_LITERAL: return parse_number_literal();
+
+  case TokenKind::STRING_LITERAL: return parse_string_literal();
+  
   case TokenKind::TRUE:
   case TokenKind::FALSE: return parse_literal_expression();
 
+  // Names
   case TokenKind::IDENTIFIER: return parse_identifier_expression();
 
+  // Grouping / collection
   case TokenKind::OPEN_PAREN: return parse_grouped_expression();
 
   case TokenKind::OPEN_BRACKET: return parse_array_literal();
+
+  // Control flow / blocks
+  case TokenKind::OPEN_BRACE: return parse_block_expression();
+
+  case TokenKind::IF_KEYWORD: return parse_if_expression();
+
+  case TokenKind::WHILE_KEYWORD: return parse_while_expression();
+
+  case TokenKind::MATCH: return parse_match_expression();
 
   default: return nullptr;
   }

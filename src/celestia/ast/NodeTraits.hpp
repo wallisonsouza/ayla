@@ -20,14 +20,17 @@
 #include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
 #include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/expressions/MatchExpression.hpp"
 #include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
 #include "celestia/ast/expressions/UnaryExpressionNode.hpp"
 // Statements
-#include "celestia/ast/statements/BlockStatementNode.hpp"
+
+#include "celestia/ast/literals/ObjectLiteral.hpp"
+#include "celestia/ast/literals/StructLiteral.hpp"
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/statements/IfStatementNode.hpp"
+#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/statements/WhileStatementNode.hpp"
+#include "celestia/ast/expressions/While.hpp"
 // Names
 #include "celestia/ast/names/Identifier.hpp"
 #include "celestia/ast/names/Qualified.hpp"
@@ -45,6 +48,25 @@
 namespace celestia::ast {
 
 template <typename T> struct NodeTraits;
+
+
+template <> struct NodeTraits<WhileExpression> {
+  static constexpr NodeKind kind = NodeKind::WhileExpression;
+};
+
+
+template <> struct NodeTraits<MatchArm> {
+  static constexpr NodeKind kind = NodeKind::MatchArm;
+};
+
+
+template <> struct NodeTraits<MatchExpression> {
+  static constexpr NodeKind kind = NodeKind::MatchExpression;
+};
+
+template <> struct NodeTraits<EnumVariantPattern> {
+  static constexpr NodeKind kind = NodeKind::EnumVariantPattern;
+};
 
 template <> struct NodeTraits<EnumVariant> {
   static constexpr NodeKind kind = NodeKind::EnumVariant;
@@ -157,11 +179,11 @@ template <> struct NodeTraits<NullLiteralNode> {
   static constexpr NodeKind kind = NodeKind::NullLiteral;
 };
 
-template <> struct NodeTraits<StructFieldInitializerNode> {
+template <> struct NodeTraits<StructField> {
   static constexpr NodeKind kind = NodeKind::StructFieldInitializer;
 };
 
-template <> struct NodeTraits<StructLiteralNode> {
+template <> struct NodeTraits<StructLiteral> {
   static constexpr NodeKind kind = NodeKind::StructLiteral;
 };
 
@@ -169,25 +191,22 @@ template <> struct NodeTraits<ArrayLiteralNode> {
   static constexpr NodeKind kind = NodeKind::ArrayLiteral;
 };
 
-template <> struct NodeTraits<ObjectLiteralNode> {
+template <> struct NodeTraits<ObjectLiteral> {
   static constexpr NodeKind kind = NodeKind::ObjectLiteral;
 };
 
-template <> struct NodeTraits<ObjectFieldNode> {
+template <> struct NodeTraits<ObjectField> {
   static constexpr NodeKind kind = NodeKind::ObjectField;
 };
 
-template <> struct NodeTraits<BlockStatement> {
-  static constexpr NodeKind kind = NodeKind::BlockStatement;
+template <> struct NodeTraits<BlockExpression> {
+  static constexpr NodeKind kind = NodeKind::BlockExpression;
 };
 
-template <> struct NodeTraits<IfStatement> {
-  static constexpr NodeKind kind = NodeKind::IfStatement;
+template <> struct NodeTraits<IfExpression> {
+  static constexpr NodeKind kind = NodeKind::IfExpression;
 };
 
-template <> struct NodeTraits<WhileStatement> {
-  static constexpr NodeKind kind = NodeKind::WhileStatement;
-};
 
 template <> struct NodeTraits<ReturnStatement> {
   static constexpr NodeKind kind = NodeKind::ReturnStatement;

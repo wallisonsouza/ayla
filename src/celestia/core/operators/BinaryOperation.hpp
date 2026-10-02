@@ -10,8 +10,8 @@ enum class BinaryOperation
     Divide,
     Modulo,
 
-    Assign,
-    Arrow,
+   Assign,
+    // Arrow,
 
     And,
     Or,
@@ -34,8 +34,8 @@ constexpr std::string_view to_string(BinaryOperation op)
         case BinaryOperation::Divide:       return "/";
         case BinaryOperation::Modulo:       return "%";
 
-        case BinaryOperation::Assign:       return "=";
-        case BinaryOperation::Arrow:        return "->";
+        // case BinaryOperation::Assign:       return "=";
+        // case BinaryOperation::Arrow:        return "->";
 
         case BinaryOperation::And:          return "&&";
         case BinaryOperation::Or:           return "||";

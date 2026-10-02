@@ -4,6 +4,7 @@
 #include "celestia/ast/declarations/EnumDeclaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/ast/names/Identifier.hpp"
+#include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/types/GenericType.hpp"
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include "celestia/syntax/parser/ParseStatus.hpp"
@@ -80,11 +81,9 @@ public:
   // statements
   ast::Statement *parse_statement();
 
-  ast::BlockStatement *parse_block_statement();
+  ast::Expression *parse_if_expression();
 
-  ast::IfStatement *parse_if_statement();
-
-  ast::WhileStatement *parse_while_statement();
+  ast::WhileExpression *parse_while_expression();
 
   ast::ReturnStatement *parse_return_statement();
 
@@ -92,7 +91,8 @@ public:
 
   // patterns
   ParseResult<ast::PatternNode *> parse_pattern();
-  ParseResult<ast::NamedPattern *> parse_named_pattern();
+  ParseResult<ast::EnumVariantPattern *> parse_enum_variant_pattern(ast::Identifier *first);
+  ParseResult<ast::NamedPattern *> parse_named_pattern(ast::Identifier *name);
 
   // expressions
 
@@ -109,12 +109,16 @@ private:
 
   ast::Expression *parse_primary_expression();
   ast::Expression *parse_literal_expression();
+  ast::Expression *parse_match_expression();
+  ast::BlockExpression *parse_block_expression();
+
+  ParseResult<std::vector<ast::BlockItem *>> parse_block_items();
 
   ast::Expression *parse_struct_literal(celestia::ast::Identifier *name);
 
   ast::Expression *parse_number_literal();
 
-  ast::StringLiteralNode *parse_string_literal();
+  ast::Expression *parse_string_literal();
 
   ast::Expression *parse_bool_literal();
 
@@ -279,6 +283,7 @@ private:
 
     return ParseResult<std::vector<T>>::fail();
   }
+
   template <typename Parser> auto speculate(Parser &&parser) {
 
     context.tokens().add_checkpoint();

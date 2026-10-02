@@ -1,8 +1,8 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
+#include "celestia/semantic/checker/TypeChecker.hpp"
 
 namespace celestia::semantic {
-#include "celestia/compiler/CompilationRules.hpp"
-#include "celestia/semantic/checker/TypeChecker.hpp"
+
 
 void TypeChecker::check_root(ast::RootNode *node) {
 
@@ -62,6 +62,17 @@ void TypeChecker::check_module_declaration(ast::ModuleDeclaration *node) {
   module.add_state(ModuleState::Checked);
 
   std::cout << "[TypeChecker] module checked\n";
+}
+
+void TypeChecker::check_import_declaration(ast::ImportDeclaration *node) {
+  // if (!node) return;
+
+
+  // auto semantic = context.unit.semantic.module(node);
+
+  // auto module = context.env().modules.get(semantic);
+
+  // std::cout << module.name() << std::endl;
 }
 
 void TypeChecker::check_module_init_declaration(ast::ModuleInitDeclaration *node) {

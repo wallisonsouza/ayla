@@ -3,6 +3,9 @@
 #include "ParserContext.hpp"
 
 #include "celestia/ast/declarations/ModuleDeclaration.hpp"
+
+#include "celestia/ast/expressions/BlockExpression.hpp"
+
 #include "celestia/ast/names/Qualified.hpp"
 
 #include <vector>
@@ -119,7 +122,7 @@ void Parser::parse_module_body(ast::ModuleDeclaration *module) {
 
   auto &tokens = context.tokens();
 
-  ast::BlockStatement *script = nullptr;
+  ast::BlockExpression *init = nullptr;
 
   while (!tokens.is_end()) {
 
@@ -128,7 +131,7 @@ void Parser::parse_module_body(ast::ModuleDeclaration *module) {
 
     auto declaration = parse_declaration();
 
-    if (declaration.is_error()) return;
+    if (declaration.is_error()) { return; }
 
     if (declaration.is_ok()) {
 
@@ -137,11 +140,11 @@ void Parser::parse_module_body(ast::ModuleDeclaration *module) {
       continue;
     }
 
-    if (auto *statement = parse_statement()) {
+    if (auto *expression = parse_expression()) {
 
-      if (!script) { script = context.get_ast().alloc<ast::BlockStatement>(); }
+      if (!init) { init = context.get_ast().alloc<ast::BlockExpression>(std::vector<ast::BlockItem *>{}, nullptr); }
 
-      script->items.push_back(statement);
+      init->items.push_back(expression);
 
       continue;
     }
@@ -149,11 +152,11 @@ void Parser::parse_module_body(ast::ModuleDeclaration *module) {
     tokens.consume();
   }
 
-  if (script) {
+  if (init) {
 
-    auto *init = context.get_ast().alloc<ast::ModuleInitDeclaration>(script);
+    auto *module_init = context.get_ast().alloc<ast::ModuleInitDeclaration>(init);
 
-    module->declarations.push_back(init);
+    module->declarations.push_back(module_init);
   }
 }
 

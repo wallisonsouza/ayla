@@ -1,6 +1,6 @@
 module collections
 
-export extern Array<T>: type
-export extern Map<K, V>: type
-export extern Set<T>: type
-export extern Ref<T>: type
+export extern Array: type<T>
+export extern Map: type<K, V>
+export extern Set: type<T>
+export extern Ref: type<T>

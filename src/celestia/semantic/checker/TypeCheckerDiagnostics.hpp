@@ -3,37 +3,31 @@
 
 namespace celestia::semantic::checker::diagnostics {
 
-inline void report_type_mismatch(semantic::TypeCheckerContext &context, SourceSlice slice, semantic::TypeId expected, semantic::TypeId found) {
+inline void report_type_mismatch(semantic::TypeCheckerContext &context, SourceSlice slice, semantic::TypeId expected, semantic::TypeId actual) {
 
   context.unit.diagnostics.report({
-
       .severity = diagnostic::Severity::Error,
-
       .code = diagnostic::DiagnosticCode::TypeMismatch,
-
       .arguments =
           {
-              diagnostic::name(context.env().types.get(expected).to_string()),
-
-              diagnostic::found(context.env().types.get(found).to_string()),
+              diagnostic::type(expected),
+              diagnostic::found_type(actual),
           },
-
       .labels =
           {
               diagnostic::location(slice),
           },
-
   });
 }
-
 inline void report_cannot_infer_type(semantic::TypeCheckerContext &context, SourceSlice slice) {
 
   context.unit.diagnostics.report({
       .severity = diagnostic::Severity::Error,
       .code = diagnostic::DiagnosticCode::CannotInferType,
-      .arguments = {
-       
-      },
+      .arguments =
+          {
+
+          },
       .labels =
           {
               diagnostic::location(slice),

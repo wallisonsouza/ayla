@@ -31,11 +31,11 @@ class UnaryExpressionNode;
 
 
 class Statement;
-class BlockStatement;
+// class BlockStatement;
 class ExpressionStatement;
-class IfStatement;
+class IfExpression;
 class ReturnStatement;
-class WhileStatement;
+class WhileExpression;
 
 
 class Type;
@@ -55,11 +55,11 @@ class GenericParameter;
 class Identifier;
 
 
-class NumberLiteral;
+class NumberLiteralNode;
 class StringLiteralNode;
 class BoolLiteralNode;
-class ObjectLiteralNode;
+class ObjectLiteral;
 class ArrayLiteralNode;
-class StructLiteralNode;
+class StructLiteral;
 
 }

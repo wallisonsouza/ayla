@@ -8,4 +8,13 @@ void AstDumper::dump_named_pattern(const ast::NamedPattern *node) {
 
   g.field("TypeAnnotation", node->type_annotation);
 }
+
+void AstDumper::dump_enum_variant_pattern(const ast::EnumVariantPattern *node) {
+
+  auto g = context.object(std::format("EnumVariantPattern"));
+
+  g.field("name", node->name);
+  g.list("arguments", node->arguments);
+}
+
 } // namespace celestia::debug

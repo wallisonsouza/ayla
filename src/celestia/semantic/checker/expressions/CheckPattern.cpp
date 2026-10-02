@@ -1,8 +1,6 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-
+#include "celestia/ast/patterns/NamedPatternNode.hpp"
 namespace celestia::semantic {
-
-
 
 bool TypeChecker::check_name_pattern(ast::NamedPattern *pattern, TypeId expected) {
 
@@ -29,7 +27,7 @@ bool TypeChecker::check_name_pattern(ast::NamedPattern *pattern, TypeId expected
       return false;
     }
 
-    if (!is_same_type(declared_type, expected)) return false;
+    if (!type_system.is_same_type(declared_type, expected)) return false;
   }
 
   semantic.set_type(pattern, expected);

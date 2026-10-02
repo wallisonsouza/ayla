@@ -1,5 +1,7 @@
+#include "celestia/ast/literals/StructLiteral.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
+#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
 
 namespace celestia::semantic {
 
@@ -8,9 +10,12 @@ bool TypeChecker::check_number_literal(ast::NumberLiteralNode *node, TypeId expe
   assert(node);
   assert(expected.is_valid());
 
-  TypeId actual = context.env().builtins.int_type;
+  TypeId actual = infer(node);
 
-  if (!is_assignable(expected, actual)) {
+  debug::Trace::log(debug::Category::TypeChecker, "type mismatch: expected id={} kind={}, actual id={} kind={}", expected.index(), static_cast<int>(context.env().types.get(expected).kind),
+                    actual.index(), static_cast<int>(context.env().types.get(actual).kind));
+
+  if (!type_system.is_assignable(expected, actual)) {
     checker::diagnostics::report_type_mismatch(context, node->slice, expected, actual);
 
     return false;
@@ -24,9 +29,9 @@ bool TypeChecker::check_string_literal(ast::StringLiteralNode *node, TypeId expe
   assert(node);
   assert(expected.is_valid());
 
-  TypeId actual = context.env().builtins.string_type;
+  TypeId actual = infer(node);
 
-  if (!is_assignable(expected, actual)) {
+  if (!type_system.is_assignable(expected, actual)) {
     checker::diagnostics::report_type_mismatch(context, node->slice, expected, actual);
 
     return false;
@@ -40,9 +45,9 @@ bool TypeChecker::check_boolean_literal(ast::BoolLiteralNode *node, TypeId expec
   assert(node);
   assert(expected.is_valid());
 
-  TypeId actual = context.env().builtins.bool_type;
+  TypeId actual = infer(node);
 
-  if (!is_assignable(expected, actual)) {
+  if (!type_system.is_assignable(expected, actual)) {
     checker::diagnostics::report_type_mismatch(context, node->slice, expected, actual);
 
     return false;
@@ -86,8 +91,7 @@ bool TypeChecker::check_array_literal(ast::ArrayLiteralNode *node, TypeId expect
   return true;
 }
 
-
-bool TypeChecker::check_struct_literal(ast::StructLiteralNode *node, TypeId expected) {
+bool TypeChecker::check_struct_literal(ast::StructLiteral *node, TypeId expected) {
 
   assert(node);
   assert(expected.is_valid());
@@ -125,7 +129,6 @@ bool TypeChecker::check_struct_literal(ast::StructLiteralNode *node, TypeId expe
   context.unit.semantic.set_type(node, expected);
 
   return true;
-
 }
 
 } // namespace celestia::semantic

@@ -35,34 +35,5 @@ struct ArrayLiteralNode : Expression {
   explicit ArrayLiteralNode(std::vector<Expression *> elems) : Expression(NodeKind::ArrayLiteral), elements(std::move(elems)) {}
 };
 
-struct ObjectFieldNode : Node {
-  Expression *key;
-  Expression *value;
-
-  ObjectFieldNode(Expression *k, Expression *v) : Node(NodeKind::ObjectField), key(k), value(v) {}
-};
-
-struct ObjectLiteralNode : Expression {
-  std::vector<ObjectFieldNode *> fields;
-
-  explicit ObjectLiteralNode(std::vector<ObjectFieldNode *> f) : Expression(NodeKind::ObjectLiteral), fields(std::move(f)) {}
-};
-
-struct StructFieldInitializerNode : Node {
-
-  Identifier *name;
-  Expression *value;
-
-  StructFieldInitializerNode(Identifier *name, Expression *value) : Node(NodeKind::StructFieldInitializer), name(name), value(value) {}
-};
-
-struct StructLiteralNode : Expression {
-
-  Type *type;
-
-  std::vector<StructFieldInitializerNode *> fields;
-
-  StructLiteralNode(Type *type, std::vector<StructFieldInitializerNode *> fields) : Expression(NodeKind::StructLiteral), type(type), fields(std::move(fields)) {}
-};
 
 } // namespace celestia::ast

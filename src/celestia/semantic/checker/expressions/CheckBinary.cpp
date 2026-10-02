@@ -1,5 +1,6 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
+#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
 
 namespace celestia::semantic {
 
@@ -15,7 +16,7 @@ void TypeChecker::check_binary_expression(ast::BinaryExpressionNode *node) {
   TypeId lhs_type = semantic.type(node->lhs);
   TypeId rhs_type = semantic.type(node->rhs);
 
-  if (!is_same_type(lhs_type, rhs_type)) {
+  if (!type_system.is_same_type(lhs_type, rhs_type)) {
 
     error(node, "binary expression requires operands of the same type");
 

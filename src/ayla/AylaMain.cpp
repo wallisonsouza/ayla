@@ -4,6 +4,7 @@
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/ModuleIndexer.hpp"
 #include "celestia/debug/ast/AstDumper.hpp"
+#include "celestia/debug/lexer/TokenDumper.hpp"
 #include "celestia/diagnostic/diagnostic_debug.hpp"
 #include <memory.h>
 
@@ -33,7 +34,12 @@ int AylaApplication::run(const CommandLine &cmd) {
   for (auto &unit : compiler.environment().units.all()) {
 
     celestia::debug::AstDumper dump;
+    celestia::debug::TokenDumper t_dump;
 
+
+    t_dump.dump(unit->tokens, unit->source.buffer);
+
+   
     dump.dump(unit->_root);
     for (auto &diag : unit->diagnostics.all()) { diagnostic::print_diagnostic(diag, unit->source, compiler.environment()); }
   }

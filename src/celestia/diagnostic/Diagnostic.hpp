@@ -7,6 +7,7 @@
 #include "celestia/diagnostic/DiagnosticCode.hpp"
 #include "celestia/diagnostic/Expected.hpp"
 #include "celestia/semantic/id/ids.hpp"
+#include "celestia/semantic/symbol/SymbolKind.hpp"
 
 #include <string>
 #include <utility>
@@ -44,10 +45,21 @@ enum class DiagnosticArgumentKind {
   Previous,
   Type,
   Symbol,
+  SymbolKind,
   Name,
 };
 
-using DiagnosticValue = std::variant<ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId, std::string>;
+enum class DiagnosticOrigin {
+  Variable,
+  Parameter,
+  Field,
+  Function,
+  Type,
+  EnumVariant,
+  Symbol,
+};
+
+using DiagnosticValue = std::variant<ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId,  std::string>;
 
 struct DiagnosticArgument {
   DiagnosticArgumentKind kind;
@@ -99,6 +111,7 @@ struct Note {
 
 struct Diagnostic {
   Severity severity;
+  DiagnosticOrigin origin;
   DiagnosticCode code;
 
   std::vector<DiagnosticArgument> arguments;
@@ -157,14 +170,16 @@ inline DiagnosticArgument expected_category(ExpectedKind kind, ExpectedPosition 
 // Other argument helpers
 //--------------------------------------------------
 
-template <typename T> inline DiagnosticArgument found(T &&value) { return make_argument(DiagnosticArgumentKind::Found, std::forward<T>(value)); }
+inline DiagnosticArgument name(std::string value) { return make_argument(DiagnosticArgumentKind::Name, std::move(value)); }
 
-template <typename T> inline DiagnosticArgument previous(T &&value) { return make_argument(DiagnosticArgumentKind::Previous, std::forward<T>(value)); }
+inline DiagnosticArgument symbol(celestia::semantic::SymbolId value) { return make_argument(DiagnosticArgumentKind::Symbol, value); }
 
-template <typename T> inline DiagnosticArgument type(T &&value) { return make_argument(DiagnosticArgumentKind::Type, std::forward<T>(value)); }
+inline DiagnosticArgument type(celestia::semantic::TypeId value) { return make_argument(DiagnosticArgumentKind::Type, value); }
 
-template <typename T> inline DiagnosticArgument symbol(T &&value) { return make_argument(DiagnosticArgumentKind::Symbol, std::forward<T>(value)); }
+inline DiagnosticArgument found_type(celestia::semantic::TypeId value) { return make_argument(DiagnosticArgumentKind::Found, value); }
 
-template <typename T> inline DiagnosticArgument name(T &&value) { return make_argument(DiagnosticArgumentKind::Name, std::forward<T>(value)); }
+inline DiagnosticArgument found(Token *value) { return make_argument(DiagnosticArgumentKind::Found, value); }
+
+inline DiagnosticArgument found(TokenKind value) { return make_argument(DiagnosticArgumentKind::Found, value); }
 
 } // namespace diagnostic

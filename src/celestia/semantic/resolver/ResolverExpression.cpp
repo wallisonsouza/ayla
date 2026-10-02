@@ -7,9 +7,8 @@
 #include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
 #include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
 #include "celestia/ast/expressions/UnaryExpressionNode.hpp"
-
+#include "celestia/semantic/scope/ScopeLookup.hpp"
 namespace celestia::semantic {
-
 
 void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node) {
   auto current = context.stack.current();
@@ -32,7 +31,7 @@ void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node
     return;
   }
 
-  SymbolId id = context.get_env().scopes.lookup(scope_id, node->name->str);
+  SymbolId id = ScopeLookup::lookup(context.get_env(), scope_id, node->name->str);
 
   if (!id.is_valid()) {
 

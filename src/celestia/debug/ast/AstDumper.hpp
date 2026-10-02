@@ -21,15 +21,15 @@
 #include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
 #include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
 #include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/expressions/MatchExpression.hpp"
 #include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
-
 #include "celestia/ast/expressions/UnaryExpressionNode.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
-#include "celestia/ast/statements/BlockStatementNode.hpp"
+
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/statements/IfStatementNode.hpp"
+#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/statements/WhileStatementNode.hpp"
+#include "celestia/ast/expressions/While.hpp"
 #include "celestia/ast/types/GenericType.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/debug/ast/DumpContext.hpp"
@@ -66,6 +66,10 @@ private:
     dispatcher.bind<ast::QualifiedName, &AstDumper::dump_qualified_name>();
 
     // Expressions
+    dispatcher.bind<ast::MatchArm, &AstDumper::dump_match_arm>();
+
+    dispatcher.bind<ast::MatchExpression, &AstDumper::dump_match_expression>();
+
     dispatcher.bind<ast::IdentifierExpressionNode, &AstDumper::dump_identifier_expression>();
 
     dispatcher.bind<ast::BinaryExpressionNode, &AstDumper::dump_binary_expression>();
@@ -83,11 +87,11 @@ private:
     // Statements
     dispatcher.bind<ast::ExpressionStatement, &AstDumper::dump_expression_statement>();
 
-    dispatcher.bind<ast::BlockStatement, &AstDumper::dump_block_statement>();
+    dispatcher.bind<ast::BlockExpression, &AstDumper::dump_block_expression>();
 
-    dispatcher.bind<ast::IfStatement, &AstDumper::dump_if_statement>();
+    dispatcher.bind<ast::IfExpression, &AstDumper::dump_if_expression>();
 
-    dispatcher.bind<ast::WhileStatement, &AstDumper::dump_while_statement>();
+    dispatcher.bind<ast::WhileExpression, &AstDumper::dump_while_expression>();
 
     dispatcher.bind<ast::ReturnStatement, &AstDumper::dump_return_statement>();
 
@@ -95,7 +99,9 @@ private:
 
     // Declarations
     dispatcher.bind<ast::VariableDeclaration, &AstDumper::dump_variable_declaration>();
+
     dispatcher.bind<ast::EnumVariant, &AstDumper::dump_enum_variant>();
+
     dispatcher.bind<ast::EnumDeclaration, &AstDumper::dump_enum_declaration>();
 
     dispatcher.bind<ast::FunctionDeclaration, &AstDumper::dump_function_declaration>();
@@ -114,18 +120,19 @@ private:
 
     // Other nodes
     dispatcher.bind<ast::NamedPattern, &AstDumper::dump_named_pattern>();
+    dispatcher.bind<ast::EnumVariantPattern, &AstDumper::dump_enum_variant_pattern>();
 
     dispatcher.bind<ast::Type, &AstDumper::dump_type>();
 
-    dispatcher.bind<ast::ObjectLiteralNode, &AstDumper::dump_object_literal>();
+    dispatcher.bind<ast::ObjectLiteral, &AstDumper::dump_object_literal>();
 
-    dispatcher.bind<ast::ObjectFieldNode, &AstDumper::dump_object_field>();
+    dispatcher.bind<ast::ObjectField, &AstDumper::dump_object_field>();
 
     dispatcher.bind<ast::ArrayLiteralNode, &AstDumper::dump_array_literal>();
 
-    dispatcher.bind<ast::StructFieldInitializerNode, &AstDumper::dump_struct_field>();
+    dispatcher.bind<ast::StructField, &AstDumper::dump_struct_field>();
 
-    dispatcher.bind<ast::StructLiteralNode, &AstDumper::dump_struct_literal>();
+    dispatcher.bind<ast::StructLiteral, &AstDumper::dump_struct_literal>();
     dispatcher.bind<ast::RootNode, &AstDumper::dump_root>();
 
     // Types
@@ -142,8 +149,8 @@ private:
   void dump_impl_declaration(const ast::ImplDeclaration *node);
   void dump_number_literal(const ast::NumberLiteralNode *node);
   void dump_string_literal(const ast::StringLiteralNode *node);
-  void dump_struct_field(const ast::StructFieldInitializerNode *node);
-  void dump_struct_literal(const ast::StructLiteralNode *node);
+  void dump_struct_field(const ast::StructField *node);
+  void dump_struct_literal(const ast::StructLiteral *node);
   void dump_bool_literal(const ast::BoolLiteralNode *node);
   void dump_null_literal(const ast::NullLiteralNode *node);
   void dump_identifier(const ast::Identifier *node);
@@ -151,6 +158,10 @@ private:
   void dump_generic(const ast::GenericParameter *node);
 
   // Expressions
+  void dump_match_arm(const ast::MatchArm *node);
+  void dump_match_expression(const ast::MatchExpression *node);
+
+  void dump_while_expression(const ast::WhileExpression *node);
   void dump_identifier_expression(const ast::IdentifierExpressionNode *node);
   void dump_binary_expression(const ast::BinaryExpressionNode *node);
   void dump_unary_expression(const ast::UnaryExpressionNode *node);
@@ -161,14 +172,16 @@ private:
 
   // Statements
   void dump_expression_statement(const ast::ExpressionStatement *node);
-  void dump_block_statement(const ast::BlockStatement *node);
-  void dump_if_statement(const ast::IfStatement *node);
-  void dump_while_statement(const ast::WhileStatement *node);
+  void dump_block_expression(const ast::BlockExpression *node);
+  void dump_if_expression(const ast::IfExpression *node);
+
   void dump_return_statement(const ast::ReturnStatement *node);
   void dump_import_statement(const ast::ImportDeclaration *node);
 
   // Declarations
   void dump_enum_variant(const ast::EnumVariant *node);
+  void dump_enum_variant_pattern(const ast::EnumVariantPattern *node);
+
   void dump_enum_declaration(const ast::EnumDeclaration *node);
   void dump_variable_declaration(const ast::VariableDeclaration *node);
   void dump_function_declaration(const ast::FunctionDeclaration *node);
@@ -179,8 +192,8 @@ private:
   // Other nodes
   void dump_named_pattern(const ast::NamedPattern *node);
   void dump_type(const ast::Type *node);
-  void dump_object_literal(const ast::ObjectLiteralNode *node);
-  void dump_object_field(const ast::ObjectFieldNode *node);
+  void dump_object_literal(const ast::ObjectLiteral *node);
+  void dump_object_field(const ast::ObjectField *node);
   void dump_array_literal(const ast::ArrayLiteralNode *node);
   void dump_field_declaration(const ast::FieldDeclaration *node);
   void dump_struct_declaration(const ast::StructDeclaration *node);

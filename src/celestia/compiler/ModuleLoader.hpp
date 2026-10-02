@@ -19,7 +19,7 @@ inline bool load_module(Compiler &compiler, const celestia::ast::ImportDeclarati
 
     if (!unit) return false;
 
-    compiler.require(*unit, StageId::Resolver, CompilationRules::normal());
+    compiler.require(*unit, StageId::Check, CompilationRules::normal());
   }
 
   return true;

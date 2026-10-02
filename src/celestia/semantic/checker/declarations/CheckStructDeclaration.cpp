@@ -1,5 +1,5 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-
+#include "celestia/ast/declarations/StructDeclaration.hpp"
 namespace celestia::semantic {
 
 void TypeChecker::check_struct_declaration(ast::StructDeclaration *node) {

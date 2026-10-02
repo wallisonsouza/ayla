@@ -1,13 +1,13 @@
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/statements/IfStatementNode.hpp"
+#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/statements/WhileStatementNode.hpp"
+#include "celestia/ast/expressions/While.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 
 #include <iostream>
 namespace celestia::semantic {
 
-void Resolver::if_statement(celestia::ast::IfStatement *node) {
+void Resolver::resolve_if_expression(celestia::ast::IfExpression *node) {
   if (node->condition) { resolve_node(node->condition); }
 
   if (node->then_block) { resolve_node(node->then_block); }
@@ -15,7 +15,7 @@ void Resolver::if_statement(celestia::ast::IfStatement *node) {
   if (node->else_block) { resolve_node(node->else_block); }
 }
 
-void Resolver::while_statement(celestia::ast::WhileStatement *node) {
+void Resolver::while_expression(celestia::ast::WhileExpression *node) {
   if (node->condition) { resolve_node(node->condition); }
 
   if (node->body) { resolve_node(node->body); }
@@ -26,7 +26,7 @@ void Resolver::expression_statement(celestia::ast::ExpressionStatement *node) {
   if (node->expression) { resolve_node(node->expression); }
 }
 
-void Resolver::block_statement(ast::BlockStatement *node) {
+void Resolver::resolve_block_expression(ast::BlockExpression *node) {
 
   if (!node) return;
 

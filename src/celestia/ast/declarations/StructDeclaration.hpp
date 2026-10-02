@@ -32,19 +32,9 @@ struct StructDeclaration : Declaration {
 
   std::vector<FieldDeclaration *> fields;
 
-  StructDeclaration(
-      Identifier *name,
-      std::vector<GenericParameter *> parameters,
-      std::vector<Type *> compositions,
-      std::vector<FieldDeclaration *> fields,
-      DeclarationSpecifiers specifiers)
+  StructDeclaration(Identifier *name, std::vector<GenericParameter *> parameters, std::vector<Type *> compositions, std::vector<FieldDeclaration *> fields, DeclarationSpecifiers specifiers)
 
-      : Declaration(NodeKind::StructDeclaration),
-        name(name),
-        generic_parameters(std::move(parameters)),
-        specifiers(specifiers),
-        compositions(std::move(compositions)),
-        fields(std::move(fields)) {}
+      : Declaration(NodeKind::StructDeclaration), name(name), generic_parameters(std::move(parameters)), specifiers(specifiers), compositions(std::move(compositions)), fields(std::move(fields)) {}
 };
 
 } // namespace celestia::ast

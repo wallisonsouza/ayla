@@ -1,11 +1,11 @@
 #pragma once
 
-#include "celestia/ast/Node.hpp"
+#include "celestia/ast/declarations/Declaration.hpp"
 
 namespace celestia::ast {
 
-struct Expression : Node {
-  explicit Expression(NodeKind k) : Node(k) {}
+struct Expression : BlockItem {
+  explicit Expression(NodeKind k) : BlockItem(k) {}
 };
 
 } // namespace celestia::ast

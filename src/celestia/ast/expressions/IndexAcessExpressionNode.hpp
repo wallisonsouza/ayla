@@ -10,8 +10,6 @@ struct IndexAccessExpressionNode : Expression {
   Expression *index;
 
   IndexAccessExpressionNode(Expression *b, Expression *i) : Expression(NodeKind::IndexAccess), base(b), index(i) {}
-
-  
 };
 
 } // namespace celestia::ast

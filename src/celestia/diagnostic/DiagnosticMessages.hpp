@@ -77,12 +77,12 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
     {DiagnosticCode::RedefinedField,
      {
          .title = "redefined field",
-         .text = "redefinition of field {kind} '{name}'",
+         .text = "redefinition of field {symbol} '{name}'",
      }},
     {DiagnosticCode::RedefinedSymbol,
      {
          .title = "redefined symbol",
-         .text = "redefinition of {kind} '{name}'",
+         .text = "redefinition of {symbol}",
      }},
 
     {DiagnosticCode::ShadowedSymbol,
@@ -128,7 +128,7 @@ inline const std::unordered_map<DiagnosticCode, DiagnosticMessage> messages = {
     {DiagnosticCode::TypeMismatch,
      {
          .title = "type mismatch",
-         .text = "type mismatch: expected '{name}', found '{found}'",
+         .text = "type mismatch: expected '{type}', found '{found}'",
      }},
 
       {DiagnosticCode::CannotInferType,

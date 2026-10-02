@@ -1,51 +1,29 @@
 #include "celestia/debug/ast/AstDumper.hpp"
 
+
+
 namespace celestia::debug {
-void AstDumper::dump_while_statement(const ast::WhileStatement *node) {
 
-  auto g = context.object("WhileStatement");
-
-  g.field("Condition", node->condition);
-  g.field("Body", node->body);
-}
-
-
-
-void AstDumper::dump_block_statement(const ast::BlockStatement *node) {
-
-  auto g = context.object("BlockStatement");
-
-  g.list("items", node->items);
-}
-
-void AstDumper::dump_if_statement(const ast::IfStatement *node) {
-
-  auto g = context.object("IfStatement");
-
-  g.field("Condition", node->condition);
-  g.field("Then", node->then_block);
-  g.field("Else", node->else_block);
-}
 
 void AstDumper::dump_return_statement(const ast::ReturnStatement *node) {
 
-  auto g = context.object("ReturnStatement");
+  auto g = context.object(ast::node_kind_name(node->kind));
 
   g.field("Value", node->value);
 }
 
 void AstDumper::dump_expression_statement(const ast::ExpressionStatement *node) {
 
-  auto g = context.object("ExpressionStatement");
+  auto g = context.object(ast::node_kind_name(node->kind));
 
   g.field("Expression", node->expression);
 }
 
 void AstDumper::dump_import_statement(const ast::ImportDeclaration *node) {
 
-  auto g = context.object("ImportDeclaration");
+  auto g = context.object(ast::node_kind_name(node->kind));
 
-  g.field("name",node->name);
+  g.field("name", node->name);
 
   if (node->path.has_value()) { g.field("path", node->path.value()); }
 

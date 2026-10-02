@@ -1,4 +1,5 @@
 #include "celestia/ast/ASTFwd.hpp"
+#include "celestia/ast/NodeCast.hpp"
 #include "celestia/ast/declarations/CapabilityDeclaration.hpp"
 #include "celestia/ast/declarations/FunctionDeclaration.hpp"
 #include "celestia/ast/declarations/ImplementationDeclaration.hpp"
@@ -68,6 +69,7 @@ ParseResult<std::vector<ast::GenericParameter *>> Parser::parse_generic_paramete
 ParseResult<ast::Declaration *> Parser::parse_declaration() {
 
   auto specifiers = parse_specifiers();
+
   auto &tokens = context.tokens();
 
   switch (tokens.kind()) {
@@ -127,6 +129,7 @@ ParseResult<ast::Declaration *> Parser::parse_declaration() {
 DeclarationSpecifiers Parser::parse_specifiers() {
 
   DeclarationSpecifiers specifiers;
+
   auto &tokens = context.tokens();
 
   while (Token *tok = tokens.current()) {
@@ -276,7 +279,12 @@ ParseResult<ast::ImportDeclaration *> Parser::parse_import_declaration() {
 
     auto node = parse_string_literal();
 
-    if (node) { path = node->value; }
+    if (node->kind == ast::NodeKind::StringLiteral) {
+
+      auto *string = ast::as<ast::StringLiteralNode>(node);
+
+      if (node) { path = string->value; }
+    }
   }
 
   celestia::debug::Trace::log(debug::Category::Parser, "parsed import declaration '{}'", module_result.value()->get_str());
@@ -618,12 +626,12 @@ ParseResult<ast::TypeDeclaration *> Parser::parse_type_declaration(ast::Identifi
 
   auto &tokens = context.tokens();
 
+  if (!tokens.match(TokenKind::TYPE_KEYWORD)) { return ParseResult<ast::TypeDeclaration *>::no_match(); }
+
   tokens.skip_trivia();
 
   // type<T, U>
   auto generic_parameters_result = parse_generic_parameters();
-
-  if (!tokens.match(TokenKind::TYPE_KEYWORD)) { return ParseResult<ast::TypeDeclaration *>::no_match(); }
 
   return ParseResult<ast::TypeDeclaration *>::ok(context.get_ast().alloc<ast::TypeDeclaration>(name, std::move(generic_parameters_result.value()), specifiers));
 }
@@ -828,11 +836,11 @@ ParseResult<ast::FunctionDeclaration *> Parser::parse_function_declaration(ast::
   }
 
   // { ... }
-  ast::BlockStatement *body = nullptr;
+  ast::BlockExpression *body = nullptr;
 
   if (tokens.check(TokenKind::OPEN_BRACE)) {
 
-    auto body_result = parse_block_statement();
+    auto body_result = parse_block_expression();
 
     if (!body_result) {
 

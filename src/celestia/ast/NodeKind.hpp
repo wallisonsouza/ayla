@@ -6,6 +6,7 @@ namespace celestia::ast {
 enum class NodeKind {
 
   EnumVariant,
+
   EnumDeclaration,
   Unknown,
   Root,
@@ -24,9 +25,8 @@ enum class NodeKind {
   QualifiedName,
   MemberAccess,
   IndexAccess,
-  BlockStatement,
-  IfStatement,
-  WhileStatement,
+  IfExpression,
+  WhileExpression,
   ForStatement,
   ReturnStatement,
   ExpressionStatement,
@@ -52,6 +52,7 @@ enum class NodeKind {
   UnaryExpression,
   LiteralExpression,
   AssignmentExpression,
+  BlockExpression,
   Type,
   NamedType,
   TypeReference,
@@ -60,8 +61,16 @@ enum class NodeKind {
   GenericParameter,
   FunctionType,
   Assignment,
+  MatchArm,
+  MatchExpression,
+
+  // patterns
   Pattern,
   NamedPattern,
+  EnumVariantPattern,
+  LiteralPattern,
+  WildcardPattern,
+
   Error,
   ParameterList,
   ArrayLiteral
@@ -93,9 +102,8 @@ constexpr std::string_view node_kind_name(NodeKind kind) noexcept {
 
   case NodeKind::MemberAccess: return "MemberAccess";
   case NodeKind::IndexAccess: return "IndexAccess";
-  case NodeKind::BlockStatement: return "BlockStatement";
-  case NodeKind::IfStatement: return "IfStatement";
-  case NodeKind::WhileStatement: return "WhileStatement";
+  case NodeKind::IfExpression: return "IfExpression";
+  case NodeKind::WhileExpression: return "WhileExpression";
   case NodeKind::ForStatement: return "ForStatement";
   case NodeKind::ReturnStatement: return "ReturnStatement";
   case NodeKind::ExpressionStatement: return "ExpressionStatement";
@@ -140,6 +148,12 @@ constexpr std::string_view node_kind_name(NodeKind kind) noexcept {
   case NodeKind::ModuleInitDeclaration: return "ModuleInitDeclaration";
   case NodeKind::EnumVariant: return "EnumVariant";
   case NodeKind::EnumDeclaration: return "EnumDeclaration";
+  case NodeKind::BlockExpression: return "BlockExpression";
+  case NodeKind::MatchArm: return "MatchArm";
+  case NodeKind::MatchExpression: return "MatchExpression";
+  case NodeKind::EnumVariantPattern: return "EnumVariantPattern";
+  case NodeKind::LiteralPattern: return "LiteralPattern";
+  case NodeKind::WildcardPattern: return "WildcardPattern";
   }
 
   return "Unknown";

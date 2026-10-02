@@ -18,8 +18,6 @@ void register_operators(celestia::LanguageDefinition &def) {
 
   def.operators.add_infix(TokenKind::ASSIGN, 1, core::Associativity::Right, BinaryOperation::Assign);
 
-  def.operators.add_infix(TokenKind::ARROW, 2, core::Associativity::Right, BinaryOperation::Arrow);
-
   def.operators.add_infix(TokenKind::EQUAL, 5, core::Associativity::Left, BinaryOperation::Equal);
 
   def.operators.add_infix(TokenKind::NOT_EQUAL, 5, core::Associativity::Left, BinaryOperation::NotEqual);

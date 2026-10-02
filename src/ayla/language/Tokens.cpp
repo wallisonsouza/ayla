@@ -19,6 +19,7 @@ void register_tokens(celestia::LanguageDefinition &def) {
   def.tokens.add(TokenKind::STRUCT_KEYWORD, "struct", TokenGroup::Keyword);
   def.tokens.add(TokenKind::TYPE_KEYWORD, "type", TokenGroup::Keyword);
   def.tokens.add(TokenKind::ENUM_KEYWORD, "enum", TokenGroup::Keyword);
+  def.tokens.add(TokenKind::MATCH, "match", TokenGroup::Keyword);
 
   def.tokens.add(TokenKind::CAP_KEYWORD, "cap", TokenGroup::Keyword);
   def.tokens.add(TokenKind::IMPL_KEYWORD, "impl", TokenGroup::Keyword);
@@ -40,6 +41,7 @@ void register_tokens(celestia::LanguageDefinition &def) {
 
   // punctuaction
   def.tokens.add(TokenKind::OPEN_PAREN, "(", TokenGroup::Punctuation);
+   def.tokens.add(TokenKind::UNDERSCORE, "_", TokenGroup::Keyword);
   def.tokens.add(TokenKind::COLON, ":", TokenGroup::Punctuation);
   def.tokens.add(TokenKind::DOT, ".", TokenGroup::Punctuation);
   def.tokens.add(TokenKind::CLOSE_PAREN, ")", TokenGroup::Punctuation);

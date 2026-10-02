@@ -1,15 +1,15 @@
 #pragma once
 #include "Declaration.hpp"
+#include "celestia/ast/expressions/BlockExpression.hpp"
 #include "celestia/ast/names/Name.hpp"
-#include "celestia/ast/statements/BlockStatementNode.hpp"
 
 namespace celestia::ast {
 
 struct ModuleInitDeclaration : Declaration {
 
-  BlockStatement *body = nullptr;
+  BlockExpression *body = nullptr;
 
-  explicit ModuleInitDeclaration(BlockStatement *body) : Declaration(NodeKind::ModuleInitDeclaration), body(body) {}
+  explicit ModuleInitDeclaration(BlockExpression *body) : Declaration(NodeKind::ModuleInitDeclaration), body(body) {}
 };
 
 struct ModuleDeclaration : Declaration {

@@ -48,6 +48,8 @@ private:
 
     case DiagnosticArgumentKind::Symbol: return "{symbol}";
 
+    case DiagnosticArgumentKind::SymbolKind: return "{symbol_kind}";
+
     case DiagnosticArgumentKind::Name: return "{name}";
     }
 
@@ -128,39 +130,28 @@ private:
     return type.to_string();
   }
 
-  static std::string format_value_impl(SymbolKind kind, const CompilerEnvironment &, const core::source::Source &) {
-
+  static std::string format_symbol_kind(SymbolKind kind) {
     switch (kind) {
-    case SymbolKind::Struct: return "struct";
-
-    case SymbolKind::Function: return "function";
-
     case SymbolKind::Variable: return "variable";
-
+    case SymbolKind::Parameter:   return "parameter";
     case SymbolKind::Field: return "field";
-
-    // case SymbolKind::Parameter: return "parameter";
-
+    case SymbolKind::Function: return "function";
     case SymbolKind::Type: return "type";
-
-    case SymbolKind::Module: return "module";
-
-    case SymbolKind::Capability: return "capability";
-
-    default: return "symbol";
+    case SymbolKind::EnumVariant: return "enum variant";
     }
+
+    return "<unknown symbol>";
   }
+
   // Symbol
 
   static std::string format_value_impl(celestia::semantic::SymbolId id, const CompilerEnvironment &env, const core::source::Source &) {
-
     if (!id.is_valid()) return "<invalid symbol>";
 
     const auto &symbol = env.symbols.get(id);
 
-    return symbol.name;
+    return format_symbol_kind(symbol.kind) + " '" + symbol.name + "'";
   }
-
   // String
 
   static std::string format_value_impl(const std::string &value, const CompilerEnvironment &, const core::source::Source &) { return value; }

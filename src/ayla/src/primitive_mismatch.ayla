@@ -1,0 +1,53 @@
+module primitive_mismatch
+
+// ============================================================
+// Int
+// ============================================================
+
+let int_from_string: Int = "hello"
+let int_from_bool: Int = true
+let int_from_char: Int = 'a'
+
+// ============================================================
+// UInt
+// ============================================================
+
+let uint_from_string: UInt = "hello"
+let uint_from_bool: UInt = false
+let uint_from_char: UInt = 'a'
+
+// ============================================================
+// Float
+// ============================================================
+
+let f32_from_string: F32 = "hello"
+let f32_from_bool: F32 = true
+let f32_from_char: F32 = 'a'
+
+let f64_from_string: F64 = "hello"
+let f64_from_bool: F64 = false
+let f64_from_char: F64 = 'a'
+
+// ============================================================
+// Bool
+// ============================================================
+
+let bool_from_int: Bool = 10
+let bool_from_string: Bool = "hello"
+let bool_from_char: Bool = 'a'
+
+// ============================================================
+// Char
+// ============================================================
+
+let char_from_int: Char = 10
+let char_from_string: Char = "hello"
+let char_from_bool: Char = true
+
+// ============================================================
+// String
+// ============================================================
+
+let string_from_int: String = 10
+let string_from_bool: String = true
+let string_from_char: String = 'a'

@@ -40,17 +40,19 @@ private:
   void collect_function_declaration(ast::FunctionDeclaration *node);
   void collect_variable_declaration(ast::VariableDeclaration *node);
   void collect_type_declaration(ast::TypeDeclaration *node);
-  void collect_block_statement(ast::BlockStatement *node);
+  void collect_block_expression(ast::BlockExpression *node);
   void collect_capability_declaration(ast::CapabilityDeclaration *node);
   void collect_impl_declaration(ast::ImplDeclaration *node);
   void collect_enum_variant(ast::EnumVariant *node);
   void collect_enum_declaration(ast::EnumDeclaration *node);
-  void collect_named_pattern(ast::NamedPattern *pattern);
+
+  void collect_pattern(ast::PatternNode *pattern, SymbolKind kind);
+  void collect_named_pattern(ast::NamedPattern *pattern, SymbolKind kind);
+
   void collect_field_declaration(ast::FieldDeclaration *node);
   void collect_generic_parameter(ast::GenericParameter *node);
 
-  SymbolId declare_named_symbol(ast::Identifier *name, SymbolKind kind, Visibility visibility, ast::Node *node);
-  SymbolId declare_symbol(const std::string &name, SymbolKind kind, Visibility visibility, ast::Node *node);
+  SymbolId declare_symbol(ast::Identifier *name, SymbolKind kind, Visibility visibility, ast::Node *node);
 
   ScopeId enter_scope(core::ScopeKind kind, ast::Node *node);
 };

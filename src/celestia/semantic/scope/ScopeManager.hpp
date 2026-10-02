@@ -28,20 +28,4 @@ public:
   core::Scope &get(celestia::semantic::ScopeId id) { return *scopes.at(id.index()); }
 
   const core::Scope &get(celestia::semantic::ScopeId id) const { return *scopes.at(id.index()); }
-
-  celestia::semantic::SymbolId lookup(celestia::semantic::ScopeId scope_id, std::string_view name) const {
-
-    while (scope_id.is_valid()) {
-
-      const auto &scope = get(scope_id);
-
-      celestia::semantic::SymbolId symbol = scope.symbols.find(name);
-
-      if (symbol.is_valid()) return symbol;
-
-      scope_id = scope.parent;
-    }
-
-    return celestia::semantic::SymbolId::invalid();
-  }
 };
