@@ -58,45 +58,45 @@ void Lowering::lower_module_declaration(const ast::ModuleDeclaration *node) {
 
   if (!module_id.is_valid()) return;
 
-  auto &module = context.compiler.environment().modules.get(module_id);
+  // auto &module = context.compiler.environment().modules.get(module_id);
 
   // --------------------------------------------------
   // Lower imports primeiro
   // --------------------------------------------------
 
-  for (auto imported_id : module.imports()) {
+  // for (auto imported_id : module.imports()) {
 
-    // if (!imported_id.is_valid()) continue;
+  //   // if (!imported_id.is_valid()) continue;
 
-    // auto &imported = context.compiler.environment().modules.get(imported_id);
+  //   // auto &imported = context.compiler.environment().modules.get(imported_id);
 
-    // auto *imported_unit = context.compiler.environment().units.get(imported.unit_);
+  //   // auto *imported_unit = context.compiler.environment().units.get(imported.unit_);
 
-    // if (!imported_unit) { throw std::runtime_error("module has no compilation unit: " + std::string(imported.name())); }
+  //   // if (!imported_unit) { throw std::runtime_error("module has no compilation unit: " + std::string(imported.name())); }
 
-    // context.compiler.require(*imported_unit, stages::Lowering, CompilationRules::normal());
-  }
+  //   // context.compiler.require(*imported_unit, stages::Lowering, CompilationRules::normal());
+  // }
 
-  // --------------------------------------------------
-  // Registra imports no módulo IR atual
-  // --------------------------------------------------
+  // // --------------------------------------------------
+  // // Registra imports no módulo IR atual
+  // // --------------------------------------------------
 
-  auto &ir_module = context.module();
+  // auto &ir_module = context.module();
 
-  for (auto imported_id : module.imports()) {
+  // for (auto imported_id : module.imports()) {
 
-    // if (!imported_id.is_valid()) continue;
+  //   // if (!imported_id.is_valid()) continue;
 
-    // auto &imported = context.compiler.environment().modules.get(imported_id);
+  //   // auto &imported = context.compiler.environment().modules.get(imported_id);
 
-    // auto *imported_unit = context.compiler.environment().units.get(imported.unit_);
+  //   // auto *imported_unit = context.compiler.environment().units.get(imported.unit_);
 
-    // if (!imported_unit) continue;
+  //   // if (!imported_unit) continue;
 
-    // if (!imported_unit->ir_module.is_valid()) continue;
+  //   // if (!imported_unit->ir_module.is_valid()) continue;
 
-    // ir_module.imports.push_back(imported_unit->ir_module);
-  }
+  //   // ir_module.imports.push_back(imported_unit->ir_module);
+  // }
 
   // --------------------------------------------------
   // Declarações locais

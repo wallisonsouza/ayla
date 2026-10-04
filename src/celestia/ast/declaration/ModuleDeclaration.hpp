@@ -1,6 +1,6 @@
 #pragma once
 #include "Declaration.hpp"
-#include "celestia/ast/expressions/BlockExpression.hpp"
+#include "celestia/ast/expression/BlockExpression.hpp"
 #include "celestia/ast/names/Name.hpp"
 
 namespace celestia::ast {

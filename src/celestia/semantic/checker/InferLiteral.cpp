@@ -1,5 +1,5 @@
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/types/GenericType.hpp"
 #include "celestia/ast/types/NamedType.hpp"
@@ -8,13 +8,13 @@
 
 namespace celestia::semantic {
 
-TypeId TypeChecker::infer_number_literal(ast::NumberLiteralNode *node) { return context.env().builtins.int_type; }
+TypeId TypeChecker::infer_number_literal(ast::NumberLiteral *node) { return context.env().builtins.int_type; }
 
-TypeId TypeChecker::infer_string_literal(ast::StringLiteralNode *node) { return context.env().builtins.string_type; }
+TypeId TypeChecker::infer_string_literal(ast::StringLiteral *node) { return context.env().builtins.string_type; }
 
-TypeId TypeChecker::infer_boolean_literal(ast::BoolLiteralNode *node) { return context.env().builtins.bool_type; }
+TypeId TypeChecker::infer_boolean_literal(ast::BoolLiteral *node) { return context.env().builtins.bool_type; }
 
-TypeId TypeChecker::infer_array_literal(ast::ArrayLiteralNode *node) {
+TypeId TypeChecker::infer_array_literal(ast::ArrayLiteral *node) {
 
   if (node->elements.empty()) {
     checker::diagnostics::report_cannot_infer_type(context, node->slice);

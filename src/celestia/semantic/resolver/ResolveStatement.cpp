@@ -1,7 +1,7 @@
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/expressions/If.hpp"
+#include "celestia/ast/expression/IfExpression.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/expressions/While.hpp"
+#include "celestia/ast/expression/WhileExpression.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 
 #include <iostream>

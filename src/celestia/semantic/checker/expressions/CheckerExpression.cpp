@@ -1,4 +1,4 @@
-#include "celestia/ast/expressions/If.hpp"
+#include "celestia/ast/expression/IfExpression.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
 

@@ -16,13 +16,13 @@ TypeId TypeChecker::infer(ast::Node *node) {
 
   case ast::NodeKind::GenericType: type = infer_generic_type(ast::as<ast::GenericType>(node)); break;
 
-  case ast::NodeKind::NumberLiteral: type = infer_number_literal(ast::as<ast::NumberLiteralNode>(node)); break;
+  case ast::NodeKind::NumberLiteral: type = infer_number_literal(ast::as<ast::NumberLiteral>(node)); break;
 
-  case ast::NodeKind::StringLiteral: type = infer_string_literal(ast::as<ast::StringLiteralNode>(node)); break;
+  case ast::NodeKind::StringLiteral: type = infer_string_literal(ast::as<ast::StringLiteral>(node)); break;
 
-  case ast::NodeKind::BooleanLiteral: type = infer_boolean_literal(ast::as<ast::BoolLiteralNode>(node)); break;
+  case ast::NodeKind::BooleanLiteral: type = infer_boolean_literal(ast::as<ast::BoolLiteral>(node)); break;
 
-  case ast::NodeKind::ArrayLiteral: type = infer_array_literal(ast::as<ast::ArrayLiteralNode>(node)); break;
+  case ast::NodeKind::ArrayLiteral: type = infer_array_literal(ast::as<ast::ArrayLiteral>(node)); break;
 
   case ast::NodeKind::StructLiteral: type = infer_struct_literal(ast::as<ast::StructLiteral>(node)); break;
 

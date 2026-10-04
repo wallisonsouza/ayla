@@ -36,15 +36,11 @@ int AylaApplication::run(const CommandLine &cmd) {
     celestia::debug::AstDumper dump;
     celestia::debug::TokenDumper t_dump;
 
-
     t_dump.dump(unit->tokens, unit->source.buffer);
 
-   
     dump.dump(unit->_root);
     for (auto &diag : unit->diagnostics.all()) { diagnostic::print_diagnostic(diag, unit->source, compiler.environment()); }
   }
-
-
 
   // celestia::debug::AstDumper dump;
   // dump.dump(user->_root);

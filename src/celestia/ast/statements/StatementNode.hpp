@@ -1,5 +1,5 @@
 #pragma once
-#include "celestia/ast/declarations/Declaration.hpp"
+#include "celestia/ast/declaration/Declaration.hpp"
 
 namespace celestia::ast {
 

@@ -2,12 +2,11 @@
 
 #include "celestia/ast/AstDispacher.hpp"
 
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
 
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/expression/BinaryExpression.hpp"
+#include "celestia/ast/expression/IdentifierExpression.hpp"
 
 #include "celestia/lowering/LoweringContext.hpp"
 
@@ -42,13 +41,13 @@ private:
 
   ir::ValueId lower_expression(const ast::Expression *node);
 
-  ir::ValueId lower_number_literal(const ast::NumberLiteralNode *node);
+  ir::ValueId lower_number_literal(const ast::NumberLiteral *node);
 
-  ir::ValueId lower_string_literal(const ast::StringLiteralNode *node);
+  ir::ValueId lower_string_literal(const ast::StringLiteral *node);
 
   ir::ValueId lower_identifier(const ast::IdentifierExpressionNode *node);
 
-  ir::ValueId lower_bool_literal(const ast::BoolLiteralNode *node);
+  ir::ValueId lower_bool_literal(const ast::BoolLiteral *node);
 
   ir::ValueId lower_binary_expression(const ast::BinaryExpressionNode *node);
 

@@ -5,34 +5,34 @@ namespace celestia::semantic::checker::diagnostics {
 
 inline void report_type_mismatch(semantic::TypeCheckerContext &context, SourceSlice slice, semantic::TypeId expected, semantic::TypeId actual) {
 
-  context.unit.diagnostics.report({
-      .severity = diagnostic::Severity::Error,
-      .code = diagnostic::DiagnosticCode::TypeMismatch,
-      .arguments =
-          {
-              diagnostic::type(expected),
-              diagnostic::found_type(actual),
-          },
-      .labels =
-          {
-              diagnostic::location(slice),
-          },
-  });
+  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
+                                   .code = diagnostic::DiagnosticCode::TypeMismatch,
+                                   .arguments =
+                                       {
+                                           diagnostic::type(expected),
+                                           diagnostic::found_type(actual),
+                                       },
+                                   .labels =
+                                       {
+                                           diagnostic::location(slice),
+                                       },
+                                   .helps = {},
+                                   .notes = {}});
 }
 inline void report_cannot_infer_type(semantic::TypeCheckerContext &context, SourceSlice slice) {
 
-  context.unit.diagnostics.report({
-      .severity = diagnostic::Severity::Error,
-      .code = diagnostic::DiagnosticCode::CannotInferType,
-      .arguments =
-          {
+  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
+                                   .code = diagnostic::DiagnosticCode::CannotInferType,
+                                   .arguments =
+                                       {
 
-          },
-      .labels =
-          {
-              diagnostic::location(slice),
-          },
-  });
+                                       },
+                                   .labels =
+                                       {
+                                           diagnostic::location(slice),
+                                       },
+                                   .helps = {},
+                                   .notes = {}});
 }
 
 } // namespace celestia::semantic::checker::diagnostics

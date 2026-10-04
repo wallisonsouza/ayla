@@ -1,6 +1,6 @@
 #pragma once
 #include "celestia/ast/Node.hpp"
-#include "celestia/ast/declarations/Declaration.hpp"
+#include "celestia/ast/declaration/Declaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/ast/names/Identifier.hpp"
 #include "celestia/ast/patterns/PatternNode.hpp"

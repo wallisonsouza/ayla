@@ -2,8 +2,6 @@
 
 #include "celestia/core/source/SourceBuffer.hpp"
 #include "celestia/core/token/Token.hpp"
-#include "celestia/core/token/TokenGroup.hpp"
-#include "celestia/core/token/TokenKind.hpp"
 #include "celestia/core/token/token_stream.hpp"
 
 #include <string>

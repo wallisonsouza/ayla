@@ -1,6 +1,6 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
 
 namespace celestia::semantic {
 

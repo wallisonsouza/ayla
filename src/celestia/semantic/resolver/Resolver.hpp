@@ -39,7 +39,7 @@ private:
   void function_call(ast::CallExpressionNode *node);
   void assignment(ast::AssignmentExpressionNode *node);
 
-  void array_literal(ast::ArrayLiteralNode *node);
+  void array_literal(ast::ArrayLiteral *node);
   void object_literal(ast::ObjectLiteral *node);
   void struct_literal(ast::StructLiteral *node);
   void index_access(ast::IndexAccessExpressionNode *node);

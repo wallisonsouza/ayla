@@ -1,4 +1,4 @@
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 

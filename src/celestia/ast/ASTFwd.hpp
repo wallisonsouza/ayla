@@ -2,11 +2,12 @@
 
 namespace celestia::ast {
 
+class RootNode;
 
 class Node;
 
-
 class Declaration;
+
 class EnumDeclaration;
 class CapabilityDeclaration;
 class FunctionDeclaration;
@@ -20,6 +21,9 @@ class ImplDeclaration;
 class FieldDeclaration;
 
 class Expression;
+
+class IfExpression;
+class WhileExpression;
 class AssignmentExpressionNode;
 class BinaryExpressionNode;
 class CallExpressionNode;
@@ -29,37 +33,31 @@ class LiteralExpressionNode;
 class MemberAccessExpressionNode;
 class UnaryExpressionNode;
 
-
 class Statement;
-// class BlockStatement;
 class ExpressionStatement;
-class IfExpression;
 class ReturnStatement;
-class WhileExpression;
-
 
 class Type;
 class FunctionType;
 class GenericType;
 class NamedType;
 
-
 class PatternNode;
 class NamedPattern;
 
 class QualifiedName;
-
+class GenericName;
 class EnumVariant;
+class EnumVariantPattern;
 
 class GenericParameter;
 class Identifier;
 
-
-class NumberLiteralNode;
-class StringLiteralNode;
-class BoolLiteralNode;
+class NumberLiteral;
+class StringLiteral;
+class BoolLiteral;
 class ObjectLiteral;
-class ArrayLiteralNode;
+class ArrayLiteral;
 class StructLiteral;
 
-}
+} // namespace celestia::ast

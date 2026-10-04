@@ -2,9 +2,9 @@
 
 #include "ParserContext.hpp"
 
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
 
-#include "celestia/ast/expressions/BlockExpression.hpp"
+#include "celestia/ast/expression/BlockExpression.hpp"
 
 #include "celestia/ast/names/Qualified.hpp"
 

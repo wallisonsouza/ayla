@@ -1,12 +1,15 @@
 #include "celestia/semantic/checker/TypeChecker.hpp"
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImportDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
+#include "celestia/ast/statements/ReturnStatementNode.hpp"
 
 namespace celestia::semantic {
 
@@ -34,13 +37,13 @@ bool TypeChecker::check(ast::Node *node, TypeId expected) {
 
   case ast::NodeKind::ReturnStatement: check_return_statement(static_cast<ast::ReturnStatement *>(node)); return true;
 
-  case ast::NodeKind::NumberLiteral: return check_number_literal(static_cast<ast::NumberLiteralNode *>(node), expected);
+  case ast::NodeKind::NumberLiteral: return check_number_literal(static_cast<ast::NumberLiteral *>(node), expected);
 
-  case ast::NodeKind::StringLiteral: return check_string_literal(static_cast<ast::StringLiteralNode *>(node), expected);
+  case ast::NodeKind::StringLiteral: return check_string_literal(static_cast<ast::StringLiteral *>(node), expected);
 
-  case ast::NodeKind::BooleanLiteral: return check_boolean_literal(static_cast<ast::BoolLiteralNode *>(node), expected);
+  case ast::NodeKind::BooleanLiteral: return check_boolean_literal(static_cast<ast::BoolLiteral *>(node), expected);
 
-  case ast::NodeKind::ArrayLiteral: return check_array_literal(static_cast<ast::ArrayLiteralNode *>(node), expected);
+  case ast::NodeKind::ArrayLiteral: return check_array_literal(static_cast<ast::ArrayLiteral *>(node), expected);
 
   case ast::NodeKind::StructLiteral: return check_struct_literal(static_cast<ast::StructLiteral *>(node), expected);
 

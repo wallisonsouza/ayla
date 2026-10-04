@@ -82,6 +82,7 @@ public:
       return Struct{
           .id = id,
           .name = name,
+          .fields = {}
       };
     });
   }
@@ -108,6 +109,7 @@ public:
       return Interface{
           .id = id,
           .name = name,
+          .methods = {}
       };
     });
   }

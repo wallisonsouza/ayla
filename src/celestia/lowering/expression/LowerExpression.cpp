@@ -9,11 +9,11 @@ ir::ValueId Lowering::lower_expression(const ast::Expression *node) {
 
   switch (node->kind) {
 
-  case ast::NodeKind::NumberLiteral: return lower_number_literal(ast::as<ast::NumberLiteralNode>(node));
+  case ast::NodeKind::NumberLiteral: return lower_number_literal(ast::as<ast::NumberLiteral>(node));
 
-  case ast::NodeKind::StringLiteral: return lower_string_literal(ast::as<ast::StringLiteralNode>(node));
+  case ast::NodeKind::StringLiteral: return lower_string_literal(ast::as<ast::StringLiteral>(node));
 
-  case ast::NodeKind::BooleanLiteral: return lower_bool_literal(ast::as<ast::BoolLiteralNode>(node));
+  case ast::NodeKind::BooleanLiteral: return lower_bool_literal(ast::as<ast::BoolLiteral>(node));
 
   // case ast::NodeKind::IdentifierExpression: return lower_identifier(ast::as<ast::IdentifierExpressionNode>(node));
 

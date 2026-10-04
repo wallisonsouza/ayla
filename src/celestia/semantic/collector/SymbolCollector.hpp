@@ -1,7 +1,7 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
+#include "celestia/ast/declaration/EnumDeclaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"

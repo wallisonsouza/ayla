@@ -47,10 +47,10 @@ private:
 
   // Expression
 
-  TypeId infer_number_literal(ast::NumberLiteralNode *node);
-  TypeId infer_string_literal(ast::StringLiteralNode *node);
-  TypeId infer_boolean_literal(ast::BoolLiteralNode *node);
-  TypeId infer_array_literal(ast::ArrayLiteralNode *node);
+  TypeId infer_number_literal(ast::NumberLiteral *node);
+  TypeId infer_string_literal(ast::StringLiteral *node);
+  TypeId infer_boolean_literal(ast::BoolLiteral *node);
+  TypeId infer_array_literal(ast::ArrayLiteral *node);
   TypeId infer_struct_literal(ast::StructLiteral *node);
   TypeId infer_name_pattern(ast::NamedPattern *pattern);
 
@@ -59,10 +59,10 @@ private:
   TypeId infer_binary_expression(ast::BinaryExpressionNode *node);
   TypeId infer_while_expression(ast::WhileExpression *node);
 
-  bool check_number_literal(ast::NumberLiteralNode *node, TypeId expected);
-  bool check_string_literal(ast::StringLiteralNode *node, TypeId expected);
-  bool check_boolean_literal(ast::BoolLiteralNode *node, TypeId expected);
-  bool check_array_literal(ast::ArrayLiteralNode *node, TypeId expected);
+  bool check_number_literal(ast::NumberLiteral *node, TypeId expected);
+  bool check_string_literal(ast::StringLiteral *node, TypeId expected);
+  bool check_boolean_literal(ast::BoolLiteral *node, TypeId expected);
+  bool check_array_literal(ast::ArrayLiteral *node, TypeId expected);
   bool check_struct_literal(ast::StructLiteral *node, TypeId expected);
   bool check_name_pattern(ast::NamedPattern *pattern, TypeId expected);
 

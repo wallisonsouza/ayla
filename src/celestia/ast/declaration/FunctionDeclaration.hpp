@@ -2,7 +2,7 @@
 
 #include "Declaration.hpp"
 
-#include "celestia/ast/expressions/BlockExpression.hpp"
+#include "celestia/ast/expression/BlockExpression.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/ast/patterns/PatternNode.hpp"
 #include "celestia/ast/types/Type.hpp"

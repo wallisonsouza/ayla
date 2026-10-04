@@ -31,6 +31,8 @@ struct Type {
     case TypeKind::Struct: return "Struct";
 
     case TypeKind::GenericInstance: return "GenericInstance";
+    case TypeKind::GenericDefinition:
+    case TypeKind::Generic: break;
     }
 
     return "Invalid";

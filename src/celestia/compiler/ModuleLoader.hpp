@@ -1,6 +1,6 @@
 #pragma once
 
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
+#include "celestia/ast/declaration/ImportDeclaration.hpp"
 #include "celestia/compiler/CompilationUnit.hpp"
 #include "celestia/compiler/Compiler.hpp"
 

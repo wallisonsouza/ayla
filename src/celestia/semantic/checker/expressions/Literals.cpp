@@ -1,11 +1,14 @@
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
 
 namespace celestia::semantic {
 
-bool TypeChecker::check_number_literal(ast::NumberLiteralNode *node, TypeId expected) {
+bool TypeChecker::check_number_literal(ast::NumberLiteral *node, TypeId expected) {
 
   assert(node);
   assert(expected.is_valid());
@@ -24,7 +27,7 @@ bool TypeChecker::check_number_literal(ast::NumberLiteralNode *node, TypeId expe
   return true;
 }
 
-bool TypeChecker::check_string_literal(ast::StringLiteralNode *node, TypeId expected) {
+bool TypeChecker::check_string_literal(ast::StringLiteral *node, TypeId expected) {
 
   assert(node);
   assert(expected.is_valid());
@@ -40,7 +43,7 @@ bool TypeChecker::check_string_literal(ast::StringLiteralNode *node, TypeId expe
   return true;
 }
 
-bool TypeChecker::check_boolean_literal(ast::BoolLiteralNode *node, TypeId expected) {
+bool TypeChecker::check_boolean_literal(ast::BoolLiteral *node, TypeId expected) {
 
   assert(node);
   assert(expected.is_valid());
@@ -56,7 +59,7 @@ bool TypeChecker::check_boolean_literal(ast::BoolLiteralNode *node, TypeId expec
   return true;
 }
 
-bool TypeChecker::check_array_literal(ast::ArrayLiteralNode *node, TypeId expected) {
+bool TypeChecker::check_array_literal(ast::ArrayLiteral *node, TypeId expected) {
 
   assert(node);
   assert(expected.is_valid());

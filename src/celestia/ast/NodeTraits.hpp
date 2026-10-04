@@ -4,61 +4,65 @@
 
 // Declarations
 #include "celestia/ast/RootNode.hpp"
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/TypeDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-// Expressions
-#include "celestia/ast/expressions/AssignmentExpression.hpp"
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/CallExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
-#include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/expressions/MatchExpression.hpp"
-#include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
-#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
-// Statements
 
-#include "celestia/ast/literals/ObjectLiteral.hpp"
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/declaration/CapabilityDeclaration.hpp"
+#include "celestia/ast/declaration/EnumDeclaration.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/ImportDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/TypeDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
+
+// Expressions
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/AssignmentExpression.hpp"
+#include "celestia/ast/expression/BinaryExpression.hpp"
+#include "celestia/ast/expression/CallExpression.hpp"
+#include "celestia/ast/expression/IdentifierExpression.hpp"
+#include "celestia/ast/expression/IfExpression.hpp"
+#include "celestia/ast/expression/IndexAcessExpression.hpp"
+#include "celestia/ast/expression/MatchExpression.hpp"
+#include "celestia/ast/expression/MemberAccessExpression.hpp"
+#include "celestia/ast/expression/NullLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/ObjectLiteral.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
+#include "celestia/ast/expression/UnaryExpression.hpp"
+#include "celestia/ast/expression/WhileExpression.hpp"
+
+// Statements
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/expressions/While.hpp"
+
 // Names
 #include "celestia/ast/names/Identifier.hpp"
 #include "celestia/ast/names/Qualified.hpp"
 
 // Types
 #include "celestia/ast/types/FunctionType.hpp"
+#include "celestia/ast/types/GenericType.hpp"
+#include "celestia/ast/types/NamedType.hpp"
 #include "celestia/ast/types/Type.hpp"
 
 // Patterns
 #include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/patterns/PatternNode.hpp"
-#include "celestia/ast/types/GenericType.hpp"
-#include "celestia/ast/types/NamedType.hpp"
 
 namespace celestia::ast {
 
 template <typename T> struct NodeTraits;
 
-
 template <> struct NodeTraits<WhileExpression> {
   static constexpr NodeKind kind = NodeKind::WhileExpression;
 };
 
-
 template <> struct NodeTraits<MatchArm> {
   static constexpr NodeKind kind = NodeKind::MatchArm;
 };
-
 
 template <> struct NodeTraits<MatchExpression> {
   static constexpr NodeKind kind = NodeKind::MatchExpression;
@@ -83,7 +87,6 @@ template <> struct NodeTraits<GenericName> {
 template <> struct NodeTraits<GenericParameter> {
   static constexpr NodeKind kind = NodeKind::GenericParameter;
 };
-
 
 template <> struct NodeTraits<RootNode> {
   static constexpr NodeKind kind = NodeKind::Root;
@@ -163,19 +166,19 @@ template <> struct NodeTraits<IdentifierExpressionNode> {
   static constexpr NodeKind kind = NodeKind::IdentifierExpression;
 };
 
-template <> struct NodeTraits<NumberLiteralNode> {
+template <> struct NodeTraits<NumberLiteral> {
   static constexpr NodeKind kind = NodeKind::NumberLiteral;
 };
 
-template <> struct NodeTraits<StringLiteralNode> {
+template <> struct NodeTraits<StringLiteral> {
   static constexpr NodeKind kind = NodeKind::StringLiteral;
 };
 
-template <> struct NodeTraits<BoolLiteralNode> {
+template <> struct NodeTraits<BoolLiteral> {
   static constexpr NodeKind kind = NodeKind::BooleanLiteral;
 };
 
-template <> struct NodeTraits<NullLiteralNode> {
+template <> struct NodeTraits<NullLiteral> {
   static constexpr NodeKind kind = NodeKind::NullLiteral;
 };
 
@@ -187,7 +190,7 @@ template <> struct NodeTraits<StructLiteral> {
   static constexpr NodeKind kind = NodeKind::StructLiteral;
 };
 
-template <> struct NodeTraits<ArrayLiteralNode> {
+template <> struct NodeTraits<ArrayLiteral> {
   static constexpr NodeKind kind = NodeKind::ArrayLiteral;
 };
 
@@ -206,7 +209,6 @@ template <> struct NodeTraits<BlockExpression> {
 template <> struct NodeTraits<IfExpression> {
   static constexpr NodeKind kind = NodeKind::IfExpression;
 };
-
 
 template <> struct NodeTraits<ReturnStatement> {
   static constexpr NodeKind kind = NodeKind::ReturnStatement;

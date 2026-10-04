@@ -1,6 +1,6 @@
+#include "celestia/ast/expression/BinaryExpression.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
 
 namespace celestia::semantic {
 

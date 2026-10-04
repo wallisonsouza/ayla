@@ -1,8 +1,12 @@
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
+
 #include "celestia/lowering/Lowering.hpp"
 
 namespace celestia::lowering {
 
-ir::ValueId Lowering::lower_number_literal(const ast::NumberLiteralNode *node) {
+ir::ValueId Lowering::lower_number_literal(const ast::NumberLiteral *node) {
 
   if (!node) return ir::ValueId::invalid();
 
@@ -17,7 +21,7 @@ ir::ValueId Lowering::lower_number_literal(const ast::NumberLiteralNode *node) {
   return context.ir.create_constant(type, node->value);
 }
 
-ir::ValueId Lowering::lower_string_literal(const ast::StringLiteralNode *node) {
+ir::ValueId Lowering::lower_string_literal(const ast::StringLiteral *node) {
 
   if (!node) return ir::ValueId::invalid();
 
@@ -32,7 +36,7 @@ ir::ValueId Lowering::lower_string_literal(const ast::StringLiteralNode *node) {
   return context.ir.create_constant(type, node->value);
 }
 
-ir::ValueId Lowering::lower_bool_literal(const ast::BoolLiteralNode *node) {
+ir::ValueId Lowering::lower_bool_literal(const ast::BoolLiteral *node) {
 
   if (!node) return ir::ValueId::invalid();
 

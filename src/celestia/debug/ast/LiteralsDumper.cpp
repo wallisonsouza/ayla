@@ -1,29 +1,31 @@
 
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
 #include "celestia/debug/ast/AstDumper.hpp"
 #include <format>
 
 namespace celestia::debug {
 
-void AstDumper::dump_number_literal(const ast::NumberLiteralNode *node) {
+void AstDumper::dump_number_literal(const ast::NumberLiteral *node) {
   auto g = context.object(std::format("Number({})", node->value));
 
   (void)g;
 }
 
-void AstDumper::dump_string_literal(const ast::StringLiteralNode *node) {
+void AstDumper::dump_string_literal(const ast::StringLiteral *node) {
   auto g = context.object(std::format("String(\"{}\")", node->value));
 
   (void)g;
 }
 
-void AstDumper::dump_bool_literal(const ast::BoolLiteralNode *node) {
+void AstDumper::dump_bool_literal(const ast::BoolLiteral *node) {
   auto g = context.object(std::format("Boolean({})", node->value ? "true" : "false"));
 
   (void)g;
 }
 
-void AstDumper::dump_null_literal(const ast::NullLiteralNode *node) {
+void AstDumper::dump_null_literal(const ast::NullLiteral *node) {
   (void)node;
 
   auto g = context.object("Null");
@@ -46,7 +48,7 @@ void AstDumper::dump_struct_literal(const ast::StructLiteral *node) {
   g.list("Fields", node->fields);
   
 }
-void AstDumper::dump_array_literal(const ast::ArrayLiteralNode *node) {
+void AstDumper::dump_array_literal(const ast::ArrayLiteral *node) {
   auto g = context.object("ArrayLiteral");
 
   g.list("Elements", node->elements);

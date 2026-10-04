@@ -1,5 +1,8 @@
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
+#include "celestia/ast/expression/NumberLiteral.hpp"
+#include "celestia/ast/expression/StringLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
 
@@ -13,7 +16,7 @@ ast::Expression *Parser::parse_number_literal() {
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  auto *node = context.get_ast().alloc<ast::NumberLiteralNode>(text);
+  auto *node = context.get_ast().alloc<ast::NumberLiteral>(text);
 
   node->slice = token->slice;
 
@@ -27,7 +30,7 @@ ast::Expression *Parser::parse_string_literal() {
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
-  auto *node = context.get_ast().alloc<ast::StringLiteralNode>(text);
+  auto *node = context.get_ast().alloc<ast::StringLiteral>(text);
 
   node->slice = token->slice;
 
@@ -41,7 +44,7 @@ ast::Expression *Parser::parse_bool_literal() {
 
   bool value = token->desc->kind == TokenKind::TRUE;
 
-  auto *node = context.get_ast().alloc<ast::BoolLiteralNode>(value);
+  auto *node = context.get_ast().alloc<ast::BoolLiteral>(value);
 
   node->slice = token->slice;
 
@@ -127,7 +130,7 @@ celestia::ast::Expression *Parser::parse_array_literal() {
 
   if (tokens.match(TokenKind::CLOSE_BRACKET)) {
 
-    auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements));
+    auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteral>(std::move(elements));
 
     node->slice.begin = open->slice.begin;
     node->slice.end = tokens.previous()->slice.end;
@@ -163,7 +166,7 @@ celestia::ast::Expression *Parser::parse_array_literal() {
 
   if (!close) return nullptr;
 
-  auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteralNode>(std::move(elements));
+  auto *node = context.get_ast().alloc<celestia::ast::ArrayLiteral>(std::move(elements));
 
   node->slice.begin = open->slice.begin;
   node->slice.end = close->slice.end;

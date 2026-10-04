@@ -1,6 +1,6 @@
 #pragma once
 
-#include "celestia/ast/expressions/ExpressionNode.hpp"
+#include "celestia/ast/expression/Expression.hpp"
 #include <vector>
 
 namespace celestia::ast {

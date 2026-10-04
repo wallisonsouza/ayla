@@ -1,16 +1,16 @@
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/literals/ObjectLiteral.hpp"
-#include "celestia/ast/literals/StructLiteral.hpp"
+#include "celestia/ast/expression/ArrayLiteral.hpp"
+#include "celestia/ast/expression/ObjectLiteral.hpp"
+#include "celestia/ast/expression/StructLiteral.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 #include <iostream>
 
 namespace celestia::semantic {
 
-// void Resolver::number_literal(celestia::ast::NumberLiteralNode *node) {}
+// void Resolver::number_literal(celestia::ast::NumberLiteral *node) {}
 
-// void Resolver::string_literal(celestia::ast::StringLiteralNode *node) {}
+// void Resolver::string_literal(celestia::ast::StringLiteral *node) {}
 
-// void Resolver::boolean_literal(celestia::ast::BoolLiteralNode *node) {}
+// void Resolver::boolean_literal(celestia::ast::BoolLiteral *node) {}
 
 void Resolver::object_literal(celestia::ast::ObjectLiteral *node) {
 
@@ -21,7 +21,7 @@ void Resolver::object_literal(celestia::ast::ObjectLiteral *node) {
   }
 }
 
-void Resolver::array_literal(celestia::ast::ArrayLiteralNode *node) {
+void Resolver::array_literal(celestia::ast::ArrayLiteral *node) {
 
   if (!node) return;
 

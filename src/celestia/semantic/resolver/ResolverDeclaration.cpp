@@ -1,12 +1,12 @@
 #include "celestia/compiler/ModuleLoader.hpp"
 #include "celestia/semantic/resolver/Resolver.hpp"
 
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
+#include "celestia/ast/declaration/CapabilityDeclaration.hpp"
+#include "celestia/ast/declaration/EnumDeclaration.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
 namespace celestia::semantic {
 
 // type

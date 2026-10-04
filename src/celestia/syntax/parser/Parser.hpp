@@ -1,11 +1,7 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/names/Generic.hpp"
-#include "celestia/ast/names/Identifier.hpp"
-#include "celestia/ast/patterns/NamedPatternNode.hpp"
-#include "celestia/ast/types/GenericType.hpp"
+
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
 #include "celestia/syntax/parser/ParseStatus.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"

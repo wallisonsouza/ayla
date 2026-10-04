@@ -7,7 +7,6 @@
 #include "celestia/diagnostic/DiagnosticCode.hpp"
 #include "celestia/diagnostic/Expected.hpp"
 #include "celestia/semantic/id/ids.hpp"
-#include "celestia/semantic/symbol/SymbolKind.hpp"
 
 #include <string>
 #include <utility>
@@ -47,16 +46,6 @@ enum class DiagnosticArgumentKind {
   Symbol,
   SymbolKind,
   Name,
-};
-
-enum class DiagnosticOrigin {
-  Variable,
-  Parameter,
-  Field,
-  Function,
-  Type,
-  EnumVariant,
-  Symbol,
 };
 
 using DiagnosticValue = std::variant<ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId,  std::string>;
@@ -111,7 +100,6 @@ struct Note {
 
 struct Diagnostic {
   Severity severity;
-  DiagnosticOrigin origin;
   DiagnosticCode code;
 
   std::vector<DiagnosticArgument> arguments;

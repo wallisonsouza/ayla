@@ -66,6 +66,7 @@ constexpr const char *type_kind_name(TypeKind kind) {
   case TypeKind::Array: return "array";
   case TypeKind::Struct: return "struct";
   case TypeKind::Function: return "function";
+  case TypeKind::Interface: break;
   }
 
   return "unknown";

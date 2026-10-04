@@ -1,13 +1,14 @@
 
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/TypeDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
 #include "celestia/debug/ast/AstDumper.hpp"
+
+#include "celestia/ast/declaration/CapabilityDeclaration.hpp"
+#include "celestia/ast/declaration/EnumDeclaration.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/TypeDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
 
 namespace celestia::debug {
 
@@ -56,7 +57,7 @@ void AstDumper::dump_module_declaration(const ast::ModuleDeclaration *node) {
   object.list("Declarations", node->declarations);
 }
 
-void AstDumper::dump_module_init(const ast::ModuleInitDeclaration *node) {
+void AstDumper::dump_module_init_declaration(const ast::ModuleInitDeclaration *node) {
 
   auto object = context.object(ast::node_kind_name(node->kind));
 
@@ -89,7 +90,6 @@ void AstDumper::dump_type_declaration(const ast::TypeDeclaration *node) {
   object.list("GenericParameters", node->generic_parameters);
 }
 
-
 void AstDumper::dump_enum_variant(const ast::EnumVariant *node) {
 
   auto g = context.object("EnumVariant");
@@ -97,7 +97,6 @@ void AstDumper::dump_enum_variant(const ast::EnumVariant *node) {
   g.field("Name", node->name);
   g.list("payload", node->payload);
 }
-
 
 void AstDumper::dump_enum_declaration(const ast::EnumDeclaration *node) {
 

@@ -1,12 +1,12 @@
 #include "celestia/semantic/resolver/Resolver.hpp"
 
-#include "celestia/ast/expressions/AssignmentExpression.hpp"
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/CallExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
-#include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
-#include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
-#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
+#include "celestia/ast/expression/AssignmentExpression.hpp"
+#include "celestia/ast/expression/BinaryExpression.hpp"
+#include "celestia/ast/expression/CallExpression.hpp"
+#include "celestia/ast/expression/IdentifierExpression.hpp"
+#include "celestia/ast/expression/IndexAcessExpression.hpp"
+#include "celestia/ast/expression/MemberAccessExpression.hpp"
+#include "celestia/ast/expression/UnaryExpression.hpp"
 #include "celestia/semantic/scope/ScopeLookup.hpp"
 namespace celestia::semantic {
 

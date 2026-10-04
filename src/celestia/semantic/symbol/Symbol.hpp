@@ -22,5 +22,5 @@ struct Symbol {
   celestia::ast::Node *declaration = nullptr;
 
   Symbol(celestia::semantic::SymbolId id, std::string name, SymbolKind kind, Visibility visibility, bool builtin, celestia::ast::Node *decl)
-      : id(id), name(std::move(name)), kind(kind), visibility(visibility), declaration(decl) {}
+      : id(id), kind(kind), name(std::move(name)), visibility(visibility), declaration(decl) {}
 };

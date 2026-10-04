@@ -6,30 +6,20 @@
 #include "celestia/ast/AstDispacher.hpp"
 #include "celestia/ast/Node.hpp"
 #include "celestia/ast/RootNode.hpp"
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/EnumDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/TypeDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-#include "celestia/ast/expressions/AssignmentExpression.hpp"
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/CallExpressionNode.hpp"
-#include "celestia/ast/expressions/IdentifierExpressionNode.hpp"
-#include "celestia/ast/expressions/IndexAcessExpressionNode.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
-#include "celestia/ast/expressions/MatchExpression.hpp"
-#include "celestia/ast/expressions/MemberAccessExpressionNode.hpp"
-#include "celestia/ast/expressions/UnaryExpressionNode.hpp"
-#include "celestia/ast/patterns/NamedPatternNode.hpp"
+#include "celestia/ast/declaration/CapabilityDeclaration.hpp"
+#include "celestia/ast/declaration/EnumDeclaration.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/ImportDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/TypeDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
+#include "celestia/ast/expression/BoolLiteral.hpp"
 
+#include "celestia/ast/patterns/NamedPatternNode.hpp"
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
-#include "celestia/ast/expressions/If.hpp"
 #include "celestia/ast/statements/ReturnStatementNode.hpp"
-#include "celestia/ast/expressions/While.hpp"
 #include "celestia/ast/types/GenericType.hpp"
 #include "celestia/ast/types/NamedType.hpp"
 #include "celestia/debug/ast/DumpContext.hpp"
@@ -52,13 +42,13 @@ public:
 private:
   void register_handlers() {
     // Literals
-    dispatcher.bind<ast::NumberLiteralNode, &AstDumper::dump_number_literal>();
+    dispatcher.bind<ast::NumberLiteral, &AstDumper::dump_number_literal>();
 
-    dispatcher.bind<ast::StringLiteralNode, &AstDumper::dump_string_literal>();
+    dispatcher.bind<ast::StringLiteral, &AstDumper::dump_string_literal>();
 
-    dispatcher.bind<ast::BoolLiteralNode, &AstDumper::dump_bool_literal>();
+    dispatcher.bind<ast::BoolLiteral, &AstDumper::dump_bool_literal>();
 
-    dispatcher.bind<ast::NullLiteralNode, &AstDumper::dump_null_literal>();
+    dispatcher.bind<ast::NullLiteral, &AstDumper::dump_null_literal>();
 
     // Names
     dispatcher.bind<ast::Identifier, &AstDumper::dump_identifier>();
@@ -108,7 +98,7 @@ private:
 
     dispatcher.bind<ast::ModuleDeclaration, &AstDumper::dump_module_declaration>();
 
-    dispatcher.bind<ast::ModuleInitDeclaration, &AstDumper::dump_module_init>();
+    dispatcher.bind<ast::ModuleInitDeclaration, &AstDumper::dump_module_init_declaration>();
 
     dispatcher.bind<ast::CapabilityDeclaration, &AstDumper::dump_capability_declaration>();
 
@@ -128,7 +118,7 @@ private:
 
     dispatcher.bind<ast::ObjectField, &AstDumper::dump_object_field>();
 
-    dispatcher.bind<ast::ArrayLiteralNode, &AstDumper::dump_array_literal>();
+    dispatcher.bind<ast::ArrayLiteral, &AstDumper::dump_array_literal>();
 
     dispatcher.bind<ast::StructField, &AstDumper::dump_struct_field>();
 
@@ -147,12 +137,12 @@ private:
   void dump_root(const ast::RootNode *node);
   void dump_generic_name(const ast::GenericName *node);
   void dump_impl_declaration(const ast::ImplDeclaration *node);
-  void dump_number_literal(const ast::NumberLiteralNode *node);
-  void dump_string_literal(const ast::StringLiteralNode *node);
+  void dump_number_literal(const ast::NumberLiteral *node);
+  void dump_string_literal(const ast::StringLiteral *node);
   void dump_struct_field(const ast::StructField *node);
   void dump_struct_literal(const ast::StructLiteral *node);
-  void dump_bool_literal(const ast::BoolLiteralNode *node);
-  void dump_null_literal(const ast::NullLiteralNode *node);
+  void dump_bool_literal(const ast::BoolLiteral *node);
+  void dump_null_literal(const ast::NullLiteral *node);
   void dump_identifier(const ast::Identifier *node);
   void dump_qualified_name(const ast::QualifiedName *node);
   void dump_generic(const ast::GenericParameter *node);
@@ -186,7 +176,7 @@ private:
   void dump_variable_declaration(const ast::VariableDeclaration *node);
   void dump_function_declaration(const ast::FunctionDeclaration *node);
   void dump_module_declaration(const ast::ModuleDeclaration *node);
-  void dump_module_init(const ast::ModuleInitDeclaration *node);
+  void dump_module_init_declaration(const ast::ModuleInitDeclaration *node);
   void dump_capability_declaration(const ast::CapabilityDeclaration *node);
 
   // Other nodes
@@ -194,7 +184,7 @@ private:
   void dump_type(const ast::Type *node);
   void dump_object_literal(const ast::ObjectLiteral *node);
   void dump_object_field(const ast::ObjectField *node);
-  void dump_array_literal(const ast::ArrayLiteralNode *node);
+  void dump_array_literal(const ast::ArrayLiteral *node);
   void dump_field_declaration(const ast::FieldDeclaration *node);
   void dump_struct_declaration(const ast::StructDeclaration *node);
   void dump_type_declaration(const ast::TypeDeclaration *node);

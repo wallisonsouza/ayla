@@ -1,7 +1,7 @@
 #pragma once
 
 #include "celestia/ast/Node.hpp"
-#include "celestia/ast/declarations/ModuleDeclaration.hpp"
+#include "celestia/ast/declaration/ModuleDeclaration.hpp"
 
 #include <vector>
 

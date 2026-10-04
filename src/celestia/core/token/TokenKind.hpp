@@ -168,6 +168,8 @@ constexpr std::string_view token_kind_name(TokenKind kind) noexcept {
   case TokenKind::LET_KEYWORD: return "LET_KEYWORD";
   case TokenKind::FROM_KEYWORD: return "FROM_KEYWORD";
   case TokenKind::ENUM_KEYWORD: return "ENUM_KEYWORD";
+  case TokenKind::MATCH: return "MATCH";
+  case TokenKind::UNDERSCORE: return "UNDERSCORE";
   }
 
   return "UNKNOWN";

@@ -1,6 +1,6 @@
-#include "celestia/ast/expressions/BinaryExpressionNode.hpp"
-#include "celestia/ast/expressions/If.hpp"
-#include "celestia/ast/expressions/While.hpp"
+#include "celestia/ast/expression/BinaryExpression.hpp"
+#include "celestia/ast/expression/IfExpression.hpp"
+#include "celestia/ast/expression/WhileExpression.hpp"
 #include "celestia/semantic/checker/TypeChecker.hpp"
 #include "celestia/semantic/checker/TypeCheckerDiagnostics.hpp"
 

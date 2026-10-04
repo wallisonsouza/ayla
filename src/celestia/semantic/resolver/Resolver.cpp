@@ -18,7 +18,7 @@ void Resolver::resolve_node(ast::Node *node) {
   // Literals
   case ast::NodeKind::StructLiteral: struct_literal(ast::as<ast::StructLiteral>(node)); break;
 
-  case ast::NodeKind::ArrayLiteral: array_literal(ast::as<ast::ArrayLiteralNode>(node)); break;
+  case ast::NodeKind::ArrayLiteral: array_literal(ast::as<ast::ArrayLiteral>(node)); break;
 
   case ast::NodeKind::ObjectLiteral: object_literal(ast::as<ast::ObjectLiteral>(node)); break;
 

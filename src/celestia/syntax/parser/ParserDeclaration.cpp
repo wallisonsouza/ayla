@@ -1,13 +1,12 @@
 #include "celestia/ast/ASTFwd.hpp"
 #include "celestia/ast/NodeCast.hpp"
-#include "celestia/ast/declarations/CapabilityDeclaration.hpp"
-#include "celestia/ast/declarations/FunctionDeclaration.hpp"
-#include "celestia/ast/declarations/ImplementationDeclaration.hpp"
-#include "celestia/ast/declarations/ImportDeclaration.hpp"
-#include "celestia/ast/declarations/StructDeclaration.hpp"
-#include "celestia/ast/declarations/TypeDeclaration.hpp"
-#include "celestia/ast/declarations/VariableDeclaration.hpp"
-#include "celestia/ast/expressions/LiteralExpressionNode.hpp"
+#include "celestia/ast/declaration/CapabilityDeclaration.hpp"
+#include "celestia/ast/declaration/FunctionDeclaration.hpp"
+#include "celestia/ast/declaration/ImplementationDeclaration.hpp"
+#include "celestia/ast/declaration/ImportDeclaration.hpp"
+#include "celestia/ast/declaration/StructDeclaration.hpp"
+#include "celestia/ast/declaration/TypeDeclaration.hpp"
+#include "celestia/ast/declaration/VariableDeclaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
 #include "celestia/semantic/resolver/Trace.hpp"
 #include "celestia/syntax/parser/Parser.hpp"
@@ -281,7 +280,7 @@ ParseResult<ast::ImportDeclaration *> Parser::parse_import_declaration() {
 
     if (node->kind == ast::NodeKind::StringLiteral) {
 
-      auto *string = ast::as<ast::StringLiteralNode>(node);
+      auto *string = ast::as<ast::StringLiteral>(node);
 
       if (node) { path = string->value; }
     }
