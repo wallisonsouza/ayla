@@ -1,3 +1,5 @@
+#pragma once
+
 #include "celestia/compiler/CompilerEnvironment.hpp"
 
 namespace celestia::semantic {

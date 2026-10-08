@@ -9,7 +9,9 @@ class SymbolCollectorStage : public Stage {
 public:
   void run(Compiler &compiler, CompilationUnit &unit) override {
 
-    SymbolCollector collector(compiler, unit);
+    SemanticContext ctx(compiler, unit);
+
+    SymbolCollector collector(ctx);
 
     collector.collect();
   }

@@ -3,9 +3,8 @@
 #include "celestia/ast/ASTFwd.hpp"
 #include "celestia/ast/declaration/EnumDeclaration.hpp"
 #include "celestia/ast/names/Generic.hpp"
-#include "celestia/compiler/CompilationUnit.hpp"
-#include "celestia/compiler/Compiler.hpp"
-#include "celestia/semantic/collector/SymbolCollectorContext.hpp"
+#include "celestia/semantic/SemanticContext.hpp"
+#include "celestia/semantic/resolver/ContextStack.hpp"
 #include "celestia/semantic/scope/Scope.hpp"
 
 namespace celestia::semantic {
@@ -24,12 +23,15 @@ struct DeclareResult {
 class SymbolCollector {
 
 public:
-  SymbolCollector(Compiler &compiler, CompilationUnit &unit);
+  SymbolCollector(SemanticContext &context);
 
   void collect();
 
 private:
-  SymbolCollectorContext context;
+  SemanticContext &context;
+
+  
+
   bool has_symbol(const std::string &name) const;
   void collect_node(ast::Node *node);
   void collect_root(ast::RootNode *node);

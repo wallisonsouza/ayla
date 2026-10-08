@@ -1,6 +1,8 @@
 #include "celestia/core/token/TokenKind.hpp"
 #include "celestia/language/LanguageDefinition.hpp"
+
 namespace ayla::language {
+
 void register_tokens(celestia::LanguageDefinition &def) {
 
   // keywords
@@ -80,4 +82,6 @@ void register_tokens(celestia::LanguageDefinition &def) {
 
   def.tokens.add(TokenKind::NOT, "!", TokenGroup::Operator);
 }
+
+
 } // namespace ayla::language

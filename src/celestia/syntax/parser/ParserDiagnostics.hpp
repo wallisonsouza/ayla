@@ -1,113 +1,97 @@
-
+#include "celestia/diagnostic/Diagnostic.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 
 namespace celestia::syntax::parser::diagnostics {
-    
+
+inline void report(ParseContext &context, diagnostic::DiagnosticCode code, std::vector<diagnostic::Argument> arguments) {
+
+  context.unit.diagnostics.report({
+
+      .severity = diagnostic::Severity::Error,
+
+      .code = code,
+
+      .arguments = std::move(arguments),
+
+      .labels =
+          {
+
+              {
+
+                  .slice = context.diagnostic_slice(),
+
+                  .code = diagnostic::LabelCode::ExpectedHere,
+
+                  .arguments = {},
+
+              },
+
+          },
+
+  });
+}
+
+//--------------------------------------------------
+// Expected
+//--------------------------------------------------
 
 inline void report_expected(ParseContext &context, TokenKind expected) {
 
   auto &tokens = context.tokens();
 
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Expected,
+  report(context, diagnostic::DiagnosticCode::Expected,
+         {
 
-                                   .arguments =
-                                       {
-                                           diagnostic::found(tokens.current()),
-                                           diagnostic::expected_token(expected),
-                                       },
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-                                   .helps = {},
+             diagnostic::ExpectedToken{
+                 .kind = expected,
+                 .position = diagnostic::ExpectedPosition::Before,
+             },
 
-                                   .notes = {}});
-}
+             tokens.current(),
 
-inline void report_missing_pattern_colon(ParseContext &context) {
-  auto &tokens = context.tokens();
-
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Expected,
-
-                                   .arguments =
-                                       {
-                                           diagnostic::found(tokens.current()),
-                                           diagnostic::expected_token(TokenKind::COLON, diagnostic::ExpectedPosition::Before),
-                                       },
-
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-
-                                   .helps =
-                                       {
-                                           {
-                                               .code = diagnostic::HelpCode::AddTypeAnnotation,
-                                               .arguments = {},
-                                           },
-                                       },
-                                   .notes = {}});
+         });
 }
 
 inline void report_expected(ParseContext &context, diagnostic::ExpectedKind expected) {
 
   auto &tokens = context.tokens();
 
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Expected,
-                                   .arguments =
-                                       {
-                                           diagnostic::found(tokens.current()),
-                                           diagnostic::expected_category(expected),
-                                       },
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-                                   .helps = {},
+  report(context, diagnostic::DiagnosticCode::Expected,
+         {
 
-                                   .notes = {}});
+             diagnostic::ExpectedCategory{
+                 .kind = expected,
+                 .position = diagnostic::ExpectedPosition::Before,
+             },
+
+             tokens.current(),
+
+         });
 }
 
 inline void report_missing(ParseContext &context, TokenKind expected) {
 
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Expected,
+  report(context, diagnostic::DiagnosticCode::Expected,
+         {
 
-                                   .arguments =
-                                       {
-                                           diagnostic::expected_token(expected),
-                                       },
+             diagnostic::ExpectedToken{
+                 .kind = expected,
+                 .position = diagnostic::ExpectedPosition::Before,
+             },
 
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-                                   .helps = {},
-
-                                   .notes = {}});
+         });
 }
 
 inline void report_unexpected(ParseContext &context) {
 
   auto &tokens = context.tokens();
 
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Unexpected,
-                                   .arguments =
-                                       {
-                                           diagnostic::found(tokens.current()),
-                                       },
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-                                   .helps = {},
+  report(context, diagnostic::DiagnosticCode::Unexpected,
+         {
 
-                                   .notes = {}});
+             tokens.current(),
+
+         });
 }
 
 //--------------------------------------------------
@@ -128,33 +112,8 @@ inline void report_expected_type(ParseContext &context) { report_expected(contex
 // Specific diagnostics
 //--------------------------------------------------
 
-inline void report_missing_return_arrow(ParseContext &context) {
+inline void report_missing_pattern_colon(ParseContext &context) { report_expected(context, TokenKind::COLON); }
 
-  auto &tokens = context.tokens();
-
-  context.unit.diagnostics.report({.severity = diagnostic::Severity::Error,
-                                   .code = diagnostic::DiagnosticCode::Expected,
-
-                                   .arguments =
-                                       {
-                                           diagnostic::found(tokens.current()),
-                                           diagnostic::expected_token(TokenKind::ARROW, diagnostic::ExpectedPosition::Before),
-                                       },
-
-                                   .labels =
-                                       {
-                                           diagnostic::location(context.diagnostic_slice()),
-                                       },
-
-                                   .helps =
-                                       {
-                                           {
-                                               .code = diagnostic::HelpCode::UseReturnArrow,
-                                               .arguments = {},
-                                           },
-                                       },
-
-                                   .notes = {}});
-}
+inline void report_missing_return_arrow(ParseContext &context) { report_expected(context, TokenKind::ARROW); }
 
 } // namespace celestia::syntax::parser::diagnostics

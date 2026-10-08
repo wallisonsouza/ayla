@@ -138,7 +138,7 @@ template <> struct NodeTraits<ModuleDeclaration> {
   static constexpr NodeKind kind = NodeKind::ModuleDeclaration;
 };
 
-template <> struct NodeTraits<BinaryExpressionNode> {
+template <> struct NodeTraits<BinaryExpression> {
   static constexpr NodeKind kind = NodeKind::BinaryExpression;
 };
 

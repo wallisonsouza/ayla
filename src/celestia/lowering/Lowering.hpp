@@ -49,7 +49,7 @@ private:
 
   ir::ValueId lower_bool_literal(const ast::BoolLiteral *node);
 
-  ir::ValueId lower_binary_expression(const ast::BinaryExpressionNode *node);
+  ir::ValueId lower_binary_expression(const ast::BinaryExpression*node);
 
   void lower_pattern(const ast::PatternNode *node, ir::ValueId value);
 

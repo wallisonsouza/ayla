@@ -7,13 +7,13 @@
 namespace diagnostic {
 
 const char *LineCutter::compute_start(const char *line_begin, const char *span_begin) {
-  constexpr uint32_t context = 10;
+  
 
   const char *p = span_begin;
 
   uint32_t back = 0;
 
-  while (p > line_begin && back < context) {
+  while (p > line_begin && back < start_context) {
     do { --p; } while (((*p) & 0b11000000) == 0b10000000);
 
     ++back;
@@ -23,13 +23,12 @@ const char *LineCutter::compute_start(const char *line_begin, const char *span_b
 }
 
 const char *LineCutter::compute_end(const char *line_end, const char *span_end) {
-  constexpr uint32_t context = 10;
 
   const char *p = span_end;
 
   uint32_t forward = 0;
 
-  while (p < line_end && forward < context) {
+  while (p < line_end && forward < end_context) {
     auto len = utils::Utf8::length(static_cast<uint8_t>(*p));
 
     p += len;

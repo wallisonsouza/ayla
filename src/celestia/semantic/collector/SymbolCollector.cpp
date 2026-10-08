@@ -6,12 +6,13 @@
 #include "celestia/ast/declaration/StructDeclaration.hpp"
 #include "celestia/ast/declaration/TypeDeclaration.hpp"
 #include "celestia/ast/declaration/VariableDeclaration.hpp"
-#include "celestia/ast/patterns/NamedPatternNode.hpp"
+#include "celestia/semantic/SemanticContext.hpp"
 #include "celestia/semantic/collector/SymbolCollectorDiagnostics.hpp"
 #include "celestia/semantic/scope/ScopeLookup.hpp"
+
 namespace celestia::semantic {
 
-SymbolCollector::SymbolCollector(Compiler &compiler, CompilationUnit &unit) : context(compiler, unit) {}
+SymbolCollector::SymbolCollector(SemanticContext &context) : context(context) {}
 
 void SymbolCollector::collect() {
   if (!context.unit._root) return;
@@ -25,7 +26,7 @@ bool SymbolCollector::has_symbol(const std::string &name) const {
 
   assert(scope_id.is_valid());
 
-  const auto &scope = context.env().scopes.get(scope_id);
+  const auto &scope =context.get_env().scopes.get(scope_id);
 
   return scope.symbols.contains(name);
 }
@@ -38,7 +39,7 @@ SymbolId SymbolCollector::declare_symbol(ast::Identifier *name, SymbolKind kind,
 
   assert(scope_id.is_valid());
 
-  auto existing = ScopeLookup::find_local(context.env(), scope_id, text);
+  auto existing = ScopeLookup::find_local(context.get_env(), scope_id, text);
 
   if (existing.is_valid()) {
     collector::diagnostics::report_redeclaration(context, existing, name->slice);
@@ -46,11 +47,11 @@ SymbolId SymbolCollector::declare_symbol(ast::Identifier *name, SymbolKind kind,
     return SymbolId::invalid();
   }
 
-  auto symbol_id = context.env().symbols.create_symbol(text, kind, visibility, false, node);
+  auto symbol_id =context.get_env().symbols.create_symbol(text, kind, visibility, false, node);
 
   assert(symbol_id.is_valid());
 
-  auto &scope = context.env().scopes.get(scope_id);
+  auto &scope =context.get_env().scopes.get(scope_id);
 
   const bool inserted = scope.symbols.insert(text, symbol_id);
   assert(inserted);
@@ -64,7 +65,7 @@ ScopeId SymbolCollector::enter_scope(core::ScopeKind kind, ast::Node *node) {
 
   auto parent = context.stack.current();
 
-  auto scope = context.env().scopes.create_scope(kind, parent);
+  auto scope =context.get_env().scopes.create_scope(kind, parent);
 
   if (!scope.is_valid()) return ScopeId::invalid();
 
@@ -142,22 +143,20 @@ void SymbolCollector::collect_module(ast::ModuleDeclaration *node) {
   const auto module_name = node->name->get_str();
 
   // Cria ou reutiliza o módulo.
-  auto module_id = context.env().modules.register_module(module_name);
+  auto module_id =context.get_env().modules.register_module(module_name);
 
   if (!module_id.is_valid()) { return; }
 
-  auto &builtin = context.env().modules.get(context.env().builtin_module);
+  auto &builtin =context.get_env().modules.get(context.get_env().builtin_module);
 
-  auto &module = context.env().modules.get(module_id);
+  auto &module =context.get_env().modules.get(module_id);
 
   // O módulo ainda não possui scope.
   ScopeId scope = module.scope_id();
 
   if (!scope.is_valid()) {
 
-    ScopeId parent = context.stack.current();
-
-    scope = context.env().scopes.create_scope(core::ScopeKind::Module, builtin.scope_id());
+    scope =context.get_env().scopes.create_scope(core::ScopeKind::Module, builtin.scope_id());
 
     if (!scope.is_valid()) { return; }
 

@@ -6,14 +6,14 @@
 #include "celestia/ast/expression/IndexAcessExpression.hpp"
 #include "celestia/ast/expression/MemberAccessExpression.hpp"
 #include "celestia/ast/expression/UnaryExpression.hpp"
-#include "celestia/syntax/parser/Parser.hpp"
-#include "celestia/syntax/parser/ParserContext.hpp"
+
 #include "celestia/ast/expression/BlockExpression.hpp"
-#include "celestia/ast/expression/Expression.hpp"
 #include "celestia/ast/expression/IfExpression.hpp"
 #include "celestia/ast/expression/MatchExpression.hpp"
 #include "celestia/ast/expression/WhileExpression.hpp"
+
 #include "celestia/ast/statements/ExpressionStatementNode.hpp"
+
 #include "celestia/syntax/parser/Parser.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 
@@ -22,6 +22,8 @@ namespace celestia::syntax {
 ast::Expression *Parser::parse_match_expression() {
 
   auto &tokens = context.tokens();
+
+  auto *start = tokens.current();
 
   if (!tokens.match(TokenKind::MATCH)) return nullptr;
 
@@ -37,7 +39,7 @@ ast::Expression *Parser::parse_match_expression() {
 
   while (!tokens.is_end()) {
 
-    if (tokens.match(TokenKind::CLOSE_BRACE)) break;
+    if (tokens.check(TokenKind::CLOSE_BRACE)) break;
 
     auto pattern_result = parse_pattern();
 
@@ -56,53 +58,70 @@ ast::Expression *Parser::parse_match_expression() {
     tokens.skip_trivia();
   }
 
-  return context.get_ast().alloc<ast::MatchExpression>(value, std::move(arms));
+  auto *close = tokens.current();
+
+  if (!tokens.match(TokenKind::CLOSE_BRACE)) return nullptr;
+
+  auto *node = context.get_ast().alloc<ast::MatchExpression>(value, std::move(arms));
+
+  node->slice = start->slice;
+  node->slice.extend_to(close->slice);
+
+  return node;
 }
 
+// ------------------------------------------------------------
 // while
+// ------------------------------------------------------------
+
 ast::WhileExpression *Parser::parse_while_expression() {
+
   auto &tokens = context.tokens();
 
+  auto *start = tokens.current();
+
   if (!tokens.match(TokenKind::WHILE_KEYWORD)) return nullptr;
+
+  tokens.skip_trivia();
 
   auto *condition = parse_expression();
 
   if (!condition) {
-    // context.//report_error(
-    //     DiagnosticCode::ConditionMissing,
-    //     "expected condition after while"
-    // );
-
+    // report error
     return nullptr;
   }
 
   if (condition->kind == ast::NodeKind::Assignment) {
-    // context.//report_error(
-    //     DiagnosticCode::ConditionAssignment,
-    //     "assignment is not allowed in while condition"
-    // );
-
+    // report error
     return nullptr;
   }
+
+  tokens.skip_trivia();
 
   auto *block = parse_block_expression();
 
   if (!block) {
-    // context.//report_error(
-    //     DiagnosticCode::BlockError,
-    //     "error in while block"
-    // );
-
+    // report error
     return nullptr;
   }
 
-  return context.get_ast().alloc<celestia::ast::WhileExpression>(condition, block);
+  auto *node = context.get_ast().alloc<ast::WhileExpression>(condition, block);
+
+  node->slice = start->slice;
+  node->slice.extend_to(block->slice);
+
+  return node;
 }
 
+// ------------------------------------------------------------
 // if
-celestia::ast::Expression *Parser::parse_if_expression() {
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_if_expression() {
 
   auto &tokens = context.tokens();
+
+  auto *start = tokens.current();
 
   if (!tokens.match(TokenKind::IF_KEYWORD)) return nullptr;
 
@@ -115,8 +134,8 @@ celestia::ast::Expression *Parser::parse_if_expression() {
     return nullptr;
   }
 
-  if (condition->kind == celestia::ast::NodeKind::Assignment) {
-    // context.report_error(...)
+  if (condition->kind == ast::NodeKind::Assignment) {
+    // report error
     return nullptr;
   }
 
@@ -124,14 +143,11 @@ celestia::ast::Expression *Parser::parse_if_expression() {
 
   auto *then_block = parse_block_expression();
 
-  if (!then_block) {
-    // erro
-    return nullptr;
-  }
+  if (!then_block) return nullptr;
 
   tokens.skip_trivia();
 
-  celestia::ast::Expression *else_block = nullptr;
+  ast::Expression *else_block = nullptr;
 
   if (tokens.match(TokenKind::ELSE_KEYWORD)) {
 
@@ -143,14 +159,24 @@ celestia::ast::Expression *Parser::parse_if_expression() {
       else_block = parse_block_expression();
     }
 
-    if (!else_block) {
-      // erro: esperado if ou bloco após else
-      return nullptr;
-    }
+    if (!else_block) return nullptr;
   }
 
-  return context.get_ast().alloc<celestia::ast::IfExpression>(condition, then_block, else_block);
+  auto *node = context.get_ast().alloc<ast::IfExpression>(condition, then_block, else_block);
+
+  node->slice = start->slice;
+
+  if (else_block)
+    node->slice.extend_to(else_block->slice);
+  else
+    node->slice.extend_to(then_block->slice);
+
+  return node;
 }
+
+// ------------------------------------------------------------
+// block
+// ------------------------------------------------------------
 
 ast::BlockExpression *Parser::parse_block_expression() {
 
@@ -217,7 +243,9 @@ ast::BlockExpression *Parser::parse_block_expression() {
     auto *last = parsed.back();
 
     if (dynamic_cast<ast::Expression *>(last)) {
+
       value = static_cast<ast::Expression *>(last);
+
       parsed.pop_back();
     }
   }
@@ -244,6 +272,10 @@ ast::BlockExpression *Parser::parse_block_expression() {
   return block;
 }
 
+// ------------------------------------------------------------
+// block items
+// ------------------------------------------------------------
+
 ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
 
   auto &tokens = context.tokens();
@@ -255,6 +287,7 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
     tokens.skip_trivia();
 
     if (tokens.check(TokenKind::CLOSE_BRACE)) break;
+
     if (tokens.check(TokenKind::UNDERSCORE)) break;
 
     ast::BlockItem *item = nullptr;
@@ -262,15 +295,19 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
     auto decl = parse_declaration();
 
     if (decl.is_ok()) {
+
       item = decl.value();
 
     } else if (auto *stmt = parse_statement()) {
+
       item = stmt;
 
     } else if (auto *expr = parse_expression()) {
+
       item = expr;
 
     } else {
+
       return ParseResult<std::vector<ast::BlockItem *>>::fail();
     }
 
@@ -282,7 +319,7 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
 
     if (tokens.check(TokenKind::UNDERSCORE)) break;
 
-    if (!tokens.match(TokenKind::NEW_LINE)) return ParseResult<std::vector<ast::BlockItem *>>::fail();
+    if (!tokens.match(TokenKind::NEW_LINE)) { return ParseResult<std::vector<ast::BlockItem *>>::fail(); }
 
     tokens.skip_trivia();
   }
@@ -290,7 +327,12 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
   return ParseResult<std::vector<ast::BlockItem *>>::ok(std::move(items));
 }
 
-celestia::ast::Expression *Parser::parse_expression() {
+// ------------------------------------------------------------
+// expression
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_expression() {
+
   auto *lhs = parse_unary_expression();
 
   if (!lhs) return nullptr;
@@ -298,8 +340,15 @@ celestia::ast::Expression *Parser::parse_expression() {
   return parse_binary_expression(0, lhs);
 }
 
-celestia::ast::Expression *Parser::parse_grouped_expression() {
+// ------------------------------------------------------------
+// grouped expression
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_grouped_expression() {
+
   auto &tokens = context.tokens();
+
+  auto *open = tokens.current();
 
   if (!tokens.match(TokenKind::OPEN_PAREN)) return nullptr;
 
@@ -307,10 +356,27 @@ celestia::ast::Expression *Parser::parse_grouped_expression() {
 
   if (!expr) return nullptr;
 
+  auto *close = tokens.current();
+
   if (!tokens.match(TokenKind::CLOSE_PAREN)) return nullptr;
+
+  /*
+   * A expressão continua sendo a mesma expressão
+   * semanticamente, mas seu slice representa o
+   * agrupamento completo.
+   *
+   * (a + b)
+   * ^^^^^^^
+   */
+  expr->slice = open->slice;
+  expr->slice.extend_to(close->slice);
 
   return expr;
 }
+
+// ------------------------------------------------------------
+// primary
+// ------------------------------------------------------------
 
 ast::Expression *Parser::parse_primary_expression() {
 
@@ -327,15 +393,12 @@ ast::Expression *Parser::parse_primary_expression() {
   case TokenKind::TRUE:
   case TokenKind::FALSE: return parse_literal_expression();
 
-  // Names
   case TokenKind::IDENTIFIER: return parse_identifier_expression();
 
-  // Grouping / collection
   case TokenKind::OPEN_PAREN: return parse_grouped_expression();
 
   case TokenKind::OPEN_BRACKET: return parse_array_literal();
 
-  // Control flow / blocks
   case TokenKind::OPEN_BRACE: return parse_block_expression();
 
   case TokenKind::IF_KEYWORD: return parse_if_expression();
@@ -348,7 +411,13 @@ ast::Expression *Parser::parse_primary_expression() {
   }
 }
 
-celestia::ast::Expression *Parser::parse_assignment(celestia::ast::Expression *target) {
+// ------------------------------------------------------------
+// assignment
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_assignment(ast::Expression *target) {
+
+  assert(target);
 
   auto &tokens = context.tokens();
 
@@ -358,10 +427,21 @@ celestia::ast::Expression *Parser::parse_assignment(celestia::ast::Expression *t
 
   if (!value) return nullptr;
 
-  return context.get_ast().alloc<celestia::ast::AssignmentExpressionNode>(target, value);
+  auto *node = context.get_ast().alloc<ast::AssignmentExpressionNode>(target, value);
+
+  node->slice = target->slice;
+  node->slice.extend_to(value->slice);
+
+  return node;
 }
 
-celestia::ast::Expression *Parser::parse_binary_expression(int min_bp, celestia::ast::Expression *left) {
+// ------------------------------------------------------------
+// binary
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_binary_expression(int min_bp, ast::Expression *left) {
+
+  assert(left);
 
   while (true) {
 
@@ -385,15 +465,38 @@ celestia::ast::Expression *Parser::parse_binary_expression(int min_bp, celestia:
 
     right = parse_binary_expression(info->rbp, right);
 
+    if (!right) return nullptr;
+
     auto op = std::get<BinaryOperation>(info->op);
 
-    left = context.get_ast().alloc<celestia::ast::BinaryExpressionNode>(left, op, right);
+    auto *binary = context.get_ast().alloc<ast::BinaryExpression>(left, op, right);
+
+    /*
+     * Não alteramos o slice de `left`.
+     *
+     * Cada BinaryExpression possui seu próprio
+     * intervalo.
+     *
+     * a + b
+     * ^^^^^
+     *
+     * a + b * c
+     * ^^^^^^^^^
+     */
+    binary->slice = left->slice;
+    binary->slice.extend_to(right->slice);
+
+    left = binary;
   }
 
   return left;
 }
 
-celestia::ast::Expression *Parser::parse_postfix_expression() {
+// ------------------------------------------------------------
+// postfix
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_postfix_expression() {
 
   auto *expr = parse_primary_expression();
 
@@ -402,6 +505,7 @@ celestia::ast::Expression *Parser::parse_postfix_expression() {
   while (true) {
 
     auto &tokens = context.tokens();
+
     auto *token = tokens.current();
 
     if (!token) break;
@@ -415,7 +519,7 @@ celestia::ast::Expression *Parser::parse_postfix_expression() {
 
       if (!generic_arguments) return nullptr;
 
-      if (tokens.current()->desc->kind != TokenKind::OPEN_PAREN) return nullptr;
+      if (!tokens.current() || tokens.current()->desc->kind != TokenKind::OPEN_PAREN) return nullptr;
 
       expr = parse_call(expr, std::move(*generic_arguments));
 
@@ -451,20 +555,41 @@ celestia::ast::Expression *Parser::parse_postfix_expression() {
   return expr;
 }
 
-celestia::ast::Expression *Parser::parse_member_access(celestia::ast::Expression *base) {
+// ------------------------------------------------------------
+// member access
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_member_access(ast::Expression *base) {
+
+  assert(base);
 
   auto &tokens = context.tokens();
 
   if (!tokens.match(TokenKind::DOT)) return nullptr;
 
-  auto *member = parse_identifier().value();
+  auto *member_start = tokens.current();
+
+  auto member_result = parse_identifier();
+
+  if (!member_result.is_ok()) return nullptr;
+
+  auto *member = member_result.value();
 
   if (!member) return nullptr;
 
-  return context.get_ast().alloc<celestia::ast::MemberAccessExpressionNode>(base, member);
+  auto *node = context.get_ast().alloc<ast::MemberAccessExpressionNode>(base, member);
+
+  node->slice = base->slice;
+  node->slice.extend_to(member->slice);
+
+  return node;
 }
 
-celestia::ast::Expression *Parser::parse_unary_expression() {
+// ------------------------------------------------------------
+// unary
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_unary_expression() {
 
   auto *token = context.tokens().current();
 
@@ -476,6 +601,8 @@ celestia::ast::Expression *Parser::parse_unary_expression() {
 
   if (!std::holds_alternative<UnaryOperation>(info->op)) return nullptr;
 
+  auto start = token->slice;
+
   context.tokens().consume();
 
   auto op = std::get<UnaryOperation>(info->op);
@@ -484,19 +611,44 @@ celestia::ast::Expression *Parser::parse_unary_expression() {
 
   if (!operand) return nullptr;
 
-  return context.get_ast().alloc<celestia::ast::UnaryExpressionNode>(op, operand);
+  auto *node = context.get_ast().alloc<ast::UnaryExpressionNode>(op, operand);
+
+  node->slice = start;
+  node->slice.extend_to(operand->slice);
+
+  return node;
 }
 
+// ------------------------------------------------------------
+// identifier
+// ------------------------------------------------------------
+
 ast::Expression *Parser::parse_identifier_expression() {
+
+  auto *start = context.tokens().current();
 
   auto name = parse_identifier_name();
 
   if (!name.is_ok()) return nullptr;
 
-  return context.get_ast().alloc<celestia::ast::IdentifierExpressionNode>(name.value());
+  auto *node = context.get_ast().alloc<ast::IdentifierExpressionNode>(name.value());
+
+  /*
+   * Caso parse_identifier_name() não preencha
+   * o slice do próprio nome.
+   */
+  node->slice = start->slice;
+
+  return node;
 }
 
-celestia::ast::Expression *Parser::parse_index_access(celestia::ast::Expression *base) {
+// ------------------------------------------------------------
+// index access
+// ------------------------------------------------------------
+
+ast::Expression *Parser::parse_index_access(ast::Expression *base) {
+
+  assert(base);
 
   auto &tokens = context.tokens();
 
@@ -506,10 +658,21 @@ celestia::ast::Expression *Parser::parse_index_access(celestia::ast::Expression 
 
   if (!index) return nullptr;
 
+  auto *close = tokens.current();
+
   if (!tokens.match(TokenKind::CLOSE_BRACKET)) return nullptr;
 
-  return context.get_ast().alloc<celestia::ast::IndexAccessExpressionNode>(base, index);
+  auto *node = context.get_ast().alloc<ast::IndexAccessExpressionNode>(base, index);
+
+  node->slice = base->slice;
+  node->slice.extend_to(close->slice);
+
+  return node;
 }
+
+// ------------------------------------------------------------
+// generic arguments
+// ------------------------------------------------------------
 
 std::optional<std::vector<ast::Type *>> Parser::parse_type_arguments() {
 
@@ -535,7 +698,13 @@ std::optional<std::vector<ast::Type *>> Parser::parse_type_arguments() {
   return arguments;
 }
 
-ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression *callee, std::vector<ast::Type *> generic_arguments) {
+// ------------------------------------------------------------
+// call
+// ------------------------------------------------------------
+
+ast::CallExpressionNode *Parser::parse_call(ast::Expression *callee, std::vector<ast::Type *> generic_arguments) {
+
+  assert(callee);
 
   auto &tokens = context.tokens();
 
@@ -561,7 +730,22 @@ ast::CallExpressionNode *Parser::parse_call(celestia::ast::Expression *callee, s
     }
   }
 
-  return context.get_ast().alloc<ast::CallExpressionNode>(callee, std::move(generic_arguments), std::move(args));
+  /*
+   * Nesse ponto current() é o token seguinte
+   * ao ')', então precisamos recuperar o token
+   * anterior para obter o fechamento.
+   *
+   * Se seu TokenStream possuir previous(), use-o.
+   */
+  auto *close = tokens.previous();
+
+  auto *node = context.get_ast().alloc<ast::CallExpressionNode>(callee, std::move(generic_arguments), std::move(args));
+
+  node->slice = callee->slice;
+
+  if (close) node->slice.extend_to(close->slice);
+
+  return node;
 }
 
 } // namespace celestia::syntax

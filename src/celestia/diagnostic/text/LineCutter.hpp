@@ -20,6 +20,10 @@ struct LineCut {
 
 class LineCutter {
 
+  static constexpr uint32_t start_context = 30;
+
+   static constexpr uint32_t end_context = 30;
+
 public:
 
   LineCut cut(const core::source::Source &source, const SourceSlice &slice);

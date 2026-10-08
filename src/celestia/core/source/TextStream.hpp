@@ -38,8 +38,6 @@ struct State {
 class TextStream {
 public:
 private:
-  const SourceBuffer &buffer;
-
   const char *begin;
   const char *current;
   const char *end;
@@ -50,7 +48,7 @@ private:
   std::vector<State> checkpoints;
 
 public:
-  explicit TextStream(const SourceBuffer &buf) : buffer(buf), begin(buf.begin()), current(buf.begin()), end(buf.end()) {}
+  explicit TextStream(const SourceBuffer &buf) : begin(buf.begin()), current(buf.begin()), end(buf.end()) {}
 
   bool eof() const noexcept { return current >= end; }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "celestia/debug/console/color.hpp"
+#include "debug/console/color.hpp"
 
 namespace diagnostic::theme {
 

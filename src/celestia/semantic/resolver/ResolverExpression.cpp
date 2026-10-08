@@ -11,22 +11,22 @@
 namespace celestia::semantic {
 
 void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node) {
-  auto current = context.stack.current();
+  auto current = stack.current();
 
   debug::Trace::header(debug::Category::Resolver, "Resolving '{}' in scope {}", node->name->get_str(), current.index());
 
-  ScopeId scope_id = context.stack.current();
+  ScopeId scope_id = stack.current();
 
   if (!scope_id.is_valid()) {
 
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::NotAType,
-        .arguments =
-            {
-                diagnostic::name(node->name->str),
-            },
-    });
+    // context.unit.diagnostics.report({
+    //     .severity = diagnostic::Severity::Error,
+    //     .code = diagnostic::DiagnosticCode::NotAType,
+    //     .arguments =
+    //         {
+    //             diagnostic::name(node->name->str),
+    //         },
+    // });
 
     return;
   }
@@ -35,14 +35,14 @@ void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node
 
   if (!id.is_valid()) {
 
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UndefinedSymbol,
-        .arguments =
-            {
-                diagnostic::name(node->name->str),
-            },
-    });
+    // context.unit.diagnostics.report({
+    //     .severity = diagnostic::Severity::Error,
+    //     .code = diagnostic::DiagnosticCode::UndefinedSymbol,
+    //     .arguments =
+    //         {
+    //             diagnostic::name(node->name->str),
+    //         },
+    // });
 
     return;
   }
@@ -50,7 +50,7 @@ void Resolver::resolve_identifier_expression(ast::IdentifierExpressionNode *node
   context.unit.semantic.set_symbol(node, id);
 }
 
-void Resolver::binary_expression(celestia::ast::BinaryExpressionNode *node) {
+void Resolver::binary_expression(celestia::ast::BinaryExpression *node) {
   resolve_node(node->lhs);
   resolve_node(node->rhs);
 }
@@ -72,8 +72,6 @@ void Resolver::assignment(celestia::ast::AssignmentExpressionNode *node) {
     std::cout << "ERRO: assignment target sem simbolo\n";
     return;
   }
-
-  auto &symbol = context.get_env().symbols.get(symbol_id);
 
   if (node->value) resolve_node(node->value);
 }

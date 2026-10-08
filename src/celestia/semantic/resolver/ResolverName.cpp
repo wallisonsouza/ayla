@@ -10,18 +10,18 @@ SymbolId Resolver::require_symbol(ast::NameNode *name, ScopeId scope_id) {
 
   if (symbol.is_valid()) return symbol;
 
-  context.unit.diagnostics.report({
-      .severity = diagnostic::Severity::Error,
-      .code = diagnostic::DiagnosticCode::UndefinedSymbol,
-      .arguments =
-          {
-              diagnostic::name(name->get_str()),
-          },
-      .labels =
-          {
-              diagnostic::location(name->slice),
-          },
-  });
+//   context.unit.diagnostics.report({
+//       .severity = diagnostic::Severity::Error,
+//       .code = diagnostic::DiagnosticCode::UndefinedSymbol,
+//       .arguments =
+//           {
+//               diagnostic::name(name->get_str()),
+//           },
+//       .labels =
+//           {
+//               diagnostic::location(name->slice),
+//           },
+//   });
 
   return SymbolId::invalid();
 }

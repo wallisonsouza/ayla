@@ -15,6 +15,7 @@ void SymbolCollector::collect_pattern(ast::PatternNode *pattern, SymbolKind kind
   }
 }
 
+
 void SymbolCollector::collect_named_pattern(ast::NamedPattern *pattern, SymbolKind kind) {
   assert(pattern && pattern->name);
 

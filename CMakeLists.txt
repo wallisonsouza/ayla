@@ -51,7 +51,7 @@ set(AYLA_IR_SOURCES
 
 
 set(AYLA_TRANSPILER_SOURCES
-
+src/celestia/diagnostic/formatter/TypeFormatter.cpp
     src/celestia/transpiler/CGenerator.cpp
     src/celestia/transpiler/declaration/CStructDeclarationGen.cpp
 )
@@ -81,7 +81,7 @@ add_executable(ayla
 
 add_subdirectory(src/celestia/semantic)
 add_subdirectory(src/celestia/syntax)
-add_subdirectory(src/celestia/debug)
+add_subdirectory(src/debug)
 # -------------------------------------------------------------
 # Includes
 # -------------------------------------------------------------

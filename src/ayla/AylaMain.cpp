@@ -3,9 +3,9 @@
 #include "ayla/language/AylaLanguage.hpp"
 #include "celestia/compiler/Compiler.hpp"
 #include "celestia/compiler/ModuleIndexer.hpp"
-#include "celestia/debug/ast/AstDumper.hpp"
-#include "celestia/debug/lexer/TokenDumper.hpp"
 #include "celestia/diagnostic/diagnostic_debug.hpp"
+#include "debug/ast/AstDumper.hpp"
+#include "debug/lexer/TokenDumper.hpp"
 #include <memory.h>
 
 int AylaApplication::run(const CommandLine &cmd) {

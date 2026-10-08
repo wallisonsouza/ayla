@@ -11,7 +11,7 @@ void Resolver::resolve_named_type(ast::NamedType *node) {
 
   assert(node && node->name);
 
-  ScopeId scope_id = context.stack.current();
+  ScopeId scope_id = stack.current();
 
   if (!scope_id.is_valid()) return;
 
@@ -26,7 +26,7 @@ void Resolver::resolve_generic_type(ast::GenericType *node) {
 
   assert(node && node->name);
 
-  ScopeId scope_id = context.stack.current();
+  ScopeId scope_id = stack.current();
 
   if (!scope_id.is_valid()) return;
 

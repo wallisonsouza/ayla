@@ -14,7 +14,6 @@ public:
 
   auto &tokens() { return unit.tokens; }
 
-
   auto &source() { return unit.source; }
 
   auto &get_ast() { return unit.arena; }

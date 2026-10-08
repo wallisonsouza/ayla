@@ -3,7 +3,7 @@
 
 namespace celestia::semantic {
 
-Resolver::Resolver(Compiler &compiler, CompilationUnit &unit) : context(compiler, unit) {}
+Resolver::Resolver(SemanticContext &context) : context(context), stack(ScopeId::invalid()) {}
 
 void Resolver::resolve_node(ast::Node *node) {
 
@@ -28,7 +28,7 @@ void Resolver::resolve_node(ast::Node *node) {
   case ast::NodeKind::NullLiteral: break;
 
   // Expressions
-  case ast::NodeKind::BinaryExpression: binary_expression(ast::as<ast::BinaryExpressionNode>(node)); break;
+  case ast::NodeKind::BinaryExpression: binary_expression(ast::as<ast::BinaryExpression>(node)); break;
 
   case ast::NodeKind::UnaryExpression: unary_expression(ast::as<ast::UnaryExpressionNode>(node)); break;
 

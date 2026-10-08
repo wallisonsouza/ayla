@@ -25,7 +25,7 @@ class Expression;
 class IfExpression;
 class WhileExpression;
 class AssignmentExpressionNode;
-class BinaryExpressionNode;
+class BinaryExpression;
 class CallExpressionNode;
 class IdentifierExpressionNode;
 class IndexAccessExpressionNode;

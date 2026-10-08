@@ -1,35 +1,25 @@
 #pragma once
 
 #include "celestia/ast/ASTFwd.hpp"
-#include "celestia/compiler/CompilationUnit.hpp"
-#include "celestia/compiler/Compiler.hpp"
-#include "celestia/compiler/CompilerEnvironment.hpp"
+#include "celestia/semantic/SemanticContext.hpp"
 #include "celestia/semantic/id/ids.hpp"
 #include "celestia/semantic/resolver/ContextStack.hpp"
 
 namespace celestia::semantic {
-struct ResolverContext {
-  Compiler &compiler;
-  CompilationUnit &unit;
-
-  ContextStack<ScopeId> stack;
-
-  CompilerEnvironment &get_env() const { return compiler.environment(); }
-
-  ResolverContext(Compiler &compiler, CompilationUnit &unit) : compiler(compiler), unit(unit), stack(ScopeId::invalid()) {}
-};
 
 struct Resolver {
-
 public:
-  Resolver(Compiler &compiler, CompilationUnit &unit);
+  Resolver(SemanticContext &context);
   void resolve_root(ast::RootNode *node);
 
 private:
-  ResolverContext context;
+  SemanticContext &context;
+
+  ContextStack<ScopeId> stack;
+
+  SymbolId require_symbol(ast::NameNode *name, ScopeId scope_id);
 
   void resolve_node(ast::Node *node);
-  SymbolId require_symbol(ast::NameNode *name, ScopeId scope_id);
   void resolve_named_type(ast::NamedType *node);
   void resolve_enum_variant(ast::EnumVariant *node);
   void resolve_enum_declaration(ast::EnumDeclaration *node);
@@ -46,7 +36,7 @@ private:
   void member_access(ast::MemberAccessExpressionNode *node);
 
   void resolve_identifier_expression(ast::IdentifierExpressionNode *node);
-  void binary_expression(ast::BinaryExpressionNode *node);
+  void binary_expression(ast::BinaryExpression *node);
   void unary_expression(ast::UnaryExpressionNode *node);
   void resolve_if_expression(ast::IfExpression *node);
 
@@ -70,7 +60,5 @@ private:
   void resolve_import_declaration(ast::ImportDeclaration *node);
   void expression_statement(ast::ExpressionStatement *node);
   void named_pattern(ast::NamedPattern *pattern);
-
-  void diagnostic() {}
 };
 } // namespace celestia::semantic

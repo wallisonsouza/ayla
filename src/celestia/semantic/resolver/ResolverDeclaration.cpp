@@ -17,23 +17,7 @@ void Resolver::resolve_impl_declaration(ast::ImplDeclaration *node) {}
 void Resolver::resolve_import_declaration(ast::ImportDeclaration *node) {
   assert(node && node->name);
 
-  if (!load_module(context.compiler, node, context.unit)) {
-
-    context.unit.diagnostics.report({
-        .severity = diagnostic::Severity::Error,
-        .code = diagnostic::DiagnosticCode::UnknownModule,
-        .arguments =
-            {
-                diagnostic::name(node->name->get_str()),
-            },
-        .labels =
-            {
-                diagnostic::location(node->name->slice),
-            },
-    });
-
-    return;
-  }
+  if (!load_module(context.compiler, node, context.unit)) { return; }
 }
 
 void Resolver::resolve_module_declaration(ast::ModuleDeclaration *node) {
@@ -41,13 +25,13 @@ void Resolver::resolve_module_declaration(ast::ModuleDeclaration *node) {
 
   auto scope = context.unit.semantic.scope(node);
 
-  context.stack.push(scope);
+  stack.push(scope);
 
   for (auto *declaration : node->declarations) {
     if (declaration) resolve_node(declaration);
   }
 
-  context.stack.pop();
+  stack.pop();
 }
 
 void Resolver::resolve_enum_declaration(ast::EnumDeclaration *node) {
@@ -55,7 +39,7 @@ void Resolver::resolve_enum_declaration(ast::EnumDeclaration *node) {
 
   auto scope = context.unit.semantic.scope(node);
 
-  context.stack.push(scope);
+  stack.push(scope);
 
   for (auto *generic : node->generic_parameters) {
     if (generic) resolve_node(generic);
@@ -65,7 +49,7 @@ void Resolver::resolve_enum_declaration(ast::EnumDeclaration *node) {
     if (variant) resolve_node(variant);
   }
 
-  context.stack.pop();
+  stack.pop();
 }
 
 void Resolver::resolve_enum_variant(ast::EnumVariant *node) {
@@ -81,7 +65,7 @@ void Resolver::resolve_function_declaration(ast::FunctionDeclaration *node) {
 
   auto scope = context.unit.semantic.scope(node);
 
-  context.stack.push(scope);
+  stack.push(scope);
 
   // // generics
   for (auto *generic : node->generic_parameters) {
@@ -99,7 +83,7 @@ void Resolver::resolve_function_declaration(ast::FunctionDeclaration *node) {
   // Body
   if (node->body) { resolve_node(node->body); }
 
-  context.stack.pop();
+  stack.pop();
 }
 
 void Resolver::resolve_field_declaration(ast::FieldDeclaration *node) {
@@ -113,7 +97,7 @@ void Resolver::resolve_struct_declaration(ast::StructDeclaration *node) {
 
   auto scope = context.unit.semantic.scope(node);
 
-  context.stack.push(scope);
+  stack.push(scope);
 
   // generics
   for (auto *generic : node->generic_parameters) {
@@ -130,7 +114,7 @@ void Resolver::resolve_struct_declaration(ast::StructDeclaration *node) {
     if (field) resolve_node(field);
   }
 
-  context.stack.pop();
+  stack.pop();
 }
 
 void Resolver::resolve_variable_declaration(ast::VariableDeclaration *node) {

@@ -4,48 +4,48 @@
 
 namespace celestia::semantic {
 
-namespace {
+// namespace {
 
-const char *module_state_name(ModuleState state) {
+// const char *module_state_name(ModuleState state) {
 
-  switch (state) {
+//   switch (state) {
 
-  case ModuleState::None: return "None";
+//   case ModuleState::None: return "None";
 
-  case ModuleState::Discovered: return "Discovered";
+//   case ModuleState::Discovered: return "Discovered";
 
-  case ModuleState::Parsed: return "Parsed";
+//   case ModuleState::Parsed: return "Parsed";
 
-  case ModuleState::Resolved: return "Resolved";
+//   case ModuleState::Resolved: return "Resolved";
 
-  case ModuleState::Checked: return "Checked";
+//   case ModuleState::Checked: return "Checked";
 
-  case ModuleState::Lowered: return "Lowered";
+//   case ModuleState::Lowered: return "Lowered";
 
-  case ModuleState::Failed: return "Failed";
-  }
+//   case ModuleState::Failed: return "Failed";
+//   }
 
-  return "Unknown";
-}
+//   return "Unknown";
+// }
 
-void log_module_state(Module &module) {
+// void log_module_state(Module &module) {
 
-  debug::Trace::log(debug::Category::Resolver, "module '{}' state: {}{}{}{}{}{}", module.name(),
+//   debug::Trace::log(debug::Category::Resolver, "module '{}' state: {}{}{}{}{}{}", module.name(),
 
-               module.has_state(ModuleState::Discovered) ? "Discovered " : "",
+//                module.has_state(ModuleState::Discovered) ? "Discovered " : "",
 
-               module.has_state(ModuleState::Parsed) ? "Parsed " : "",
+//                module.has_state(ModuleState::Parsed) ? "Parsed " : "",
 
-               module.has_state(ModuleState::Resolved) ? "Resolved " : "",
+//                module.has_state(ModuleState::Resolved) ? "Resolved " : "",
 
-               module.has_state(ModuleState::Checked) ? "Checked " : "",
+//                module.has_state(ModuleState::Checked) ? "Checked " : "",
 
-               module.has_state(ModuleState::Lowered) ? "Lowered " : "",
+//                module.has_state(ModuleState::Lowered) ? "Lowered " : "",
 
-               module.has_state(ModuleState::Failed) ? "Failed" : "");
-}
+//                module.has_state(ModuleState::Failed) ? "Failed" : "");
+// }
 
-} // namespace
+// } // namespace
 
 void Resolver::resolve_module_init_declaration(ast::ModuleInitDeclaration *node) {
 

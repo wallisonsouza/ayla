@@ -1,12 +1,1 @@
-Point: struct {
-    x: Int
-    y: Int
-}
-
-add: fun(a: Int, b: Int) -> Int {
-    a + b
-}
-
-main: fun() -> Int {
-   
-}
+let x: Int = []

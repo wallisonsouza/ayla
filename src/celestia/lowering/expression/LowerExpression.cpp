@@ -17,7 +17,7 @@ ir::ValueId Lowering::lower_expression(const ast::Expression *node) {
 
   // case ast::NodeKind::IdentifierExpression: return lower_identifier(ast::as<ast::IdentifierExpressionNode>(node));
 
-  // case ast::NodeKind::BinaryExpression: return lower_binary_expression(ast::as<ast::BinaryExpressionNode>(node));
+  // case ast::NodeKind::BinaryExpression: return lower_binary_expression(ast::as<ast::BinaryExpression>(node));
 
   default: return ir::ValueId::invalid();
   }

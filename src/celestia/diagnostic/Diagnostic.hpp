@@ -1,13 +1,12 @@
 #pragma once
 
-#include "celestia/ast/Node.hpp"
+#include "celestia/core/operators/BinaryOperation.hpp"
 #include "celestia/core/token/Location.hpp"
 #include "celestia/core/token/Token.hpp"
 #include "celestia/core/token/TokenKind.hpp"
-#include "celestia/diagnostic/DiagnosticCode.hpp"
-#include "celestia/diagnostic/Expected.hpp"
 #include "celestia/semantic/id/ids.hpp"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <variant>
@@ -16,8 +15,60 @@
 namespace diagnostic {
 
 //--------------------------------------------------
+// Diagnostic
+//--------------------------------------------------
+
+enum class DiagnosticCode : std::uint32_t {
+  None = 0,
+
+  // Lexer
+  InvalidCharacter,
+  InvalidEscapeSequence,
+  UnterminatedString,
+  UnterminatedComment,
+
+  // Parser
+  Expected,
+  Unexpected,
+  UnexpectedEOF,
+
+  // Resolver
+  UndefinedSymbol,
+  UnknownModule,
+  RedefinedSymbol,
+  RedefinedField,
+  ShadowedSymbol,
+  UnknownType,
+  NotAType,
+  UnknownGeneric,
+  InvalidGenericArity,
+
+  // Type checker
+  TypeMismatch,
+  InvalidBinaryOperation,
+  CannotInferType,
+  InvalidType,
+  InvalidAssignment,
+  InvalidConversion,
+};
+
+//--------------------------------------------------
 // Expected
 //--------------------------------------------------
+
+enum class ExpectedKind {
+  Token,
+
+  Identifier,
+
+  Expression,
+  Statement,
+  Pattern,
+
+  Type,
+
+  Declaration
+};
 
 enum class ExpectedPosition {
   Before,
@@ -34,39 +85,38 @@ struct ExpectedCategory {
   ExpectedPosition position;
 };
 
-//--------------------------------------------------
-// Argument
-//--------------------------------------------------
 
-enum class DiagnosticArgumentKind {
-  Expected,
-  Found,
-  Previous,
-  Type,
-  Symbol,
-  SymbolKind,
-  Name,
-};
 
-using DiagnosticValue = std::variant<ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId,  std::string>;
-
-struct DiagnosticArgument {
-  DiagnosticArgumentKind kind;
-  DiagnosticValue value;
+struct OperationTypes {
+  celestia::semantic::TypeId lhs;
+  celestia::semantic::TypeId rhs;
 };
 
 //--------------------------------------------------
-// Label
+// Diagnostic arguments
 //--------------------------------------------------
 
-enum class LabelKind {
-  Primary,
-  Secondary,
+using Argument = std::variant<OperationTypes, BinaryOperation, ExpectedToken, ExpectedCategory, Token *, TokenKind, celestia::semantic::TypeId, celestia::semantic::SymbolId, std::string>;
+
+enum class LabelCode {
+  None,
+
+  ExpectedType,
+  FoundType,
+  Location,
+  ExpectedHere,
+
+  LeftOperand,
+  RightOperand,
+
+  PreviousDeclaration,
+  ConflictingDeclaration,
 };
 
 struct Label {
   SourceSlice slice;
-  LabelKind kind;
+  LabelCode code;
+  std::vector<Argument> arguments;
 };
 
 //--------------------------------------------------
@@ -76,22 +126,6 @@ struct Label {
 enum class Severity {
   Error,
   Warning,
-  Note,
-  Help,
-};
-
-//--------------------------------------------------
-// Auxiliary diagnostics
-//--------------------------------------------------
-
-struct Help {
-  HelpCode code;
-  std::vector<DiagnosticArgument> arguments;
-};
-
-struct Note {
-  NoteCode code;
-  std::vector<DiagnosticArgument> arguments;
 };
 
 //--------------------------------------------------
@@ -102,72 +136,32 @@ struct Diagnostic {
   Severity severity;
   DiagnosticCode code;
 
-  std::vector<DiagnosticArgument> arguments;
+  SourceSlice primary_slice;
 
+  std::vector<Argument> arguments;
   std::vector<Label> labels;
-  std::vector<Help> helps;
-  std::vector<Note> notes;
 };
 
 //--------------------------------------------------
-// Label helpers
+// Labels
 //--------------------------------------------------
 
-inline Label location(SourceSlice slice, LabelKind kind = LabelKind::Primary) {
+inline Label label(SourceSlice slice, LabelCode code) {
 
   return {
       .slice = slice,
-      .kind = kind,
+      .code = code,
+      .arguments = {},
   };
 }
 
-inline Label location(const celestia::ast::Node *node, LabelKind kind = LabelKind::Primary) { return location(node->slice, kind); }
-//--------------------------------------------------
-// Argument helpers
-//--------------------------------------------------
-
-template <typename T> inline DiagnosticArgument make_argument(DiagnosticArgumentKind kind, T &&value) {
+inline Label label(SourceSlice slice, LabelCode code, std::vector<Argument> arguments) {
 
   return {
-      .kind = kind,
-      .value = std::forward<T>(value),
+      .slice = slice,
+      .code = code,
+      .arguments = std::move(arguments),
   };
 }
-
-//--------------------------------------------------
-// Expected helpers
-//--------------------------------------------------
-
-inline DiagnosticArgument expected_token(TokenKind kind, ExpectedPosition position = ExpectedPosition::Before) {
-
-  return make_argument(DiagnosticArgumentKind::Expected, ExpectedToken{
-                                                             .kind = kind,
-                                                             .position = position,
-                                                         });
-}
-
-inline DiagnosticArgument expected_category(ExpectedKind kind, ExpectedPosition position = ExpectedPosition::Before) {
-
-  return make_argument(DiagnosticArgumentKind::Expected, ExpectedCategory{
-                                                             .kind = kind,
-                                                             .position = position,
-                                                         });
-}
-
-//--------------------------------------------------
-// Other argument helpers
-//--------------------------------------------------
-
-inline DiagnosticArgument name(std::string value) { return make_argument(DiagnosticArgumentKind::Name, std::move(value)); }
-
-inline DiagnosticArgument symbol(celestia::semantic::SymbolId value) { return make_argument(DiagnosticArgumentKind::Symbol, value); }
-
-inline DiagnosticArgument type(celestia::semantic::TypeId value) { return make_argument(DiagnosticArgumentKind::Type, value); }
-
-inline DiagnosticArgument found_type(celestia::semantic::TypeId value) { return make_argument(DiagnosticArgumentKind::Found, value); }
-
-inline DiagnosticArgument found(Token *value) { return make_argument(DiagnosticArgumentKind::Found, value); }
-
-inline DiagnosticArgument found(TokenKind value) { return make_argument(DiagnosticArgumentKind::Found, value); }
 
 } // namespace diagnostic

@@ -9,7 +9,7 @@ class CheckStage : public Stage {
 public:
   void run(Compiler &compiler, CompilationUnit &unit) override {
 
-    TypeCheckerContext ctx(compiler, unit);
+    SemanticContext ctx(compiler, unit);
 
     TypeChecker checker(ctx);
 

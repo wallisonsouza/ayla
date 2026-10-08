@@ -9,7 +9,9 @@ class ResolverStage : public Stage {
 public:
   void run(Compiler &compiler, CompilationUnit &unit) override {
 
-    Resolver resolver = Resolver(compiler, unit);
+    SemanticContext ctx(compiler, unit);
+
+    Resolver resolver = Resolver(ctx);
 
     resolver.resolve_root(unit._root);
   }

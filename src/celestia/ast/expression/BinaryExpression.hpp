@@ -4,13 +4,13 @@
 
 namespace celestia::ast {
 
-struct BinaryExpressionNode : Expression {
+struct BinaryExpression: Expression {
 
   Expression *lhs;
   BinaryOperation operation;
   Expression *rhs;
 
-  BinaryExpressionNode(Expression *l, BinaryOperation o, Expression *r) : Expression(NodeKind::BinaryExpression), lhs(l), operation(o), rhs(r) {}
+  BinaryExpression(Expression *l, BinaryOperation o, Expression *r) : Expression(NodeKind::BinaryExpression), lhs(l), operation(o), rhs(r) {}
 
   
 };

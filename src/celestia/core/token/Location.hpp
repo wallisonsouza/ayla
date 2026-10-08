@@ -21,5 +21,9 @@ struct SourceSlice {
     };
   }
 
+  static const SourceSlice EMPTY;
+
   void extend_to(SourceSlice other) { end = other.end; }
 };
+
+inline const SourceSlice SourceSlice::EMPTY{};

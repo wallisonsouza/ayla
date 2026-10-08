@@ -21,7 +21,7 @@ enum class BinaryOperation {
   GreaterEqual
 };
 
-constexpr std::string_view to_string(BinaryOperation op) {
+constexpr std::string_view binary_operation_string(BinaryOperation op) {
   switch (op) {
   case BinaryOperation::Add: return "+";
   case BinaryOperation::Subtract: return "-";
