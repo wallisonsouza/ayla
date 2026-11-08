@@ -67,7 +67,7 @@ cmake -G Ninja \
     "${CMAKE_LAUNCHERS[@]}" \
     ..
 
-MAX_THREADS="${MAX_THREADS:-2}"
+MAX_THREADS="${MAX_THREADS:-16}"
 THREADS=$(nproc)
 
 if [ "$THREADS" -gt "$MAX_THREADS" ]; then

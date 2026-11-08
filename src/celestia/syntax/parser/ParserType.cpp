@@ -9,7 +9,7 @@
 
 namespace celestia::syntax {
 
-ParseResult<ast::Type *> Parser::parse_type() {
+Match<ast::Type *> Parser::parse_type() {
 
   auto &tokens = context.tokens();
 
@@ -27,9 +27,9 @@ ParseResult<ast::Type *> Parser::parse_type() {
     // foo.Vec<Int>
     auto name_result = parse_name();
 
-    if (name_result.is_error()) { return ParseResult<ast::Type *>::fail(); }
+    if (name_result.is_error()) { return Match<ast::Type *>::fail(); }
 
-    if (name_result.is_no_match()) { return ParseResult<ast::Type *>::no_match(); }
+    if (name_result.is_no_match()) { return Match<ast::Type *>::no_match(); }
 
     auto *name = name_result.value();
 
@@ -40,22 +40,22 @@ ParseResult<ast::Type *> Parser::parse_type() {
 
     type->slice = name->slice;
 
-    return ParseResult<ast::Type *>::ok(type);
+    return Match<ast::Type *>::ok(type);
   }
 
-  default: return ParseResult<ast::Type *>::no_match();
+  default: return Match<ast::Type *>::no_match();
   }
 }
 
-ParseResult<ast::NamedType *> Parser::parse_named_type() {
+Match<ast::NamedType *> Parser::parse_named_type() {
 
   auto result = parse_name();
 
-  if (result.is_error()) { return ParseResult<ast::NamedType *>::fail(); }
+  if (result.is_error()) { return Match<ast::NamedType *>::fail(); }
 
   if (result.is_no_match()) {
     parser::diagnostics::report_expected_type(context);
-    return ParseResult<ast::NamedType *>::fail();
+    return Match<ast::NamedType *>::fail();
   }
 
   auto *name = result.value();
@@ -64,10 +64,10 @@ ParseResult<ast::NamedType *> Parser::parse_named_type() {
 
   type->slice = name->slice;
 
-  return ParseResult<ast::NamedType *>::ok(type);
+  return Match<ast::NamedType *>::ok(type);
 }
 
-ParseResult<ast::GenericType *>
+Match<ast::GenericType *>
 Parser::parse_generic_type(ast::NameNode *name) {
 
   auto &tokens = context.tokens();
@@ -78,17 +78,17 @@ Parser::parse_generic_type(ast::NameNode *name) {
           TokenKind::LESS,
           TokenKind::GREATER,
           TokenKind::COMMA,
-          [&]() -> ParseResult<ast::Type *> {
+          [&]() -> Match<ast::Type *> {
             return parse_type();
           }
       );
 
   if (result.is_error()) {
-    return ParseResult<ast::GenericType *>::fail();
+    return Match<ast::GenericType *>::fail();
   }
 
   if (result.is_no_match()) {
-    return ParseResult<ast::GenericType *>::no_match();
+    return Match<ast::GenericType *>::no_match();
   }
 
   auto arguments = std::move(result.value());
@@ -96,7 +96,7 @@ Parser::parse_generic_type(ast::NameNode *name) {
   // Type<>
   if (arguments.empty()) {
     parser::diagnostics::report_expected_type(context);
-    return ParseResult<ast::GenericType *>::fail();
+    return Match<ast::GenericType *>::fail();
   }
 
   auto *type =
@@ -107,14 +107,14 @@ Parser::parse_generic_type(ast::NameNode *name) {
 
   type->slice = name->slice;
 
-  return ParseResult<ast::GenericType *>::ok(type);
+  return Match<ast::GenericType *>::ok(type);
 }
 
-ParseResult<ast::FunctionType *> Parser::parse_function_type() {
+Match<ast::FunctionType *> Parser::parse_function_type() {
 
   auto &tokens = context.tokens();
 
-  if (!tokens.match(TokenKind::OPEN_PAREN)) { return ParseResult<ast::FunctionType *>::no_match(); }
+  if (!tokens.match(TokenKind::OPEN_PAREN)) { return Match<ast::FunctionType *>::no_match(); }
 
   std::vector<ast::Type *> parameters;
 
@@ -128,13 +128,13 @@ ParseResult<ast::FunctionType *> Parser::parse_function_type() {
       // (Type, ...)
       auto result = parse_type();
 
-      if (result.is_error()) { return ParseResult<ast::FunctionType *>::fail(); }
+      if (result.is_error()) { return Match<ast::FunctionType *>::fail(); }
 
       if (result.is_no_match()) {
 
         parser::diagnostics::report_expected_type(context);
 
-        return ParseResult<ast::FunctionType *>::fail();
+        return Match<ast::FunctionType *>::fail();
       }
 
       parameters.push_back(result.value());
@@ -149,7 +149,7 @@ ParseResult<ast::FunctionType *> Parser::parse_function_type() {
 
         parser::diagnostics::report_expected(context, TokenKind::COMMA);
 
-        return ParseResult<ast::FunctionType *>::fail();
+        return Match<ast::FunctionType *>::fail();
       }
 
       tokens.skip_trivia();
@@ -162,7 +162,7 @@ ParseResult<ast::FunctionType *> Parser::parse_function_type() {
 
       parser::diagnostics::report_expected(context, TokenKind::CLOSE_PAREN);
 
-      return ParseResult<ast::FunctionType *>::fail();
+      return Match<ast::FunctionType *>::fail();
     }
   }
 
@@ -171,26 +171,26 @@ ParseResult<ast::FunctionType *> Parser::parse_function_type() {
 
     parser::diagnostics::report_expected(context, TokenKind::ARROW);
 
-    return ParseResult<ast::FunctionType *>::fail();
+    return Match<ast::FunctionType *>::fail();
   }
 
   // () -> ...
   auto return_result = parse_type();
 
-  if (return_result.is_error()) { return ParseResult<ast::FunctionType *>::fail(); }
+  if (return_result.is_error()) { return Match<ast::FunctionType *>::fail(); }
 
   if (return_result.is_no_match()) {
 
     parser::diagnostics::report_expected_type(context);
 
-    return ParseResult<ast::FunctionType *>::fail();
+    return Match<ast::FunctionType *>::fail();
   }
 
   auto *type = context.get_ast().alloc<ast::FunctionType>(std::move(parameters), return_result.value());
 
   auto end = tokens.position();
 
-  return ParseResult<ast::FunctionType *>::ok(type);
+  return Match<ast::FunctionType *>::ok(type);
 }
 
 } // namespace celestia::syntax

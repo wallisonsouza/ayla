@@ -4,7 +4,7 @@
 
 namespace celestia::syntax {
 
-ParseResult<ast::PatternNode *> Parser::parse_pattern() {
+Match<ast::PatternNode *> Parser::parse_pattern() {
 
   auto &tokens = context.tokens();
   std::cerr << "[Parser] parsing match arm\n";
@@ -17,15 +17,15 @@ ParseResult<ast::PatternNode *> Parser::parse_pattern() {
     if (current->desc) { std::cerr << "[Pattern] current token name = " << current->desc->name << "\n"; }
   }
 
-  if (!current) return ParseResult<ast::PatternNode *>::no_match();
+  if (!current) return Match<ast::PatternNode *>::no_match();
 
-  if (current->kind() != TokenKind::IDENTIFIER) return ParseResult<ast::PatternNode *>::no_match();
+  if (current->kind() != TokenKind::IDENTIFIER) return Match<ast::PatternNode *>::no_match();
 
   auto name_result = parse_identifier();
 
-  if (name_result.is_error()) return ParseResult<ast::PatternNode *>::fail();
+  if (name_result.is_error()) return Match<ast::PatternNode *>::fail();
 
-  if (name_result.is_no_match()) return ParseResult<ast::PatternNode *>::no_match();
+  if (name_result.is_no_match()) return Match<ast::PatternNode *>::no_match();
 
   auto *name = name_result.value();
 
@@ -39,7 +39,7 @@ ParseResult<ast::PatternNode *> Parser::parse_pattern() {
   return upcast<ast::PatternNode>(parse_named_pattern(name));
 }
 
-ParseResult<ast::NamedPattern *> Parser::parse_named_pattern(ast::Identifier *name) {
+Match<ast::NamedPattern *> Parser::parse_named_pattern(ast::Identifier *name) {
 
   auto &tokens = context.tokens();
 
@@ -49,11 +49,11 @@ ParseResult<ast::NamedPattern *> Parser::parse_named_pattern(ast::Identifier *na
 
     auto type_result = parse_type();
 
-    if (type_result.is_error()) return ParseResult<ast::NamedPattern *>::fail();
+    if (type_result.is_error()) return Match<ast::NamedPattern *>::fail();
 
     if (type_result.is_no_match()) {
       parser::diagnostics::report_expected_type(context);
-      return ParseResult<ast::NamedPattern *>::fail();
+      return Match<ast::NamedPattern *>::fail();
     }
 
     type = type_result.value();
@@ -64,7 +64,7 @@ ParseResult<ast::NamedPattern *> Parser::parse_named_pattern(ast::Identifier *na
 
     if (type_result.is_ok()) {
       parser::diagnostics::report_missing_pattern_colon(context);
-      return ParseResult<ast::NamedPattern *>::fail();
+      return Match<ast::NamedPattern *>::fail();
     }
   }
 
@@ -74,10 +74,10 @@ ParseResult<ast::NamedPattern *> Parser::parse_named_pattern(ast::Identifier *na
 
   if (type) pattern->slice.extend_to(type->slice);
 
-  return ParseResult<ast::NamedPattern *>::ok(pattern);
+  return Match<ast::NamedPattern *>::ok(pattern);
 }
 
-ParseResult<ast::EnumVariantPattern *> Parser::parse_enum_variant_pattern(ast::Identifier *first) {
+Match<ast::EnumVariantPattern *> Parser::parse_enum_variant_pattern(ast::Identifier *first) {
 
   auto &tokens = context.tokens();
 
@@ -88,11 +88,11 @@ ParseResult<ast::EnumVariantPattern *> Parser::parse_enum_variant_pattern(ast::I
 
     auto result = parse_identifier();
 
-    if (result.is_error()) return ParseResult<ast::EnumVariantPattern *>::fail();
+    if (result.is_error()) return Match<ast::EnumVariantPattern *>::fail();
 
     if (result.is_no_match()) {
       parser::diagnostics::report_expected_identifier(context);
-      return ParseResult<ast::EnumVariantPattern *>::fail();
+      return Match<ast::EnumVariantPattern *>::fail();
     }
 
     parts.push_back(result.value());
@@ -111,19 +111,19 @@ ParseResult<ast::EnumVariantPattern *> Parser::parse_enum_variant_pattern(ast::I
 
       auto pattern = parse_pattern();
 
-      if (pattern.is_error() || pattern.is_no_match()) return ParseResult<ast::EnumVariantPattern *>::fail();
+      if (pattern.is_error() || pattern.is_no_match()) return Match<ast::EnumVariantPattern *>::fail();
 
       arguments.push_back(pattern.value());
 
       if (tokens.match(TokenKind::CLOSE_PAREN)) break;
 
-      if (!tokens.match(TokenKind::COMMA)) return ParseResult<ast::EnumVariantPattern *>::fail();
+      if (!tokens.match(TokenKind::COMMA)) return Match<ast::EnumVariantPattern *>::fail();
     }
   }
 
   auto *pattern = context.get_ast().alloc<ast::EnumVariantPattern>(name, std::move(arguments));
 
-  return ParseResult<ast::EnumVariantPattern *>::ok(pattern);
+  return Match<ast::EnumVariantPattern *>::ok(pattern);
 }
 
 } // namespace celestia::syntax

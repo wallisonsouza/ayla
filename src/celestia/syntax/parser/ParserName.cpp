@@ -4,17 +4,17 @@
 
 namespace celestia::syntax {
 
-ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
+Match<celestia::ast::NameNode *> Parser::parse_name() {
 
   auto &tokens = context.tokens();
 
   auto first = parse_identifier();
 
-  if (first.is_no_match()) return ParseResult<celestia::ast::NameNode *>::no_match();
+  if (first.is_no_match()) return Match<celestia::ast::NameNode *>::no_match();
 
-  if (first.is_error()) return ParseResult<celestia::ast::NameNode *>::fail();
+  if (first.is_error()) return Match<celestia::ast::NameNode *>::fail();
 
-  if (!tokens.check(TokenKind::DOT)) return ParseResult<celestia::ast::NameNode *>::ok(first.value());
+  if (!tokens.check(TokenKind::DOT)) return Match<celestia::ast::NameNode *>::ok(first.value());
 
   std::vector<celestia::ast::Identifier *> parts;
   parts.push_back(first.value());
@@ -25,10 +25,10 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
 
     if (next.is_no_match()) {
       parser::diagnostics::report_expected_identifier(context);
-      return ParseResult<celestia::ast::NameNode *>::fail();
+      return Match<celestia::ast::NameNode *>::fail();
     }
 
-    if (next.is_error()) return ParseResult<celestia::ast::NameNode *>::fail();
+    if (next.is_error()) return Match<celestia::ast::NameNode *>::fail();
 
     parts.push_back(next.value());
   }
@@ -38,14 +38,14 @@ ParseResult<celestia::ast::NameNode *> Parser::parse_name() {
   qualified->slice.begin = qualified->parts.front()->slice.begin;
   qualified->slice.end = qualified->parts.back()->slice.end;
 
-  return ParseResult<celestia::ast::NameNode *>::ok(qualified);
+  return Match<celestia::ast::NameNode *>::ok(qualified);
 }
-ParseResult<celestia::ast::Identifier *> Parser::parse_identifier() {
+Match<celestia::ast::Identifier *> Parser::parse_identifier() {
   auto &tokens = context.tokens();
 
   auto *token = tokens.match(TokenKind::IDENTIFIER);
 
-  if (!token) { return ParseResult<celestia::ast::Identifier *>::no_match(); }
+  if (!token) { return Match<celestia::ast::Identifier *>::no_match(); }
 
   auto text = context.source().buffer.get_text(token->slice.get_span());
 
@@ -53,22 +53,22 @@ ParseResult<celestia::ast::Identifier *> Parser::parse_identifier() {
 
   node->slice = token->slice;
 
-  return ParseResult<celestia::ast::Identifier *>::ok(node);
+  return Match<celestia::ast::Identifier *>::ok(node);
 }
 
-ParseResult<ast::Identifier *> Parser::parse_identifier_name() {
+Match<ast::Identifier *> Parser::parse_identifier_name() {
 
   auto result = parse_name();
 
-  if (result.is_error()) { return ParseResult<ast::Identifier *>::fail(); }
+  if (result.is_error()) { return Match<ast::Identifier *>::fail(); }
 
-  if (result.is_no_match()) { return ParseResult<ast::Identifier *>::no_match(); }
+  if (result.is_no_match()) { return Match<ast::Identifier *>::no_match(); }
 
   auto *name = result.value();
 
-  if (name->kind != ast::NodeKind::Identifier) { return ParseResult<ast::Identifier *>::no_match(); }
+  if (name->kind != ast::NodeKind::Identifier) { return Match<ast::Identifier *>::no_match(); }
 
-  return ParseResult<ast::Identifier *>::ok(static_cast<ast::Identifier *>(name));
+  return Match<ast::Identifier *>::ok(static_cast<ast::Identifier *>(name));
 }
 
 } // namespace celestia::syntax

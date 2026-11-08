@@ -3,7 +3,7 @@
 #include "celestia/ast/ASTFwd.hpp"
 
 #include "celestia/syntax/parser/DeclarationSpecifiers.hpp"
-#include "celestia/syntax/parser/ParseStatus.hpp"
+#include "celestia/syntax/parser/Match.hpp"
 #include "celestia/syntax/parser/ParserContext.hpp"
 #include "celestia/syntax/parser/ParserDiagnostics.hpp"
 
@@ -28,51 +28,51 @@ public:
   DeclarationSpecifiers parse_specifiers();
 
   // names
-  ParseResult<celestia::ast::Identifier *> parse_identifier();
-  // ParseResult<ast::QualifiedName *> parse_qualified_name();
-  ParseResult<ast::Identifier *> parse_identifier_name();
-  ParseResult<std::vector<ast::GenericParameter *>> parse_generic_parameters();
-  ParseResult<celestia::ast::NameNode *> parse_name();
+  Match<celestia::ast::Identifier *> parse_identifier();
+  // Match<ast::QualifiedName *> parse_qualified_name();
+  Match<ast::Identifier *> parse_identifier_name();
+  Match<std::vector<ast::GenericParameter *>> parse_generic_parameters();
+  Match<celestia::ast::NameNode *> parse_name();
 
   // types
-  ParseResult<ast::Type *> parse_type();
+  Match<ast::Type *> parse_type();
 
-  ParseResult<ast::GenericType *> parse_generic_type(ast::NameNode *name);
+  Match<ast::GenericType *> parse_generic_type(ast::NameNode *name);
 
-  ParseResult<ast::NamedType *> parse_named_type();
+  Match<ast::NamedType *> parse_named_type();
 
-  ParseResult<ast::FunctionType *> parse_function_type();
+  Match<ast::FunctionType *> parse_function_type();
 
   // declarations
-  ParseResult<ast::Declaration *> parse_declaration();
+  Match<ast::Declaration *> parse_declaration();
 
-  ParseResult<ast::ModuleDeclaration *> parse_module_declaration();
+  Match<ast::ModuleDeclaration *> parse_module_declaration();
 
-  ParseResult<ast::ImportDeclaration *> parse_import_declaration();
+  Match<ast::ImportDeclaration *> parse_import_declaration();
 
-  ParseResult<ast::GenericName *> parse_declaration_name();
+  Match<ast::GenericName *> parse_declaration_name();
 
-  ParseResult<ast::ImplDeclaration *> parse_impl_declaration();
+  Match<ast::ImplDeclaration *> parse_impl_declaration();
 
-  ParseResult<ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
+  Match<ast::VariableDeclaration *> parse_variable_declaration(DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::EnumVariant *> parse_enum_variant();
+  Match<ast::EnumVariant *> parse_enum_variant();
 
-  ParseResult<ast::EnumDeclaration *> parse_enum_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
+  Match<ast::EnumDeclaration *> parse_enum_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::FunctionDeclaration *> parse_function_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers, bool require_body = true);
+  Match<ast::FunctionDeclaration *> parse_function_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers, bool require_body = true);
 
-  ParseResult<ast::Declaration *> parse_capability_member(DeclarationSpecifiers specifiers);
+  Match<ast::Declaration *> parse_capability_member(DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::CapabilityDeclaration *> parse_capability_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
+  Match<ast::CapabilityDeclaration *> parse_capability_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::StructDeclaration *> parse_struct_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
+  Match<ast::StructDeclaration *> parse_struct_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::TypeDeclaration *> parse_type_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
+  Match<ast::TypeDeclaration *> parse_type_declaration(ast::Identifier *name, DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::Declaration *> named(DeclarationSpecifiers specifiers);
+  Match<ast::Declaration *> named(DeclarationSpecifiers specifiers);
 
-  ParseResult<ast::FieldDeclaration *> parse_field_declaration();
+  Match<ast::FieldDeclaration *> parse_field_declaration();
 
   // statements
   ast::Statement *parse_statement();
@@ -86,9 +86,9 @@ public:
   ast::ExpressionStatement *parse_expression_statement();
 
   // patterns
-  ParseResult<ast::PatternNode *> parse_pattern();
-  ParseResult<ast::EnumVariantPattern *> parse_enum_variant_pattern(ast::Identifier *first);
-  ParseResult<ast::NamedPattern *> parse_named_pattern(ast::Identifier *name);
+  Match<ast::PatternNode *> parse_pattern();
+  Match<ast::EnumVariantPattern *> parse_enum_variant_pattern(ast::Identifier *first);
+  Match<ast::NamedPattern *> parse_named_pattern(ast::Identifier *name);
 
   // expressions
 
@@ -108,7 +108,7 @@ private:
   ast::Expression *parse_match_expression();
   ast::BlockExpression *parse_block_expression();
 
-  ParseResult<std::vector<ast::BlockItem *>> parse_block_items();
+  Match<std::vector<ast::BlockItem *>> parse_block_items();
 
   ast::Expression *parse_struct_literal(celestia::ast::Identifier *name);
 
@@ -191,74 +191,74 @@ private:
     }
   }
 
-  template <typename Base, typename Derived> ParseResult<Base *> upcast(ParseResult<Derived *> result) {
-    if (result.is_error()) return ParseResult<Base *>::fail();
+  template <typename Base, typename Derived> Match<Base *> upcast(Match<Derived *> result) {
+    if (result.is_error()) return Match<Base *>::fail();
 
-    if (result.is_no_match()) return ParseResult<Base *>::no_match();
+    if (result.is_no_match()) return Match<Base *>::no_match();
 
-    return ParseResult<Base *>::ok(result.value());
+    return Match<Base *>::ok(result.value());
   }
 
-  template <typename T, typename Parser> ParseResult<std::vector<T>> parse_delimited_list(ParseContext &context, TokenKind open, TokenKind close, TokenKind separator, Parser &&parse_element) {
+  template <typename T, typename Parser> Match<std::vector<T>> parse_delimited_list(ParseContext &context, TokenKind open, TokenKind close, TokenKind separator, Parser &&parse_element) {
 
     auto &tokens = context.tokens();
     std::vector<T> elements;
 
-    if (!tokens.match(open)) return ParseResult<std::vector<T>>::no_match();
+    if (!tokens.match(open)) return Match<std::vector<T>>::no_match();
 
     tokens.skip_trivia();
 
-    if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+    if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
 
     while (!tokens.is_end()) {
 
       auto result = parse_element();
 
-      if (result.is_error()) return ParseResult<std::vector<T>>::fail();
+      if (result.is_error()) return Match<std::vector<T>>::fail();
 
-      if (result.is_no_match()) return ParseResult<std::vector<T>>::fail();
+      if (result.is_no_match()) return Match<std::vector<T>>::fail();
 
       elements.push_back(result.value());
 
       tokens.skip_trivia();
 
-      if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+      if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
 
       if (!tokens.match(separator)) {
 
         parser::diagnostics::report_expected(context, separator);
 
-        return ParseResult<std::vector<T>>::fail();
+        return Match<std::vector<T>>::fail();
       }
 
       tokens.skip_trivia();
 
-      if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+      if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
     }
 
     parser::diagnostics::report_expected(context, close);
 
-    return ParseResult<std::vector<T>>::fail();
+    return Match<std::vector<T>>::fail();
   }
 
-  template <typename T, typename Parser> ParseResult<std::vector<T>> parse_delimited_items(ParseContext &context, TokenKind open, TokenKind close, Parser &&parse_element) {
+  template <typename T, typename Parser> Match<std::vector<T>> parse_delimited_items(ParseContext &context, TokenKind open, TokenKind close, Parser &&parse_element) {
 
     auto &tokens = context.tokens();
     std::vector<T> elements;
 
-    if (!tokens.match(open)) return ParseResult<std::vector<T>>::no_match();
+    if (!tokens.match(open)) return Match<std::vector<T>>::no_match();
 
     tokens.skip_trivia();
 
-    if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+    if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
 
     while (!tokens.is_end()) {
 
       auto result = parse_element();
 
-      if (result.is_error()) return ParseResult<std::vector<T>>::fail();
+      if (result.is_error()) return Match<std::vector<T>>::fail();
 
-      if (result.is_no_match()) return ParseResult<std::vector<T>>::fail();
+      if (result.is_no_match()) return Match<std::vector<T>>::fail();
 
       elements.push_back(result.value());
 
@@ -267,17 +267,17 @@ private:
       if (tokens.match(TokenKind::COMMA)) {
         tokens.skip_trivia();
 
-        if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+        if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
 
         continue;
       }
 
-      if (tokens.match(close)) return ParseResult<std::vector<T>>::ok(std::move(elements));
+      if (tokens.match(close)) return Match<std::vector<T>>::ok(std::move(elements));
     }
 
     parser::diagnostics::report_expected(context, close);
 
-    return ParseResult<std::vector<T>>::fail();
+    return Match<std::vector<T>>::fail();
   }
 
   template <typename Parser> auto speculate(Parser &&parser) {

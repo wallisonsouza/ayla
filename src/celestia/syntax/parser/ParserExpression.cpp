@@ -276,7 +276,7 @@ ast::BlockExpression *Parser::parse_block_expression() {
 // block items
 // ------------------------------------------------------------
 
-ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
+Match<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
 
   auto &tokens = context.tokens();
 
@@ -308,7 +308,7 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
 
     } else {
 
-      return ParseResult<std::vector<ast::BlockItem *>>::fail();
+      return Match<std::vector<ast::BlockItem *>>::fail();
     }
 
     items.push_back(item);
@@ -319,12 +319,12 @@ ParseResult<std::vector<ast::BlockItem *>> Parser::parse_block_items() {
 
     if (tokens.check(TokenKind::UNDERSCORE)) break;
 
-    if (!tokens.match(TokenKind::NEW_LINE)) { return ParseResult<std::vector<ast::BlockItem *>>::fail(); }
+    if (!tokens.match(TokenKind::NEW_LINE)) { return Match<std::vector<ast::BlockItem *>>::fail(); }
 
     tokens.skip_trivia();
   }
 
-  return ParseResult<std::vector<ast::BlockItem *>>::ok(std::move(items));
+  return Match<std::vector<ast::BlockItem *>>::ok(std::move(items));
 }
 
 // ------------------------------------------------------------
